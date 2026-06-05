@@ -26,7 +26,7 @@ public class ModulatorTest {
         ModulatorModel model = null;
         try {
             model = new ModulatorModel(1);
-            checkModel(model, 10);
+            checkModel(model, 1);
             model.lock(0);
 
             model.setModulationGain(0, 1f);
