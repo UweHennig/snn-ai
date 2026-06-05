@@ -47,9 +47,10 @@ public class WeightTest {
     public void testMemoryModel() {
         WeightModel model = null;
         try {
-            model = new WeightModel(10);
-            checkModel(model, 10);
+            model = new WeightModel(1);
+            checkModel(model, 1);
 
+            model.lock(0);
             model.setWeight(0, 1f);
             assertEquals(1f, model.getWeight(0), "invalid weight in model");
 
@@ -70,7 +71,7 @@ public class WeightTest {
 
             model.setTimeLimit(0, 7f);
             assertEquals(7f, model.getTimeLimit(0), "invalid timeLimit in model");
-
+            model.unlock(0);
         } finally {
             if (model != null) {
                 model.close();

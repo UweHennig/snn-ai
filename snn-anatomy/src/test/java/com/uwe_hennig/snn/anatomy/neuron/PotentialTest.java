@@ -46,6 +46,8 @@ public class PotentialTest {
         assertEquals(2f, model.getLastUpdateTime(0));
         assertEquals(3f, model.getRestingPotential(0));
         assertEquals(4f, model.getRepolarizationTime(0));
+
+        model.close();
     }
 
     @Test
@@ -61,8 +63,10 @@ public class PotentialTest {
             PotentialView[] views = new PotentialView[n];
             for (int i = 0; i < n; i++) {
                 views[i] = new PotentialView(i, model);
+                model.lock(i);
                 model.setPotential(i, 0f);
                 model.setRestingPotential(i, 0f);
+                model.unlock(i);
             }
 
             for (int i = 0; i < n; i++) {

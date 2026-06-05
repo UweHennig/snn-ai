@@ -1,4 +1,4 @@
-name: Java Build
+name: SNN-AI Java Build
 
 on:
   push:
