@@ -7,20 +7,18 @@ package com.uwe_hennig.snn.anatomy.neuron;
 
 /**
  * SynapseView
- * @formatter:off
- * @formatter:on
  * @author Uwe Hennig
  */
 public class SynapseView {
-    private final long index;
+    private final int index;
     private final SynapseModel model;
 
-    private final long fieldId;
-    private final long neuronId;
-    private final long targetId;
-    private final long modulatorId;
+    private final int fieldId;
+    private final int neuronId;
+    private final int targetId;
+    private final int modulatorId;
 
-    public SynapseView(long index, SynapseModel model, long fieldId, long neuronId, long targetId, long modulatorId) {
+    public SynapseView(int index, SynapseModel model, int fieldId, int neuronId, int targetId, int modulatorId) {
         assert model != null : "Model must not be null!";
         assert index < model.capacity && index >= 0 : " " + index + " >= " + model.capacity;
 

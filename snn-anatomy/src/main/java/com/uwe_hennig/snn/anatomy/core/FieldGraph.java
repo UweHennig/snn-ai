@@ -7,17 +7,18 @@ package com.uwe_hennig.snn.anatomy.core;
 
 /**
  * FieldGraph
+ *
  * @author Uwe Hennig
  */
 public class FieldGraph {
     private static volatile FieldGraph INSTANCE;
-    private final Blockchain blockchain;
+    private final Blockchain           blockchain;
 
-    private FieldGraph(long maxFieldBlocks, int  minFieldSize) {
+    private FieldGraph(int maxFieldBlocks, int minFieldSize) {
         blockchain = new Blockchain(maxFieldBlocks, minFieldSize);
     }
 
-    public static FieldGraph of(long maxFieldBlocks, int  minFieldSize) {
+    public static FieldGraph of(int maxFieldBlocks, int minFieldSize) {
         synchronized (FieldGraph.class) {
             if (INSTANCE != null) {
                 throw new IllegalStateException("Already initialized");
@@ -31,34 +32,34 @@ public class FieldGraph {
         return INSTANCE;
     }
 
-    public long addParentFieldIds(long[] parentIds) {
-        long ref = blockchain.allocate();
+    public int addParentFieldIds(int[] parentIds) {
+        int ref = (int) blockchain.allocate();
         blockchain.put(ref, parentIds);
         return ref;
     }
 
-    public long addChildFieldIds(long[] childIds) {
-        long ref = blockchain.allocate();
+    public int addChildFieldIds(int[] childIds) {
+        int ref = (int) blockchain.allocate();
         blockchain.put(ref, childIds);
         return ref;
     }
 
-    public long addNeuronIds(long[] neuronIds) {
-        long ref = blockchain.allocate();
+    public int addNeuronIds(int[] neuronIds) {
+        int ref = (int) blockchain.allocate();
         blockchain.put(ref, neuronIds);
         return ref;
     }
 
-    public long[] getParentFieldIds(long parentsRef) {
-        return blockchain.getLongs(parentsRef);
+    public int[] getParentFieldIds(int parentsRef) {
+        return blockchain.getInts(parentsRef);
     }
 
-    public long[] getChildFieldIds(long childrenRef) {
-        return blockchain.getLongs(childrenRef);
+    public int[] getChildFieldIds(int childrenRef) {
+        return blockchain.getInts(childrenRef);
     }
 
-    public long[] getNeuronIds(long neuronRef) {
-        return blockchain.getLongs(neuronRef);
+    public int[] getNeuronIds(int neuronRef) {
+        return blockchain.getInts(neuronRef);
     }
 
 }

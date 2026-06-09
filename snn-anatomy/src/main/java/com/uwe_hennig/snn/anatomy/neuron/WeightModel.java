@@ -21,7 +21,7 @@ import java.lang.invoke.VarHandle;
  * @author Uwe Hennig
  */
 public final class WeightModel {
-    final long  capacity;
+    final int   capacity;
     final Arena arena;
 
     SequenceLayout sequenceLayout;
@@ -53,7 +53,7 @@ public final class WeightModel {
 
     // ----- public -----
 
-    public WeightModel(long capacity) {
+    public WeightModel(int capacity) {
         assert capacity > 0 : "invalid capacity";
 
         this.capacity = capacity;
@@ -67,78 +67,78 @@ public final class WeightModel {
         arena.close();
     }
 
-    public long getCapacity() {
+    public int getCapacity() {
         return capacity;
     }
 
     // ----- lock/unlock -----
 
-    void lock(long index) {
+    void lock(int index) {
         // 0 = unlocked, 1 = lock
         while (!VH_LOCK.compareAndSet(segment, 0L, index, 0, 1)) {
             Thread.onSpinWait();
         }
     }
 
-    void unlock(long index) {
+    void unlock(int index) {
         VH_LOCK.setRelease(segment, 0L, index, 0);
     }
 
     // ----- getter/setter -----
 
-    float getWeight(long index) {
+    float getWeight(int index) {
         return (float) VH_WEIGHT.get(segment, 0L, index);
     }
 
-    void setWeight(long index, float weight) {
+    void setWeight(int index, float weight) {
         VH_WEIGHT.set(segment, 0L, index, weight);
     }
 
-    float getPreSynapticTime(long index) {
+    float getPreSynapticTime(int index) {
         return (float) VH_PRE_SYNAPTIC_TIME.get(segment, 0L, index);
     }
 
-    void setPreSynapticTime(long index, float timestamp) {
+    void setPreSynapticTime(int index, float timestamp) {
         VH_PRE_SYNAPTIC_TIME.set(segment, 0L, index, timestamp);
     }
 
-    float getPostSynapticTime(long index) {
+    float getPostSynapticTime(int index) {
         return (float) VH_POST_SYNAPTIC_TIME.get(segment, 0L, index);
     }
 
-    void setPostSynapticTime(long index, float timestamp) {
+    void setPostSynapticTime(int index, float timestamp) {
         VH_POST_SYNAPTIC_TIME.set(segment, 0L, index, timestamp);
     }
 
-    float getHebbTimeRange(long index) {
+    float getHebbTimeRange(int index) {
         return (float) VH_HEBB_TIME_RANGE.get(segment, 0L, index);
     }
 
-    void setHebbTimeRange(long index, float time) {
+    void setHebbTimeRange(int index, float time) {
         VH_HEBB_TIME_RANGE.set(segment, 0L, index, time);
     }
 
-    float getHebbScale(long index) {
+    float getHebbScale(int index) {
         return (float) VH_HEBB_SCALE.get(segment, 0L, index);
     }
 
-    void setHebbScale(long index, float timeRange) {
+    void setHebbScale(int index, float timeRange) {
         VH_HEBB_SCALE.set(segment, 0L, index, timeRange);
     }
 
-    float getWeightScale(long index) {
+    float getWeightScale(int index) {
         return (float) VH_WEIGHT_SCALE.get(segment, 0L, index);
     }
 
-    void setWeightScale(long index, float timeRange) {
+    void setWeightScale(int index, float timeRange) {
         VH_WEIGHT_SCALE.set(segment, 0L, index, timeRange);
     }
 
-    float getTimeLimit(long index) {
+    float getTimeLimit(int index) {
         return (float) VH_TIME_LIMIT.get(segment, 0L, index);
     }
 
-    void setTimeLimit(long index, float timeRange) {
+    void setTimeLimit(int index, float timeRange) {
         VH_TIME_LIMIT.set(segment, 0L, index, timeRange);
     }
 

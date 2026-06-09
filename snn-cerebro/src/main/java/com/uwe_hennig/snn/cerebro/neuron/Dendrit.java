@@ -8,6 +8,8 @@ package com.uwe_hennig.snn.cerebro.neuron;
 import com.uwe_hennig.snn.anatomy.neuron.DendritView;
 import com.uwe_hennig.snn.anatomy.neuron.ModulatorView;
 import com.uwe_hennig.snn.anatomy.neuron.WeightView;
+import com.uwe_hennig.snn.contracts.core.StimulusType;
+import com.uwe_hennig.snn.services.StimulusService;
 
 /**
  * Dendrit
@@ -31,8 +33,19 @@ public final class Dendrit {
      * @param stimulusIdentifier
      */
     public void stimulate(int stimulusIdentifier) {
-        // TODO complete implementation
-        // TODO StimulusService service; service.get(stimulusIdentifier);
-        // TODO float weight = view.getWeightView().applyStimulus(stimulusValue, time);
+        float currentTime = 1000; // TODO
+        float stimulusValue = StimulusService.getValue(stimulusIdentifier);
+        int stimulusType = StimulusService.getType(stimulusIdentifier);
+
+        if (StimulusType.STIMULUS.code() == stimulusType) {
+            stimulusValue = weightView.applyStimulus(stimulusValue, currentTime);
+            StimulusService.update(stimulusIdentifier,
+                view.getViewId(), view.getSomaId(), stimulusType, stimulusValue);
+        }
+
+        if (StimulusType.TIME_FEEDBACK.code() == stimulusType) {
+            weightView.applyFeedback(stimulusValue);
+        }
+
     }
 }

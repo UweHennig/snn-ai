@@ -7,17 +7,18 @@ package com.uwe_hennig.snn.anatomy.core;
 
 /**
  * NeuronGraph
+ *
  * @author Uwe Hennig
  */
 public class NeuronGraph {
     private static volatile NeuronGraph INSTANCE;
-    private final Blockchain blockchain;
+    private final Blockchain            blockchain;
 
-    private NeuronGraph(long maxFieldBlocks, int  minFieldSize) {
+    private NeuronGraph(int maxFieldBlocks, int minFieldSize) {
         blockchain = new Blockchain(maxFieldBlocks, minFieldSize);
     }
 
-    public static NeuronGraph of(long maxFieldBlocks, int  minFieldSize) {
+    public static NeuronGraph of(int maxFieldBlocks, int minFieldSize) {
         synchronized (NeuronGraph.class) {
             if (INSTANCE != null) {
                 throw new IllegalStateException("Already initialized");
@@ -31,14 +32,14 @@ public class NeuronGraph {
         return INSTANCE;
     }
 
-    public long addNeuronElements(long[] neuronElements) {
-        long ref = blockchain.allocate();
+    public int addNeuronElements(int[] neuronElements) {
+        int ref = (int) blockchain.allocate();
         blockchain.put(ref, neuronElements);
         return ref;
     }
 
-    public long[] getNeuronElements(long neuronElementRef) {
-        return blockchain.getLongs(neuronElementRef);
+    public int[] getNeuronElements(int neuronElementRef) {
+        return blockchain.getInts(neuronElementRef);
     }
 
 }

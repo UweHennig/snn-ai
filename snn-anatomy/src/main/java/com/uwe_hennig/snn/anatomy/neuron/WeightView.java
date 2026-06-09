@@ -7,11 +7,12 @@ package com.uwe_hennig.snn.anatomy.neuron;
 
 /**
  * WeightView
+ *
  * @author Uwe Hennig
  */
 public class WeightView {
     private final WeightModel model;
-    private final long        index;
+    private final int         index;
 
     public WeightView(int index, WeightModel model) {
         assert model != null : "Model must not bei null!";
@@ -27,7 +28,7 @@ public class WeightView {
         return model;
     }
 
-    public long getViewId() {
+    public int getViewId() {
         return index;
     }
 
@@ -52,7 +53,7 @@ public class WeightView {
     }
 
     // The method is called only by the dendrite corresponding to the timulusType
-    public long applyFeedback(float deltaTimeFeedback) {
+    public int applyFeedback(float deltaTimeFeedback) {
         model.lock(index);
         try {
             float preSynapticTime = model.getPreSynapticTime(index);

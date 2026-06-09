@@ -12,7 +12,7 @@ package com.uwe_hennig.snn.anatomy.neuron;
  */
 public final class ModulatorView {
     private final ModulatorModel model;
-    private final long           index;
+    private final int            index;
 
     static final float TARGET_INHIBITORY = 0.9f;
     static final float TARGET_EXCITATORY = 1.1f;
@@ -32,7 +32,7 @@ public final class ModulatorView {
         return model;
     }
 
-    public long getViewId() {
+    public int getViewId() {
         return index;
     }
 

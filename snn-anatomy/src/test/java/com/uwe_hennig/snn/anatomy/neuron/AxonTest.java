@@ -15,8 +15,6 @@ import org.junit.jupiter.api.TestInfo;
 
 /**
  * AxonTest
- * @formatter:off
- * @formatter:on
  * @author Uwe Hennig
  */
 public class AxonTest {
@@ -29,10 +27,10 @@ public class AxonTest {
 
         try {
             model.lock(0);
-            model.setFieldId(0, 1L);
-            model.setNeuronId(0, 2L);
-            model.setModulatorId(0, 3L);
-            model.setSynapseRef(0, 4L);
+            model.setFieldId(0, 1);
+            model.setNeuronId(0, 2);
+            model.setModulatorId(0, 3);
+            model.setSynapseRef(0, 4);
         } finally {
             model.unlock(0);
         }

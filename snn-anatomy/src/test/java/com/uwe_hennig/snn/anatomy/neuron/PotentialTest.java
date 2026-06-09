@@ -17,8 +17,7 @@ import org.junit.jupiter.api.TestInfo;
 
 /**
  * PotentialTest
- * @formatter:off
- * @formatter:on
+ *
  * @author Uwe Hennig
  */
 public class PotentialTest {

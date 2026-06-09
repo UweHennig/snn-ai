@@ -7,17 +7,18 @@ package com.uwe_hennig.snn.anatomy.core;
 
 /**
  * AxonGraph
+ *
  * @author Uwe Hennig
  */
 public class AxonGraph {
     private static volatile AxonGraph INSTANCE;
-    private final Blockchain blockchain;
+    private final Blockchain          blockchain;
 
-    private AxonGraph(long maxFieldBlocks, int  minFieldSize) {
+    private AxonGraph(int maxFieldBlocks, int minFieldSize) {
         blockchain = new Blockchain(maxFieldBlocks, minFieldSize);
     }
 
-    public static AxonGraph of(long maxFieldBlocks, int  minFieldSize) {
+    public static AxonGraph of(int maxFieldBlocks, int minFieldSize) {
         synchronized (AxonGraph.class) {
             if (INSTANCE != null) {
                 throw new IllegalStateException("Already initialized");
@@ -31,13 +32,13 @@ public class AxonGraph {
         return INSTANCE;
     }
 
-    public long addSynapseIds(long[] synapseIds) {
-        long ref = blockchain.allocate();
+    public int addSynapseIds(int[] synapseIds) {
+        int ref = (int) blockchain.allocate();
         blockchain.put(ref, synapseIds);
         return ref;
     }
 
-    public long [] getSynapseIds(long synapseRef) {
-        return blockchain.getLongs(synapseRef);
+    public int[] getSynapseIds(int synapseRef) {
+        return blockchain.getInts(synapseRef);
     }
 }

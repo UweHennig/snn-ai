@@ -6,20 +6,20 @@
 package com.uwe_hennig.snn.anatomy.neuron;
 
 /**
- * DendritView
- * Unlike conventional SNNs, the Dendrit network handles the weights
+ * DendritView Unlike conventional SNNs, the Dendrit network handles the weights
+ *
  * @author Uwe Hennig
  */
 public class DendritView {
-    private final long index;
+    private final int          index;
     private final DendritModel model;
 
     private WeightView weightView;
-    private long fieldId;
-    private long neuronId;
-    private long somaId;
+    private int        fieldId;
+    private int        neuronId;
+    private int        somaId;
 
-    public DendritView(long index, DendritModel model, WeightView weightView, long fieldId, long neuronId, long somaId) {
+    public DendritView(int index, DendritModel model, WeightView weightView, int fieldId, int neuronId, int somaId) {
         assert model != null : "Model must not be null!";
         assert index < model.capacity && index >= 0 : " " + index + " >= " + model.capacity;
 
@@ -49,7 +49,7 @@ public class DendritView {
         return model;
     }
 
-    public long getViewId() {
+    public int getViewId() {
         return index;
     }
 
@@ -57,15 +57,15 @@ public class DendritView {
         return weightView;
     }
 
-    public long getFieldId() {
+    public int getFieldId() {
         return fieldId;
     }
 
-    public long getNeuronId() {
+    public int getNeuronId() {
         return neuronId;
     }
 
-    public long getSomaId() {
+    public int getSomaId() {
         return somaId;
     }
 

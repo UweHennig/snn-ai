@@ -18,10 +18,11 @@ import java.lang.invoke.VarHandle;
 
 /**
  * StimulusModel
+ *
  * @author Uwe Hennig
  */
 public class StimulusModel {
-    final int  capacity;
+    final int   capacity;
     final Arena arena;
 
     SequenceLayout sequenceLayout;
@@ -64,14 +65,14 @@ public class StimulusModel {
 
     // ----- lock/unlock -----
 
-    void lock(long index) {
+    void lock(int index) {
         // 0 = unlocked, 1 = lock
         while (!VH_LOCK.compareAndSet(segment, 0L, index, 0, 1)) {
             Thread.onSpinWait();
         }
     }
 
-    void unlock(long index) {
+    void unlock(int index) {
         VH_LOCK.setRelease(segment, 0L, index, 0);
     }
 
@@ -80,48 +81,48 @@ public class StimulusModel {
     }
 
     public boolean isLocked(long index) {
-        return (int)VH_LOCK.get(segment, 0L, index) == 1;
+        return (int) VH_LOCK.get(segment, 0L, index) == 1;
     }
 
     // ----- getter/setter -----
 
-    long getExpiry(long index) {
+    long getExpiry(int index) {
         return (long) VH_EXPIRY.get(segment, 0L, index);
     }
 
-    void setExpiry(long index, long value) {
+    void setExpiry(int index, long value) {
         VH_EXPIRY.set(segment, 0L, index, value);
     }
 
-    int getSrc(long index) {
+    int getSrc(int index) {
         return (int) VH_SRC_INDEX.get(segment, 0L, index);
     }
 
-    void setSrc(long index, int value) {
+    void setSrc(int index, int value) {
         VH_SRC_INDEX.set(segment, 0L, index, value);
     }
 
-    int getTrg(long index) {
+    int getTrg(int index) {
         return (int) VH_TRG_INDEX.get(segment, 0L, index);
     }
 
-    void setTrg(long index, int value) {
+    void setTrg(int index, int value) {
         VH_TRG_INDEX.set(segment, 0L, index, value);
     }
 
-    int getType(long index) {
+    int getType(int index) {
         return (int) VH_TYPE.get(segment, 0L, index);
     }
 
-    void setType(long index, int type) {
+    void setType(int index, int type) {
         VH_TYPE.set(segment, 0L, index, type);
     }
 
-    float getValue(long index) {
+    float getValue(int index) {
         return (float) VH_VALUE.get(segment, 0L, index);
     }
 
-    void setValue(long index, float value) {
+    void setValue(int index, float value) {
         VH_VALUE.set(segment, 0L, index, value);
     }
 

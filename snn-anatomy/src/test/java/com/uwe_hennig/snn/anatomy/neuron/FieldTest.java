@@ -16,8 +16,6 @@ import org.junit.jupiter.api.TestInfo;
 
 /**
  * FieldTest
- * @formatter:off
- * @formatter:on
  * @author Uwe Hennig
  */
 public class FieldTest {
@@ -34,9 +32,9 @@ public class FieldTest {
                 model.setType(i, 5 + i);
                 model.setLevel(i, 2 + i);
 
-                model.setChildrenRef(i, 1L + i);
-                model.setNeuronsRef(i, 3L + i);
-                model.setParentsRef(i, 4L + i);
+                model.setChildrenRef(i, 1 + i);
+                model.setNeuronsRef(i, 3 + i);
+                model.setParentsRef(i, 4 + i);
             } catch (Exception e) {
                 fail("Exception on testAsyncData " + e.getLocalizedMessage());
             } finally {

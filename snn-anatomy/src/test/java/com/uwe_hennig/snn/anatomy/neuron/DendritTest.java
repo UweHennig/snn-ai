@@ -27,7 +27,7 @@ public class DendritTest {
         DendritModel model = new DendritModel(1);
         checkModel(model, 1);
 
-        assertEquals(40, model.sequenceLayout.byteSize());
+        assertEquals(24, model.sequenceLayout.byteSize());
         assertEquals(1, model.capacity);
 
         try {

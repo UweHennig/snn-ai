@@ -29,9 +29,9 @@ public class SynapseTest {
 
         try {
             model.lock(0);
-            model.setFieldId(0, 1L);
-            model.setNeuronId(0, 2L);
-            model.setTargetId(0, 3L);
+            model.setFieldId(0, 1);
+            model.setNeuronId(0, 2);
+            model.setTargetId(0, 3);
             model.setModulatorId(0, 4);
         } finally {
             model.unlock(0);

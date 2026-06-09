@@ -87,7 +87,7 @@ public class WeightTest {
         checkModel(model, capacity);
 
         AtomicLong lockCount = new AtomicLong(0);
-        AtomicLong lockTime  = new AtomicLong(0);
+        AtomicLong lockTime = new AtomicLong(0);
 
         CountDownLatch startSignal = new CountDownLatch(1);
 
@@ -99,7 +99,7 @@ public class WeightTest {
                         startSignal.await();
                         ThreadLocalRandom rand = ThreadLocalRandom.current();
 
-                        long v = 0; // hotspot lock
+                        int v = 0; // hotspot lock
                         boolean w = rand.nextBoolean();
 
                         if (w) {
@@ -144,7 +144,6 @@ public class WeightTest {
         }
     }
 
-
     @Test
     @DisplayName("Asynchronous Test on WeightModel")
     public void testAsyncModel() {
@@ -158,7 +157,7 @@ public class WeightTest {
             for (int i = 0; i < NUM_THREADS; i++) {
                 executor.submit(() -> {
                     final ThreadLocalRandom rand = ThreadLocalRandom.current();
-                    long v = rand.nextLong(capacity);
+                    int v = rand.nextInt(capacity);
 
                     float currentWeight = rand.nextFloat();
                     float timestamp = rand.nextFloat();
@@ -205,7 +204,7 @@ public class WeightTest {
             executor.submit(() -> {
                 ThreadLocalRandom rand = ThreadLocalRandom.current();
                 while (running.get()) {
-                    long v = rand.nextLong(capacity);
+                    int v = rand.nextInt(capacity);
 
                     float currentWeight = rand.nextFloat();
                     float timestamp = rand.nextFloat();
@@ -278,7 +277,6 @@ public class WeightTest {
             long startTime = System.nanoTime();
             WeightPersistence.save(model, path);
             long endTime = System.nanoTime();
-
 
             System.out.printf("Written %,d bytes %n", model.segment.byteSize());
             System.out.printf("Written in %,3.2f milli sec%n%n", (endTime - startTime) / 1_000_000f);

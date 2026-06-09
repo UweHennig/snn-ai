@@ -16,8 +16,7 @@ import org.junit.jupiter.api.TestInfo;
 
 /**
  * PlasticityTest
- * @formatter:off
- * @formatter:on
+ *
  * @author Uwe Hennig
  */
 public class PlasticityTest {

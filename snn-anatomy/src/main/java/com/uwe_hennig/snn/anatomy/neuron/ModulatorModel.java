@@ -21,7 +21,7 @@ import java.lang.invoke.VarHandle;
  * @author Uwe Hennig
  */
 public final class ModulatorModel {
-    final long  capacity;
+    final int   capacity;
     final Arena arena;
 
     SequenceLayout sequenceLayout;
@@ -51,7 +51,7 @@ public final class ModulatorModel {
 
     // ----- public -----
 
-    public ModulatorModel(long capacity) {
+    public ModulatorModel(int capacity) {
         assert capacity > 0 : "invalid capacity";
 
         this.capacity = capacity;
@@ -65,54 +65,54 @@ public final class ModulatorModel {
         arena.close();
     }
 
-    public long getCapacity() {
+    public int getCapacity() {
         return capacity;
     }
 
     // ----- lock/unlock -----
 
-    void lock(long index) {
+    void lock(int index) {
         // 0 = unlocked, 1 = lock
         while (!VH_LOCK.compareAndSet(segment, 0L, index, 0, 1)) {
             Thread.onSpinWait();
         }
     }
 
-    void unlock(long index) {
+    void unlock(int index) {
         VH_LOCK.setRelease(segment, 0L, index, 0);
     }
 
     // ----- getter/setter -----
 
-    float getModulationGain(long index) {
+    float getModulationGain(int index) {
         return (float) VH_MODULATION_GAIN.get(segment, 0L, index);
     }
 
-    void setModulationGain(long index, float value) {
+    void setModulationGain(int index, float value) {
         VH_MODULATION_GAIN.set(segment, 0L, index, value);
     }
 
-    float getGainDuration(long index) {
+    float getGainDuration(int index) {
         return (float) VH_GAIN_DURATION.get(segment, 0L, index);
     }
 
-    void setGainDuration(long index, float value) {
+    void setGainDuration(int index, float value) {
         VH_GAIN_DURATION.set(segment, 0L, index, value);
     }
 
-    float getModulationGainDefault(long index) {
+    float getModulationGainDefault(int index) {
         return (float) VH_MODULATION_GAIN_DEFAULT.get(segment, 0L, index);
     }
 
-    void setModulationGainDefault(long index, float value) {
+    void setModulationGainDefault(int index, float value) {
         VH_MODULATION_GAIN_DEFAULT.set(segment, 0L, index, value);
     }
 
-    float getLastEventTime(long index) {
+    float getLastEventTime(int index) {
         return (float) VH_LAST_EVENT_TIME.get(segment, 0L, index);
     }
 
-    void setLastEventTime(long index, float value) {
+    void setLastEventTime(int index, float value) {
         VH_LAST_EVENT_TIME.set(segment, 0L, index, value);
     }
 }

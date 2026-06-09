@@ -17,12 +17,11 @@ import java.lang.invoke.VarHandle;
 
 /**
  * PotentialModel
- * @formatter:off
- * @formatter:on
+ *
  * @author Uwe Hennig
  */
 public class PotentialModel {
-    final long  capacity;
+    final int   capacity;
     final Arena arena;
 
     SequenceLayout sequenceLayout;
@@ -53,7 +52,7 @@ public class PotentialModel {
 
     // ----- public -----
 
-    public PotentialModel(long capacity) {
+    public PotentialModel(int capacity) {
         assert capacity > 0 : "invalid capacity";
 
         this.capacity = capacity;
@@ -67,54 +66,54 @@ public class PotentialModel {
         arena.close();
     }
 
-    public long getCapacity() {
+    public int getCapacity() {
         return capacity;
     }
 
     // ----- lock/unlock -----
 
-    void lock(long index) {
+    void lock(int index) {
         // 0 = unlocked, 1 = lock
         while (!VH_LOCK.compareAndSet(segment, 0L, index, 0, 1)) {
             Thread.onSpinWait();
         }
     }
 
-    void unlock(long index) {
+    void unlock(int index) {
         VH_LOCK.setRelease(segment, 0L, index, 0);
     }
 
     // ----- getter/setter -----
 
-    float getPotential(long index) {
+    float getPotential(int index) {
         return (float) VH_POTENTIAL.get(segment, 0L, index);
     }
 
-    void setPotential(long index, float value) {
+    void setPotential(int index, float value) {
         VH_POTENTIAL.set(segment, 0L, index, value);
     }
 
-    float getRestingPotential(long index) {
+    float getRestingPotential(int index) {
         return (float) VH_RESTING_POTENTIAL.get(segment, 0L, index);
     }
 
-    void setRestingPotential(long index, float value) {
+    void setRestingPotential(int index, float value) {
         VH_RESTING_POTENTIAL.set(segment, 0L, index, value);
     }
 
-    float getLastUpdateTime(long index) {
+    float getLastUpdateTime(int index) {
         return (float) VH_LAST_UPDATE_TIME.get(segment, 0L, index);
     }
 
-    void setLastUpdateTime(long index, float value) {
+    void setLastUpdateTime(int index, float value) {
         VH_LAST_UPDATE_TIME.set(segment, 0L, index, value);
     }
 
-    float getRepolarizationTime(long index) {
+    float getRepolarizationTime(int index) {
         return (float) VH_REPOLARIZATIN_TIME.get(segment, 0L, index);
     }
 
-    void setRepolarizationTime(long index, float value) {
+    void setRepolarizationTime(int index, float value) {
         VH_REPOLARIZATIN_TIME.set(segment, 0L, index, value);
     }
 

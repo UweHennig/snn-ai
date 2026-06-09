@@ -12,7 +12,7 @@ package com.uwe_hennig.snn.anatomy.neuron;
  */
 public class PlasticityView {
     private final PlasticityModel model;
-    private final long            index;
+    private final int             index;
 
     public PlasticityView(int index, PlasticityModel model) {
         assert model != null : "Model must not be null!";
@@ -26,7 +26,7 @@ public class PlasticityView {
         return model;
     }
 
-    public long getViewId() {
+    public int getViewId() {
         return index;
     }
 
@@ -76,7 +76,7 @@ public class PlasticityView {
         // targetPot fluctuates between 50mv and 70mV
         // restingPoot fluctuates between -90mv and -40mV
         if (deltaValueFeedback > 0) {
-            targetPot  = update(targetPot, 90f, targetTime, 3f, elapsed);
+            targetPot = update(targetPot, 90f, targetTime, 3f, elapsed);
             restingPot = update(restingPot, -40f, restingTime, 3f, elapsed);
         } else {
             targetPot = update(targetPot, 50f, targetTime, 3f, elapsed);
@@ -101,12 +101,12 @@ public class PlasticityView {
 
         float totalTime = model.getTargetTime(index);
         float elapsed = currentTime - model.getLastUpdateTime(index);
-        float tauDominatorTarget  = model.getTargetRate(index);
+        float tauDominatorTarget = model.getTargetRate(index);
         float tauDominatorResting = model.getRestingRate(index);
 
         // tauDominators fluctuates between 2 and 5
         if (deltaTimeFeedback < 0.0f) {
-            tauDominatorTarget  = update(tauDominatorTarget, 2.0f, totalTime, 3f, elapsed);
+            tauDominatorTarget = update(tauDominatorTarget, 2.0f, totalTime, 3f, elapsed);
             tauDominatorResting = update(tauDominatorResting, 5.0f, totalTime, 3f, elapsed);
         } else {
             tauDominatorTarget = update(tauDominatorTarget, 5.0f, totalTime, 3f, elapsed);

@@ -28,12 +28,12 @@ public class SomaTest {
         checkModel(model, 1);
         try {
             model.lock(0);
-            model.setFieldId(0, 1L);
-            model.setNeuronId(0, 2L);
-            model.setPotentialId(0, 3L);
-            model.setThresholdId(0, 4L);
-            model.setStpId(0, 5L);
-            model.setLtpId(0, 6L);
+            model.setFieldId(0, 1);
+            model.setNeuronId(0, 2);
+            model.setPotentialId(0, 3);
+            model.setThresholdId(0, 4);
+            model.setStpId(0, 5);
+            model.setLtpId(0, 6);
         } finally {
             model.unlock(0);
         }

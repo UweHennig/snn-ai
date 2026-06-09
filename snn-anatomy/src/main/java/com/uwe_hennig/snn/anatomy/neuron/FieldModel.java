@@ -6,7 +6,6 @@
 package com.uwe_hennig.snn.anatomy.neuron;
 
 import static java.lang.foreign.ValueLayout.JAVA_INT;
-import static java.lang.foreign.ValueLayout.JAVA_LONG;
 
 import java.lang.foreign.Arena;
 import java.lang.foreign.GroupLayout;
@@ -17,10 +16,11 @@ import java.lang.invoke.VarHandle;
 
 /**
  * FieldModel
+ *
  * @author Uwe Hennig
  */
 public final class FieldModel {
-    public final long  capacity;
+    public final int   capacity;
     public final Arena arena;
 
     SequenceLayout sequenceLayout;
@@ -31,10 +31,9 @@ public final class FieldModel {
         JAVA_INT.withName("lock"),
         JAVA_INT.withName("type"),
         JAVA_INT.withName("level"),
-        MemoryLayout.paddingLayout(4),
-        JAVA_LONG.withName("parentsRef"),
-        JAVA_LONG.withName("childrenRef"),
-        JAVA_LONG.withName("neuronsRef")
+        JAVA_INT.withName("parentsRef"),
+        JAVA_INT.withName("childrenRef"),
+        JAVA_INT.withName("neuronsRef")
     ).withByteAlignment(8);
 
     static final VarHandle VH_LOCK =
@@ -53,7 +52,7 @@ public final class FieldModel {
 
     // ----- public -----
 
-    public FieldModel(long capacity) {
+    public FieldModel(int capacity) {
         assert capacity > 0 : "invalid capacity";
 
         this.capacity = capacity;
@@ -67,62 +66,62 @@ public final class FieldModel {
         arena.close();
     }
 
-    public long getCapacity() {
+    public int getCapacity() {
         return capacity;
     }
 
     // ----- lock/unlock -----
 
-    void lock(long index) {
+    void lock(int index) {
         // 0 = unlocked, 1 = lock
         while (!VH_LOCK.compareAndSet(segment, 0L, index, 0, 1)) {
             Thread.onSpinWait();
         }
     }
 
-    void unlock(long index) {
+    void unlock(int index) {
         VH_LOCK.setRelease(segment, 0L, index, 0);
     }
 
     // ----- getter/setter -----
 
-    int getType(long index) {
+    int getType(int index) {
         return (int) VH_TYPE.get(segment, 0L, index);
     }
 
-    void setType(long index, int value) {
+    void setType(int index, int value) {
         VH_TYPE.set(segment, 0L, index, value);
     }
 
-    int getLevel(long index) {
+    int getLevel(int index) {
         return (int) VH_LEVEL.get(segment, 0L, index);
     }
 
-    void setLevel(long index, int value) {
+    void setLevel(int index, int value) {
         VH_LEVEL.set(segment, 0L, index, value);
     }
 
-    long getParentsRef(long index) {
-        return (long) VH_PARENTS_REF.get(segment, 0L, index);
+    int getParentsRef(int index) {
+        return (int) VH_PARENTS_REF.get(segment, 0L, index);
     }
 
-    void setParentsRef(long index, long value) {
+    void setParentsRef(int index, int value) {
         VH_PARENTS_REF.set(segment, 0L, index, value);
     }
 
-    long getChildrenRef(long index) {
-        return (long) VH_CHILDREN_REF.get(segment, 0L, index);
+    int getChildrenRef(int index) {
+        return (int) VH_CHILDREN_REF.get(segment, 0L, index);
     }
 
-    void setChildrenRef(long index, long value) {
+    void setChildrenRef(int index, int value) {
         VH_CHILDREN_REF.set(segment, 0L, index, value);
     }
 
-    long getNeuronsRef(long index) {
-        return (long) VH_NEURONS_REF.get(segment, 0L, index);
+    int getNeuronsRef(int index) {
+        return (int) VH_NEURONS_REF.get(segment, 0L, index);
     }
 
-    void setNeuronsRef(long index, long value) {
+    void setNeuronsRef(int index, int value) {
         VH_NEURONS_REF.set(segment, 0L, index, value);
     }
 }

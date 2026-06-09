@@ -7,10 +7,11 @@ package com.uwe_hennig.snn.anatomy.neuron;
 
 /**
  * PotentialView
+ *
  * @author Uwe Hennig
  */
 public class PotentialView {
-    private final long           index;
+    private final int            index;
     private final PotentialModel model;
 
     public PotentialView(int index, PotentialModel model) {
@@ -27,19 +28,18 @@ public class PotentialView {
         return model;
     }
 
-    public long getViewId() {
+    public int getViewId() {
         return index;
     }
 
     public float decay(float currentTime) {
         float currentPotential = model.getPotential(index);
-        float lastUpdate =  model.getLastUpdateTime(index);
+        float lastUpdate = model.getLastUpdateTime(index);
         float elapsed = Math.max(currentTime - lastUpdate, 0f);
         float repolarizationTime = model.getRepolarizationTime(index);
         float restingPotential = model.getRestingPotential(index);
 
-        float potential = currentPotential +
-            (repolarizationTime - currentPotential) * Math.clamp(elapsed / restingPotential, 0.0f, 1.0f);
+        float potential = currentPotential + (repolarizationTime - currentPotential) * Math.clamp(elapsed / restingPotential, 0.0f, 1.0f);
 
         try {
             model.lock(index);

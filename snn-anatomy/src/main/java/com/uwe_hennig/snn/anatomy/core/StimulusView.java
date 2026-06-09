@@ -87,23 +87,23 @@ public class StimulusView {
         return false;
     }
 
-    public long getExpiry(long index) {
+    public long getExpiry(int index) {
         return model.getExpiry(index);
     }
 
-    public int getSrc(long index) {
+    public int getSrc(int index) {
         return model.getSrc(index);
     }
 
-    public int getTrg(long index) {
+    public int getTrg(int index) {
         return model.getTrg(index);
     }
 
-    public int getType(long index) {
+    public int getType(int index) {
         return model.getType(index);
     }
 
-    public float getValue(long index) {
+    public float getValue(int index) {
         return model.getValue(index);
     }
 

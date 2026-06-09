@@ -6,7 +6,6 @@
 package com.uwe_hennig.snn.anatomy.neuron;
 
 import static java.lang.foreign.ValueLayout.JAVA_INT;
-import static java.lang.foreign.ValueLayout.JAVA_LONG;
 
 import java.lang.foreign.Arena;
 import java.lang.foreign.GroupLayout;
@@ -17,12 +16,11 @@ import java.lang.invoke.VarHandle;
 
 /**
  * SomaModel
- * @formatter:off
- * @formatter:on
+ *
  * @author Uwe Hennig
  */
 public final class SomaModel {
-    public final long  capacity;
+    public final int   capacity;
     public final Arena arena;
 
     SequenceLayout sequenceLayout;
@@ -32,12 +30,12 @@ public final class SomaModel {
     static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         JAVA_INT.withName("lock"),
         MemoryLayout.paddingLayout(4),
-        JAVA_LONG.withName("fieldId"),
-        JAVA_LONG.withName("neuronId"),
-        JAVA_LONG.withName("potentialId"),
-        JAVA_LONG.withName("thresholdId"),
-        JAVA_LONG.withName("stpId"),
-        JAVA_LONG.withName("ltpId")
+        JAVA_INT.withName("fieldId"),
+        JAVA_INT.withName("neuronId"),
+        JAVA_INT.withName("potentialId"),
+        JAVA_INT.withName("thresholdId"),
+        JAVA_INT.withName("stpId"),
+        JAVA_INT.withName("ltpId")
     );
 
     static final VarHandle VH_LOCK =
@@ -56,7 +54,7 @@ public final class SomaModel {
         LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("ltpId"));
     // @formatter:on
 
-    public SomaModel(long capacity) {
+    public SomaModel(int capacity) {
         assert capacity > 0 : "invalid capacity";
 
         this.capacity = capacity;
@@ -70,70 +68,70 @@ public final class SomaModel {
         arena.close();
     }
 
-    public long getCapacity() {
+    public int getCapacity() {
         return capacity;
     }
 
     // ----- lock/unlock -----
 
-    void lock(long index) {
+    void lock(int index) {
         // 0 = unlocked, 1 = lock
         while (!VH_LOCK.compareAndSet(segment, 0L, index, 0, 1)) {
             Thread.onSpinWait();
         }
     }
 
-    void unlock(long index) {
+    void unlock(int index) {
         VH_LOCK.setRelease(segment, 0L, index, 0);
     }
 
     // ----- getter/setter -----
 
-    long getFieldId(long index) {
-        return (long) VH_FIELD_ID.get(segment, 0L, index);
+    int getFieldId(int index) {
+        return (int) VH_FIELD_ID.get(segment, 0L, index);
     }
 
-    void setFieldId(long index, long value) {
+    void setFieldId(int index, int value) {
         VH_FIELD_ID.set(segment, 0L, index, value);
     }
 
-    long getNeuronId(long index) {
-        return (long) VH_NEURON_ID.get(segment, 0L, index);
+    int getNeuronId(int index) {
+        return (int) VH_NEURON_ID.get(segment, 0L, index);
     }
 
-    void setNeuronId(long index, long value) {
+    void setNeuronId(int index, int value) {
         VH_NEURON_ID.set(segment, 0L, index, value);
     }
 
-    long getPotentialId(long index) {
-        return (long) VH_POTENTIAL_ID.get(segment, 0L, index);
+    int getPotentialId(int index) {
+        return (int) VH_POTENTIAL_ID.get(segment, 0L, index);
     }
 
-    void setPotentialId(long index, long value) {
+    void setPotentialId(int index, int value) {
         VH_POTENTIAL_ID.set(segment, 0L, index, value);
     }
 
-    long getThresholdId(long index) {
-        return (long) VH_THRESHOLD_ID.get(segment, 0L, index);
+    int getThresholdId(int index) {
+        return (int) VH_THRESHOLD_ID.get(segment, 0L, index);
     }
 
-    void setThresholdId(long index, long value) {
+    void setThresholdId(int index, int value) {
         VH_THRESHOLD_ID.set(segment, 0L, index, value);
     }
 
-    long getStpId(long index) {
-        return (long) VH_STP_ID.get(segment, 0L, index);
+    int getStpId(int index) {
+        return (int) VH_STP_ID.get(segment, 0L, index);
     }
 
-    void setStpId(long index, long value) {
+    void setStpId(int index, int value) {
         VH_STP_ID.set(segment, 0L, index, value);
     }
 
-    long getLtpId(long index) {
-        return (long) VH_LTP_ID.get(segment, 0L, index);
+    int getLtpId(int index) {
+        return (int) VH_LTP_ID.get(segment, 0L, index);
     }
 
-    void setLtpId(long index, long value) {
+    void setLtpId(int index, int value) {
         VH_LTP_ID.set(segment, 0L, index, value);
     }
 }

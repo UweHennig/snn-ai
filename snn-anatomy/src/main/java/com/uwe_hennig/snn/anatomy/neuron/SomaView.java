@@ -7,22 +7,20 @@ package com.uwe_hennig.snn.anatomy.neuron;
 
 /**
  * SomaView
- * @formatter:off
- * @formatter:on
  * @author Uwe Hennig
  */
 public class SomaView {
-    private final long index;
+    private final int       index;
     private final SomaModel model;
 
-    private final long fieldId;
-    private final long neuronId;
-    private final long potentialId;
-    private final long thresholdId;
-    private final long stpId;
-    private final long ltpId;
+    private final int fieldId;
+    private final int neuronId;
+    private final int potentialId;
+    private final int thresholdId;
+    private final int stpId;
+    private final int ltpId;
 
-    public SomaView(long index, SomaModel model, long fieldId, long neuronId, long potentialId, long thresholdId, long stpId, long ltpId) {
+    public SomaView(int index, SomaModel model, int fieldId, int neuronId, int potentialId, int thresholdId, int stpId, int ltpId) {
         assert model != null : "Model must not be null!";
         assert index < model.capacity && index >= 0 : " " + index + " >= " + model.capacity;
 

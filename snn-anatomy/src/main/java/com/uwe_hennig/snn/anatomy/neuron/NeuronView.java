@@ -7,19 +7,16 @@ package com.uwe_hennig.snn.anatomy.neuron;
 
 /**
  * NeuronView
- * @formatter:off
- * @formatter:on
  * @author Uwe Hennig
  */
 public class NeuronView {
-    private final long index;
+    private final int         index;
     private final NeuronModel model;
 
-    private final long fieldId;
-    private long neuronElementRef;
+    private final int fieldId;
+    private int       neuronElementRef;
 
-
-    public NeuronView(long index, NeuronModel model, long fieldId) {
+    public NeuronView(int index, NeuronModel model, int fieldId) {
         assert model != null : "Model must not bei null!";
         assert index < model.capacity && index >= 0 : " " + index + " >= " + model.capacity;
 
@@ -45,11 +42,11 @@ public class NeuronView {
         return model;
     }
 
-    public long getViewId() {
+    public int getViewId() {
         return index;
     }
 
-    public long getFieldId() {
+    public int getFieldId() {
         return fieldId;
     }
 

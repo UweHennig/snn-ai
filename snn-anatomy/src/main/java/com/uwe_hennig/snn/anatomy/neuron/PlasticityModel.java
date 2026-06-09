@@ -17,12 +17,11 @@ import java.lang.invoke.VarHandle;
 
 /**
  * PlasticityModel
- * @formatter:off
- * @formatter:on
+ *
  * @author Uwe Hennig
  */
 public class PlasticityModel {
-    final long  capacity;
+    final int   capacity;
     final Arena arena;
 
     SequenceLayout sequenceLayout;
@@ -31,6 +30,7 @@ public class PlasticityModel {
     // @formatter:off
     static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         JAVA_INT.withName("lock"),
+        MemoryLayout.paddingLayout(4),
 
         // === DYNAMIC STATE ===
         JAVA_FLOAT.withName("currentPotential"),
@@ -61,7 +61,7 @@ public class PlasticityModel {
     static final VarHandle VZ_RESTING_RATE      = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("restingRate"));
     // @formatter:on
 
-    public PlasticityModel(long capacity) {
+    public PlasticityModel(int capacity) {
         assert capacity > 0 : "invalid capacity";
 
         this.capacity = capacity;
@@ -75,86 +75,86 @@ public class PlasticityModel {
         arena.close();
     }
 
-    public long getCapacity() {
+    public int getCapacity() {
         return capacity;
     }
 
     // ----- lock/unlock -----
 
-    void lock(long index) {
+    void lock(int index) {
         // 0 = unlocked, 1 = lock
         while (!VH_LOCK.compareAndSet(segment, 0L, index, 0, 1)) {
             Thread.onSpinWait();
         }
     }
 
-    void unlock(long index) {
+    void unlock(int index) {
         VH_LOCK.setRelease(segment, 0L, index, 0);
     }
 
     // ----- getter/setter -----
 
-    float getCurrentPotential(long index) {
+    float getCurrentPotential(int index) {
         return (float) VZ_CURRENT_POTENTIAL.get(segment, 0L, index);
     }
 
-    void setCurrentPotential(long index, float value) {
+    void setCurrentPotential(int index, float value) {
         VZ_CURRENT_POTENTIAL.set(segment, 0L, index, value);
     }
 
-    float getLastUpdateTime(long index) {
+    float getLastUpdateTime(int index) {
         return (float) VZ_LAST_UPDATE_TIME.get(segment, 0L, index);
     }
 
-    void setLastUpdateTime(long index, float value) {
+    void setLastUpdateTime(int index, float value) {
         VZ_LAST_UPDATE_TIME.set(segment, 0L, index, value);
     }
 
-    float getTargetPotential(long index) {
+    float getTargetPotential(int index) {
         return (float) VZ_TARGET_POTENTIAL.get(segment, 0L, index);
     }
 
-    void setTargetPotential(long index, float value) {
+    void setTargetPotential(int index, float value) {
         VZ_TARGET_POTENTIAL.set(segment, 0L, index, value);
     }
 
-    float getRestingPotential(long index) {
+    float getRestingPotential(int index) {
         return (float) VZ_RESTING_POTENTIAL.get(segment, 0L, index);
     }
 
-    void setRestingPotential(long index, float value) {
+    void setRestingPotential(int index, float value) {
         VZ_RESTING_POTENTIAL.set(segment, 0L, index, value);
     }
 
-    float getTargetTime(long index) {
+    float getTargetTime(int index) {
         return (float) VZ_TARGET_TIME.get(segment, 0L, index);
     }
 
-    void setTargetTime(long index, float value) {
+    void setTargetTime(int index, float value) {
         VZ_TARGET_TIME.set(segment, 0L, index, value);
     }
 
-    float getRestingTime(long index) {
+    float getRestingTime(int index) {
         return (float) VZ_RESTING_TIME.get(segment, 0L, index);
     }
 
-    void setRestingTime(long index, float value) {
+    void setRestingTime(int index, float value) {
         VZ_RESTING_TIME.set(segment, 0L, index, value);
     }
 
-    float getTargetRate(long index) {
+    float getTargetRate(int index) {
         return (float) VZ_TARGET_RATE.get(segment, 0L, index);
     }
 
-    void setTargetRate(long index, float value) {
+    void setTargetRate(int index, float value) {
         VZ_TARGET_RATE.set(segment, 0L, index, value);
     }
 
-    float getRestingRate(long index) {
+    float getRestingRate(int index) {
         return (float) VZ_RESTING_RATE.get(segment, 0L, index);
     }
 
-    void setRestingRate(long index, float value) {
+    void setRestingRate(int index, float value) {
         VZ_RESTING_RATE.set(segment, 0L, index, value);
     }
 

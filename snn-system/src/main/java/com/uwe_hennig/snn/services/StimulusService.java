@@ -35,7 +35,7 @@ public class StimulusService {
         return INSTANCE.view.claimStimulus(src, trg, type, value);
     }
 
-    public static float getValue(long index) {
+    public static float getValue(int index) {
         return INSTANCE.view.getValue(index);
     }
 
@@ -43,19 +43,19 @@ public class StimulusService {
         return INSTANCE.view.updateStimulus(index, src, trg, type, value);
     }
 
-    public static int getSrc(long index) {
+    public static int getSrc(int index) {
         return INSTANCE.view.getSrc(index);
     }
 
-    public static int getTrg(long index) {
+    public static int getTrg(int index) {
         return INSTANCE.view.getTrg(index);
     }
 
-    public static int getType(long index) {
+    public static int getType(int index) {
         return INSTANCE.view.getType(index);
     }
 
-    public static long getExpiry(long index) {
+    public static long getExpiry(int index) {
         return INSTANCE.view.getExpiry(index);
     }
 }

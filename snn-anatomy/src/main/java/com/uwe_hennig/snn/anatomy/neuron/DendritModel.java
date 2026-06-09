@@ -6,7 +6,6 @@
 package com.uwe_hennig.snn.anatomy.neuron;
 
 import static java.lang.foreign.ValueLayout.JAVA_INT;
-import static java.lang.foreign.ValueLayout.JAVA_LONG;
 
 import java.lang.foreign.Arena;
 import java.lang.foreign.GroupLayout;
@@ -17,10 +16,11 @@ import java.lang.invoke.VarHandle;
 
 /**
  * DendritModel
+ *
  * @author Uwe Hennig
  */
 public final class DendritModel {
-    public final long  capacity;
+    public final int   capacity;
     public final Arena arena;
 
     SequenceLayout sequenceLayout;
@@ -30,13 +30,10 @@ public final class DendritModel {
     static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         JAVA_INT.withName("lock"),
         MemoryLayout.paddingLayout(4),
-        // structure
-        JAVA_LONG.withName("fiedlId"),
-        JAVA_LONG.withName("neuronId"),
-        // data
-        JAVA_LONG.withName("weightId"),
-        // reference
-        JAVA_LONG.withName("somaId")
+        JAVA_INT.withName("fiedlId"),
+        JAVA_INT.withName("neuronId"),
+        JAVA_INT.withName("weightId"),
+        JAVA_INT.withName("somaId")
     ).withByteAlignment(8);
 
     static final VarHandle VH_LOCK =
@@ -53,7 +50,7 @@ public final class DendritModel {
 
     // ----- public -----
 
-    public DendritModel(long capacity) {
+    public DendritModel(int capacity) {
         assert capacity > 0 : "invalid capacity";
 
         this.capacity = capacity;
@@ -67,54 +64,54 @@ public final class DendritModel {
         arena.close();
     }
 
-    public long getCapacity() {
+    public int getCapacity() {
         return capacity;
     }
 
     // ----- lock/unlock -----
 
-    void lock(long index) {
+    void lock(int index) {
         // 0 = unlocked, 1 = lock
         while (!VH_LOCK.compareAndSet(segment, 0L, index, 0, 1)) {
             Thread.onSpinWait();
         }
     }
 
-    void unlock(long index) {
+    void unlock(int index) {
         VH_LOCK.setRelease(segment, 0L, index, 0);
     }
 
     // ----- getter/setter -----
 
-    long getFiedlId(long index) {
-        return (long) VH_FIELD_ID.get(segment, 0L, index);
+    int getFiedlId(int index) {
+        return (int) VH_FIELD_ID.get(segment, 0L, index);
     }
 
-    void setFieldId(long index, long value) {
+    void setFieldId(int index, int value) {
         VH_FIELD_ID.set(segment, 0L, index, value);
     }
 
-    long getNeuronId(long index) {
-        return (long) VH_NEURON_ID.get(segment, 0L, index);
+    int getNeuronId(int index) {
+        return (int) VH_NEURON_ID.get(segment, 0L, index);
     }
 
-    void setNeuronId(long index, long value) {
+    void setNeuronId(int index, int value) {
         VH_NEURON_ID.set(segment, 0L, index, value);
     }
 
-    long getSomaId(long index) {
-        return (long) VH_SOMA_ID.get(segment, 0L, index);
+    int getSomaId(int index) {
+        return (int) VH_SOMA_ID.get(segment, 0L, index);
     }
 
-    void setSomaId(long index, long value) {
+    void setSomaId(int index, int value) {
         VH_SOMA_ID.set(segment, 0L, index, value);
     }
 
-    long getWeighId(long index) {
-        return (long) VH_WEIGHT_ID.get(segment, 0L, index);
+    int getWeighId(int index) {
+        return (int) VH_WEIGHT_ID.get(segment, 0L, index);
     }
 
-    void setWeightId(long index, long value) {
+    void setWeightId(int index, int value) {
         VH_WEIGHT_ID.set(segment, 0L, index, value);
     }
 }

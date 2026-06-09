@@ -7,13 +7,12 @@ package com.uwe_hennig.snn.anatomy.neuron;
 
 /**
  * ThresholdView
- * @formatter:off
- * @formatter:on
+ *
  * @author Uwe Hennig
  */
 public class ThresholdView {
     private final ThresholdModel model;
-    private final long        index;
+    private final int            index;
 
     public ThresholdView(int index, ThresholdModel model) {
         assert model != null : "Model must not bei null!";
@@ -28,7 +27,7 @@ public class ThresholdView {
         return model;
     }
 
-    public long getViewId() {
+    public int getViewId() {
         return index;
     }
 

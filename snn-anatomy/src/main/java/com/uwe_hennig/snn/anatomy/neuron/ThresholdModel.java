@@ -17,10 +17,11 @@ import java.lang.invoke.VarHandle;
 
 /**
  * ThresholdModel
+ *
  * @author Uwe Hennig
  */
 public class ThresholdModel {
-    final long  capacity;
+    final int   capacity;
     final Arena arena;
 
     SequenceLayout sequenceLayout;
@@ -46,7 +47,7 @@ public class ThresholdModel {
 
     // ----- public -----
 
-    public ThresholdModel(long capacity) {
+    public ThresholdModel(int capacity) {
         assert capacity > 0 : "invalid capacity";
 
         this.capacity = capacity;
@@ -60,46 +61,46 @@ public class ThresholdModel {
         arena.close();
     }
 
-    public long getCapacity() {
+    public int getCapacity() {
         return capacity;
     }
 
     // ----- lock/unlock -----
 
-    void lock(long index) {
+    void lock(int index) {
         // 0 = unlocked, 1 = lock
         while (!VH_LOCK.compareAndSet(segment, 0L, index, 0, 1)) {
             Thread.onSpinWait();
         }
     }
 
-    void unlock(long index) {
+    void unlock(int index) {
         VH_LOCK.setRelease(segment, 0L, index, 0);
     }
 
     // ----- getter/setter -----
 
-    float getThreshold(long index) {
+    float getThreshold(int index) {
         return (float) VH_THRESHOLD.get(segment, 0L, index);
     }
 
-    void setThreshold(long index, float value) {
+    void setThreshold(int index, float value) {
         VH_THRESHOLD.set(segment, 0L, index, value);
     }
 
-    float getThresholdScale(long index) {
+    float getThresholdScale(int index) {
         return (float) VH_THRESHOLD_SCALE.get(segment, 0L, index);
     }
 
-    void setThresholdScale(long index, float value) {
+    void setThresholdScale(int index, float value) {
         VH_THRESHOLD_SCALE.set(segment, 0L, index, value);
     }
 
-    float getTimeLimit(long index) {
+    float getTimeLimit(int index) {
         return (float) VH_TIME_LIMIT.get(segment, 0L, index);
     }
 
-    void setTimeLimit(long index, float timeRange) {
+    void setTimeLimit(int index, float timeRange) {
         VH_TIME_LIMIT.set(segment, 0L, index, timeRange);
     }
 }

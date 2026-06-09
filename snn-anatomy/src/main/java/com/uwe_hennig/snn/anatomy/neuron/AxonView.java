@@ -7,20 +7,19 @@ package com.uwe_hennig.snn.anatomy.neuron;
 
 /**
  * AxonView
- * @formatter:off
- * @formatter:on
+ *
  * @author Uwe Hennig
  */
 public class AxonView {
-    private final long index;
+    private final int       index;
     private final AxonModel model;
 
-    private final long fieldId;
-    private final long neuronId;
-    private final long modulatorId;
-    private final long synapseRef;
+    private final int fieldId;
+    private final int neuronId;
+    private final int modulatorId;
+    private final int synapseRef;
 
-    public AxonView(long index, AxonModel model, long fieldId, long neuronId, long modulatorId, long synapseRef) {
+    public AxonView(int index, AxonModel model, int fieldId, int neuronId, int modulatorId, int synapseRef) {
         assert model != null : "Model must not be null!";
         assert index < model.capacity && index >= 0 : " " + index + " >= " + model.capacity;
 

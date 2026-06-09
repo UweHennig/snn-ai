@@ -15,8 +15,6 @@ import org.junit.jupiter.api.TestInfo;
 
 /**
  * ModulatorTest
- * @formatter:off
- * @formatter:on
  * @author Uwe Hennig
  */
 public class ModulatorTest {
