@@ -36,7 +36,7 @@ public final class SomaModel {
         JAVA_INT.withName("thresholdId"),
         JAVA_INT.withName("stpId"),
         JAVA_INT.withName("ltpId")
-    );
+    ).withByteAlignment(8);
 
     static final VarHandle VH_LOCK =
         LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("lock"));

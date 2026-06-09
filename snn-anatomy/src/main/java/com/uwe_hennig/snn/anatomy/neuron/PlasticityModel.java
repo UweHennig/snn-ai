@@ -47,7 +47,7 @@ public class PlasticityModel {
         // === RATES ===
         JAVA_FLOAT.withName("targetRate"),
         JAVA_FLOAT.withName("restingRate")
-    );
+    ).withByteAlignment(8);
 
     static final VarHandle VH_LOCK = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("lock"));
 

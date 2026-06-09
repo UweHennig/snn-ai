@@ -35,7 +35,7 @@ public class PotentialModel {
         JAVA_FLOAT.withName("lastUpdateTime"),
         JAVA_FLOAT.withName("repolarizationTime"),
         MemoryLayout.paddingLayout(4)
-    );
+    ).withByteAlignment(8);
 
     static final VarHandle VH_LOCK      =
         LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("lock"));
