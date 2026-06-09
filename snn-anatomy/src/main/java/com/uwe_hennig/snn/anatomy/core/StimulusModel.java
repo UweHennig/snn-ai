@@ -93,19 +93,19 @@ public class StimulusModel {
         VH_EXPIRY.set(segment, 0L, index, value);
     }
 
-    int getSrcIndex(long index) {
+    int getSrc(long index) {
         return (int) VH_SRC_INDEX.get(segment, 0L, index);
     }
 
-    void setSrcIndex(long index, int value) {
+    void setSrc(long index, int value) {
         VH_SRC_INDEX.set(segment, 0L, index, value);
     }
 
-    int getTrgIndex(long index) {
+    int getTrg(long index) {
         return (int) VH_TRG_INDEX.get(segment, 0L, index);
     }
 
-    void setTrgIndex(long index, int value) {
+    void setTrg(long index, int value) {
         VH_TRG_INDEX.set(segment, 0L, index, value);
     }
 

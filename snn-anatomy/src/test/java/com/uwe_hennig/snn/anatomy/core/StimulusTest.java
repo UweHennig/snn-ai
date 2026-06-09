@@ -33,11 +33,11 @@ public class StimulusTest {
         model.setExpiry(0, time);
         assertEquals(time, model.getExpiry(0));
 
-        model.setSrcIndex(0, 1);
-        assertEquals(1, model.getSrcIndex(0));
+        model.setSrc(0, 1);
+        assertEquals(1, model.getSrc(0));
 
-        model.setTrgIndex(0, 2);
-        assertEquals(2, model.getTrgIndex(0));
+        model.setTrg(0, 2);
+        assertEquals(2, model.getTrg(0));
 
         model.setType(0, 3);
         assertEquals(3, model.getType(0));
@@ -52,7 +52,7 @@ public class StimulusTest {
     @DisplayName("Simple claim Stimulus Test")
     public void testClaimUpdateAndTTL() {
         StimulusModel model = new StimulusModel(128);
-        StimulusView view = new StimulusView(0, model, 10_000_000L);
+        StimulusView view = new StimulusView(model, 10_000_000L);
 
         long now = System.nanoTime();
 
@@ -67,8 +67,8 @@ public class StimulusTest {
         long expiry = model.getExpiry(idx);
         assertTrue(expiry > now, "Expiry must be set to now + TTL");
 
-        assertEquals(1, model.getSrcIndex(idx));
-        assertEquals(2, model.getTrgIndex(idx));
+        assertEquals(1, model.getSrc(idx));
+        assertEquals(2, model.getTrg(idx));
         assertEquals(3, model.getType(idx));
         assertEquals(4.5f, model.getValue(idx));
 
@@ -76,8 +76,8 @@ public class StimulusTest {
         boolean ok = view.updateStimulus(idx, 10, 20, 30, 40.5f);
         assertTrue(ok, "Update must succeed while TTL is valid");
 
-        assertEquals(10, model.getSrcIndex(idx));
-        assertEquals(20, model.getTrgIndex(idx));
+        assertEquals(10, model.getSrc(idx));
+        assertEquals(20, model.getTrg(idx));
         assertEquals(30, model.getType(idx));
         assertEquals(40.5f, model.getValue(idx));
 
@@ -97,7 +97,7 @@ public class StimulusTest {
     @DisplayName("Claim with skiped Stimulus Test")
     void testClaimSkipsLockedSlots() {
         StimulusModel model = new StimulusModel(32);
-        StimulusView view = new StimulusView(0, model, 10_000_000L);
+        StimulusView view = new StimulusView(model, 10_000_000L);
 
         long now = System.nanoTime();
 

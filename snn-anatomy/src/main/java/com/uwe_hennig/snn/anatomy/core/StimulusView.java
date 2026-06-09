@@ -9,24 +9,19 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * StimulusView
- * @formatter:off
- * @formatter:on
  * @author Uwe Hennig
  */
 public class StimulusView {
     private final StimulusModel model;
-    private final int index;
 
     private final int POOL_SIZE;
     private final int MASK;
     private final long TTL_NANO;
     private final AtomicInteger nextSearchStart = new AtomicInteger(0);
 
-    public StimulusView(int index, StimulusModel model, long ttl) {
+    public StimulusView(StimulusModel model, long ttl) {
         assert model != null : "Model must not bei null!";
-        assert index < model.capacity && index >=0 : " " + index + " >= " + model.capacity;
 
-        this.index = index;
         this.model = model;
 
         POOL_SIZE = model.getCapacity();
@@ -36,10 +31,6 @@ public class StimulusView {
 
     public StimulusModel getModel() {
         return model;
-    }
-
-    public long getViewId() {
-        return index;
     }
 
     public int claimStimulus(int src, int trg, int type, float value) {
@@ -53,8 +44,8 @@ public class StimulusView {
                 if (model.tryLock(index)) {
                     try {
                         if (model.getExpiry(index) < now) {
-                            model.setSrcIndex(index, src);
-                            model.setTrgIndex(index, trg);
+                            model.setSrc(index, src);
+                            model.setTrg(index, trg);
                             model.setType(index, type);
                             model.setValue(index, value);
 
@@ -78,8 +69,8 @@ public class StimulusView {
             if (model.tryLock(index)) {
                 try {
                     if (model.getExpiry(index) >= now) {
-                        model.setSrcIndex(index, src);
-                        model.setTrgIndex(index, trg);
+                        model.setSrc(index, src);
+                        model.setTrg(index, trg);
                         model.setType(index, type);
                         model.setValue(index, value);
 
@@ -95,4 +86,25 @@ public class StimulusView {
 
         return false;
     }
+
+    public long getExpiry(long index) {
+        return model.getExpiry(index);
+    }
+
+    public int getSrc(long index) {
+        return model.getSrc(index);
+    }
+
+    public int getTrg(long index) {
+        return model.getTrg(index);
+    }
+
+    public int getType(long index) {
+        return model.getType(index);
+    }
+
+    public float getValue(long index) {
+        return model.getValue(index);
+    }
+
 }
