@@ -40,6 +40,11 @@
                 <artifactId>snn-contracts</artifactId>
                 <version>${snn-version}</version>
             </dependency>        
+            <dependency>
+                <groupId>com.uwe-hennig</groupId>
+                <artifactId>snn-system</artifactId>
+                <version>${snn-version}</version>
+            </dependency>        
             <!-- Source: https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupite -->
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
@@ -54,5 +59,6 @@
         <module>snn-contracts</module>
         	<module>snn-anatomy</module>
         	<module>snn-cerebro</module>
+        <module>snn-system</module>
 	</modules>
 </project>
