@@ -6,6 +6,8 @@
 package com.uwe_hennig.snn.anatomy.neuron;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -36,6 +38,8 @@ public class PlasticityTest {
             model.setTargetTime(0, 8f);
             model.unlock(0);
 
+            checkNaN(model);
+
             assertEquals(1f, model.getCurrentPotential(0));
             assertEquals(2f, model.getLastUpdateTime(0));
             assertEquals(3f, model.getRestingPotential(0));
@@ -45,8 +49,99 @@ public class PlasticityTest {
             assertEquals(7f, model.getTargetRate(0));
             assertEquals(8f, model.getTargetTime(0));
         } finally {
-            model.close();
+            if (model != null) {
+                model.close();
+            }
         }
+    }
+
+    @Test
+    @DisplayName("Simple PlasticityModel Test")
+    public void testPlasticityView() {
+        PlasticityModel model = null;
+        PlasticityView view = null;
+        try {
+            model = new PlasticityModel(1);
+            // initial values
+            model.lock(0);
+            float startTime = 200f;
+            model.setCurrentPotential(0, -40f);
+            model.setLastUpdateTime(0, startTime);
+
+            model.setTargetPotential(0, 60f);
+            model.setRestingPotential(0, -40);
+
+            model.setTargetTime(0, 1000f);
+            model.setRestingTime(0, 1000f);
+
+            model.setTargetRate(0, 2f);
+            model.setRestingRate(0, 2f);
+            model.unlock(0);
+
+            System.out.println("### Initial values");
+            System.out.println("currentPotential = " + model.getCurrentPotential(0));
+            System.out.println("lastUpdateTime = " + model.getLastUpdateTime(0));
+
+            System.out.println("targetPotential = " + model.getTargetPotential(0));
+            System.out.println("restingPotential = " + model.getRestingPotential(0));
+
+            System.out.println("targetTime = " + model.getTargetTime(0));
+            System.out.println("restingTime = " + model.getRestingTime(0));
+
+            System.out.println("targetRate = " + model.getTargetRate(0));
+            System.out.println("restingRate = " + model.getRestingRate(0));
+            checkNaN(model);
+
+            float currentTime = 400f;
+            view = new PlasticityView(0, model);
+
+            view.updatePlasticityPotential(currentTime + 100);
+            view.applyValueFeedback(100, currentTime + 200);
+            view.applyTimeFeedback(100, currentTime + 300);
+
+            System.out.println("\n### Changed values");
+            System.out.println("elapsed = " + (currentTime - model.getLastUpdateTime(0)));
+            System.out.println("currentPotential = " + model.getCurrentPotential(0));
+            System.out.println("lastUpdateTime = " + model.getLastUpdateTime(0));
+
+            System.out.println("targetPotential = " + model.getTargetPotential(0));
+            System.out.println("restingPotential = " + model.getRestingPotential(0));
+
+            System.out.println("targetTime = " + model.getTargetTime(0));
+            System.out.println("restingTime = " + model.getRestingTime(0));
+
+            System.out.println("targetRate = " + model.getTargetRate(0));
+            System.out.println("restingRate = " + model.getRestingRate(0));
+            checkNaN(model);
+
+            assertTrue(model.getCurrentPotential(0) > -40f, "invalid currentPotential");
+            assertTrue(model.getLastUpdateTime(0) == 700f, "invalid lastUpdateTime");
+            assertTrue(model.getTargetPotential(0) > -50f && model.getTargetPotential(0) < 90f, "invalid targetPotential");
+            assertTrue(model.getRestingPotential(0) >= -90f && model.getRestingPotential(0) <= -40f, "invalid restingPotential");
+
+            // no targetTime changes implemented!
+
+            assertTrue(model.getTargetRate(0) >= 2 && model.getTargetRate(0) <= 5, "invalid targetRate");
+            assertTrue(model.getRestingRate(0) >= 2 && model.getRestingRate(0) <= 5, "invalid restingRate");
+
+        } finally {
+            if (model != null) {
+                model.close();
+            }
+        }
+
+    }
+
+    private void checkNaN(PlasticityModel model) {
+        assertFalse(Float.isNaN(model.getCurrentPotential(0)));
+
+        assertFalse(Float.isNaN(model.getLastUpdateTime(0)), "NaN Error getLastUpdateTime");
+        assertFalse(Float.isNaN(model.getTargetPotential(0)), "NaN Error getTargetPotential");
+        assertFalse(Float.isNaN(model.getRestingPotential(0)), "NaN Error getRestingPotential");
+        assertFalse(Float.isNaN(model.getTargetTime(0)), "NaN Error getTargetTime");
+        assertFalse(Float.isNaN(model.getRestingTime(0)), "NaN Error getRestingTime");
+        assertFalse(Float.isNaN(model.getTargetRate(0)), "NaN Error getTargetRate");
+        assertFalse(Float.isNaN(model.getRestingRate(0)), "NaN Error getRestingRate");
     }
 
     @BeforeEach

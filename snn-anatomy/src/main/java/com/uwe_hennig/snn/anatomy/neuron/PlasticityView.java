@@ -30,7 +30,7 @@ public class PlasticityView {
         return index;
     }
 
-    // is always called at the beginning
+    // is always called before others
     public float updatePlasticityPotential(float currentTime) {
         float lastUpdateTime = model.getLastUpdateTime(index);
         float elapsed = currentTime - lastUpdateTime;
@@ -74,10 +74,10 @@ public class PlasticityView {
         float restingTime = model.getRestingTime(index);
 
         // targetPot fluctuates between 50mv and 70mV
-        // restingPoot fluctuates between -90mv and -50mV
+        // restingPoot fluctuates between -90mv and -40mV
         if (deltaValueFeedback > 0) {
             targetPot  = update(targetPot, 90f, targetTime, 3f, elapsed);
-            restingPot = update(restingPot, -50f, restingTime, 3f, elapsed);
+            restingPot = update(restingPot, -40f, restingTime, 3f, elapsed);
         } else {
             targetPot = update(targetPot, 50f, targetTime, 3f, elapsed);
             restingPot = update(restingPot, -90f, restingTime, 3f, elapsed);
@@ -93,7 +93,7 @@ public class PlasticityView {
         }
     }
 
-    // is called when a time adjustments are made
+    // is called when time adjustments are made
     public void applyTimeFeedback(float deltaTimeFeedback, float currentTime) {
         if (Math.abs(deltaTimeFeedback) < 0.001f) {
             return;
@@ -101,7 +101,7 @@ public class PlasticityView {
 
         float totalTime = model.getTargetTime(index);
         float elapsed = currentTime - model.getLastUpdateTime(index);
-        float tauDominatorTarget  = model.getTargetTime(index);
+        float tauDominatorTarget  = model.getTargetRate(index);
         float tauDominatorResting = model.getRestingRate(index);
 
         // tauDominators fluctuates between 2 and 5
