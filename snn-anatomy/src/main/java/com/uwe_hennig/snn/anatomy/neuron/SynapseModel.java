@@ -29,10 +29,10 @@ public final class SynapseModel {
     // @formatter:off
     static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         JAVA_INT.withName("lock"),
-        MemoryLayout.paddingLayout(4),
         JAVA_INT.withName("fiedlId"),
         JAVA_INT.withName("neuronId"),
         JAVA_INT.withName("targetId"),
+        JAVA_INT.withName("targetType"),
         JAVA_INT.withName("modulatorId")
     ).withByteAlignment(8);
 
@@ -44,6 +44,8 @@ public final class SynapseModel {
         LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("neuronId"));
     static final VarHandle VH_TARGET_ID =
         LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("targetId"));
+    static final VarHandle VH_TARGET_TYPE =
+        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("targetType"));
     static final VarHandle VH_MODULATOR_ID =
         LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("modulatorId"));
     // @formatter:off
@@ -106,6 +108,15 @@ public final class SynapseModel {
     void setTargetId(int index, int value) {
         VH_TARGET_ID.set(segment, 0L, index, value);
     }
+
+    int getTargetType(int index) {
+        return (int) VH_TARGET_TYPE.get(segment, 0L, index);
+    }
+
+    void setTargetType(int index, int value) {
+        VH_TARGET_TYPE.set(segment, 0L, index, value);
+    }
+
 
     int getModulatorId(int index) {
         return (int) VH_MODULATOR_ID.get(segment, 0L, index);

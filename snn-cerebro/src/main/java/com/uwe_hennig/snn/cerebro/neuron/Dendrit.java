@@ -8,6 +8,8 @@ package com.uwe_hennig.snn.cerebro.neuron;
 import com.uwe_hennig.snn.anatomy.neuron.DendritView;
 import com.uwe_hennig.snn.anatomy.neuron.ModulatorView;
 import com.uwe_hennig.snn.anatomy.neuron.WeightView;
+import com.uwe_hennig.snn.contracts.core.NeuronElement;
+import com.uwe_hennig.snn.contracts.core.NeuronElementType;
 import com.uwe_hennig.snn.contracts.core.StimulusType;
 import com.uwe_hennig.snn.services.StimulusService;
 
@@ -16,7 +18,7 @@ import com.uwe_hennig.snn.services.StimulusService;
  *
  * @author Uwe Hennig
  */
-public final class Dendrit {
+public final class Dendrit implements NeuronElement{
     private final DendritView   view;
     private final WeightView    weightView;
     private final ModulatorView modulatorView;
@@ -47,5 +49,10 @@ public final class Dendrit {
             weightView.applyFeedback(stimulusValue);
         }
 
+    }
+
+    @Override
+    public NeuronElementType getType() {
+        return NeuronElementType.DENDRIT;
     }
 }

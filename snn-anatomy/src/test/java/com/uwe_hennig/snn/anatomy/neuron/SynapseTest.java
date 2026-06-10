@@ -33,6 +33,7 @@ public class SynapseTest {
             model.setNeuronId(0, 2);
             model.setTargetId(0, 3);
             model.setModulatorId(0, 4);
+            model.setTargetType(0, 5);
         } finally {
             model.unlock(0);
         }
@@ -41,6 +42,7 @@ public class SynapseTest {
         assertEquals(2L, model.getNeuronId(0));
         assertEquals(3L, model.getTargetId(0));
         assertEquals(4L, model.getModulatorId(0));
+        assertEquals(5L, model.getTargetType(0));
 
         model.close();
     }

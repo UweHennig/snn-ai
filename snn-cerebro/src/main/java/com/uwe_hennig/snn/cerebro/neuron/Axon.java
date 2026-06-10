@@ -7,13 +7,15 @@ package com.uwe_hennig.snn.cerebro.neuron;
 
 import com.uwe_hennig.snn.anatomy.neuron.AxonView;
 import com.uwe_hennig.snn.anatomy.neuron.ModulatorView;
+import com.uwe_hennig.snn.contracts.core.NeuronElement;
+import com.uwe_hennig.snn.contracts.core.NeuronElementType;
 
 /**
  * Axon
  *
  * @author Uwe Hennig
  */
-public final class Axon {
+public final class Axon implements NeuronElement {
     private final AxonView      view;
     private final ModulatorView modulatorView;
 
@@ -24,5 +26,10 @@ public final class Axon {
 
     public void stimulate(int stimulusIdentifier) {
         // TODO
+    }
+
+    @Override
+    public NeuronElementType getType() {
+        return NeuronElementType.AXON;
     }
 }
