@@ -11,6 +11,7 @@ import com.uwe_hennig.snn.anatomy.neuron.WeightView;
 import com.uwe_hennig.snn.contracts.core.NeuronElement;
 import com.uwe_hennig.snn.contracts.core.NeuronElementType;
 import com.uwe_hennig.snn.contracts.core.StimulusType;
+import com.uwe_hennig.snn.services.NeuronElementRegistry;
 import com.uwe_hennig.snn.services.StimulusService;
 
 /**
@@ -49,6 +50,8 @@ public final class Dendrit implements NeuronElement{
             weightView.applyFeedback(stimulusValue);
         }
 
+        Soma soma = (Soma) NeuronElementRegistry.instance().getNeuronElement(view.getSomaId(), NeuronElementType.SOMA);
+        soma.stimulate(stimulusIdentifier);
     }
 
     @Override
