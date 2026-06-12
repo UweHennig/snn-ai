@@ -20,7 +20,7 @@ import java.lang.invoke.VarHandle;
  *
  * @author Uwe Hennig
  */
-public class PlasticityModel {
+public final class PlasticityModel {
     final int   capacity;
     final Arena arena;
 

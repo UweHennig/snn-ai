@@ -10,7 +10,7 @@ package com.uwe_hennig.snn.anatomy.neuron;
  *
  * @author Uwe Hennig
  */
-public class ThresholdView {
+public final class ThresholdView {
     private final ThresholdModel model;
     private final int            index;
 

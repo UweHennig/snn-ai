@@ -20,7 +20,7 @@ import java.lang.invoke.VarHandle;
  *
  * @author Uwe Hennig
  */
-public class ThresholdModel {
+public final class ThresholdModel {
     final int   capacity;
     final Arena arena;
 

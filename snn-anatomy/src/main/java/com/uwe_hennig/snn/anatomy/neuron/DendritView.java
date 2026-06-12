@@ -10,7 +10,7 @@ package com.uwe_hennig.snn.anatomy.neuron;
  *
  * @author Uwe Hennig
  */
-public class DendritView {
+public final class DendritView {
     private final int          index;
     private final DendritModel model;
 

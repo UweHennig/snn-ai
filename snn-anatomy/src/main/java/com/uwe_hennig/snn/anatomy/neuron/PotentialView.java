@@ -10,7 +10,7 @@ package com.uwe_hennig.snn.anatomy.neuron;
  *
  * @author Uwe Hennig
  */
-public class PotentialView {
+public final class PotentialView {
     private final int            index;
     private final PotentialModel model;
 

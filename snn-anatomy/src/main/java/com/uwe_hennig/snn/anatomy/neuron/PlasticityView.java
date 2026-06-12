@@ -10,7 +10,7 @@ package com.uwe_hennig.snn.anatomy.neuron;
  *
  * @author Uwe Hennig
  */
-public class PlasticityView {
+public final class PlasticityView {
     private final PlasticityModel model;
     private final int             index;
 

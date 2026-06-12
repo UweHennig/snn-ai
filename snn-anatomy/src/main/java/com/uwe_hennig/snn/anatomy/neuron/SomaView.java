@@ -9,7 +9,7 @@ package com.uwe_hennig.snn.anatomy.neuron;
  * SomaView
  * @author Uwe Hennig
  */
-public class SomaView {
+public final class SomaView {
     private final int       index;
     private final SomaModel model;
 

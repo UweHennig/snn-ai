@@ -10,7 +10,7 @@ package com.uwe_hennig.snn.anatomy.neuron;
  *
  * @author Uwe Hennig
  */
-public class WeightView {
+public final class WeightView {
     private final WeightModel model;
     private final int         index;
 

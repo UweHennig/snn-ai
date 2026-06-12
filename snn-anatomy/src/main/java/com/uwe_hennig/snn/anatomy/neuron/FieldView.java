@@ -12,7 +12,7 @@ import com.uwe_hennig.snn.anatomy.core.FieldGraph;
  *
  * @author Uwe Hennig
  */
-public class FieldView {
+public final class FieldView {
     private final FieldModel model;
     private final int        index;
 

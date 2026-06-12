@@ -10,7 +10,7 @@ package com.uwe_hennig.snn.anatomy.neuron;
  *
  * @author Uwe Hennig
  */
-public class AxonView {
+public final class AxonView {
     private final int       index;
     private final AxonModel model;
 

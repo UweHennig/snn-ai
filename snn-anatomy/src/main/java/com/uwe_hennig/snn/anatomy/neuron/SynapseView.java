@@ -7,10 +7,11 @@ package com.uwe_hennig.snn.anatomy.neuron;
 
 /**
  * SynapseView
+ *
  * @author Uwe Hennig
  */
 public class SynapseView {
-    private final int index;
+    private final int          index;
     private final SynapseModel model;
 
     private final int fieldId;

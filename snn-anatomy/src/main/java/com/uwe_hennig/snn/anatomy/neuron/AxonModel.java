@@ -16,8 +16,6 @@ import java.lang.invoke.VarHandle;
 
 /**
  * AxonModel
- * @formatter:off
- * @formatter:on
  * @author Uwe Hennig
  */
 public final class AxonModel {
