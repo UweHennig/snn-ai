@@ -9,8 +9,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * BalanceWheel
- * @formatter:off
- * @formatter:on
+ * The clock speed was set to minimize the risk of the CPU overheating
  * @author Uwe Hennig
  */
 public final class BalanceWheel {
