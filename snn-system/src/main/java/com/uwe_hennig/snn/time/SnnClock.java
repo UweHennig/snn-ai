@@ -15,6 +15,14 @@ import java.util.concurrent.locks.ReentrantLock;
  * SnnClock
  * In this implementation, model time is determined by the system’s activities.
  * Unlike conventional model-time approaches, processing is not governed by a predefined temporal rhythm.
+ *
+ * TODO:
+ * 1) The domain classes do not create a Runnable; instead, they call `submit(int stimulusId)`
+ * 2) There is a fixed number of virtual threads, "worker threads"
+ * 3) These virtual threads handle the polling and call the `onStimulus` method with the polled ID.
+ * 4) Locking, etc., is implemented using VarHandle
+ * 5) The queue QUEUE_LAYOUT is of type SequenceLayout
+ *
  * @author Uwe Hennig
  */
 public class SnnClock {
@@ -23,6 +31,8 @@ public class SnnClock {
     private final BalanceWheel  balanceWheel;
 
     private final ReentrantLock                 lock  = new ReentrantLock();
+
+    // TODO LinkedBlockingQueue<Integer> with int = stimulusId;
     private final LinkedBlockingQueue<Runnable> queue = new LinkedBlockingQueue<>();
 
     private static SnnClock INSTANCE;
