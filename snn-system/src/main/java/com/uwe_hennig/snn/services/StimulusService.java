@@ -10,8 +10,7 @@ import com.uwe_hennig.snn.anatomy.core.StimulusView;
 
 /**
  * StimulusService
- * @formatter:off
- * @formatter:on
+ * The StimulusService optimizes Java Arena access for frequently changing events, which in turn significantly reduces GC pressure.
  * @author Uwe Hennig
  */
 public class StimulusService {

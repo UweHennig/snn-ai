@@ -13,6 +13,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * SnnClock
+ * In this implementation, model time is determined by the system’s activities.
+ * Unlike conventional model-time approaches, processing is not governed by a predefined temporal rhythm.
  * @author Uwe Hennig
  */
 public class SnnClock {
