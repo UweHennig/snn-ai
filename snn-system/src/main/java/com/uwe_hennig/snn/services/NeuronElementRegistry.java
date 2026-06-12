@@ -5,18 +5,12 @@
  */
 package com.uwe_hennig.snn.services;
 
-import static com.uwe_hennig.snn.contracts.core.NeuronElementType.AXON;
-import static com.uwe_hennig.snn.contracts.core.NeuronElementType.DENDRIT;
-import static com.uwe_hennig.snn.contracts.core.NeuronElementType.SOMA;
-import static com.uwe_hennig.snn.contracts.core.NeuronElementType.SYNAPSE;
-
 import com.uwe_hennig.snn.contracts.core.NeuronElement;
 import com.uwe_hennig.snn.contracts.core.NeuronElementType;
 
 /**
  * NeuronElementRegistry
- * @formatter:off
- * @formatter:on
+ *
  * @author Uwe Hennig
  */
 public final class NeuronElementRegistry {
