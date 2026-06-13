@@ -18,6 +18,10 @@ This approach differs fundamentally from conventional AI implementations:
 *    Neurogenesis will be an integral component.
 *    Performance and scalability are optimized to the maximum.
 *    GPU integration is, in my view, unnecessary and currently not feasible.
+*    Data is managed using Java Arena Off-Heap.
+*    Java virtual threads are used.
+*    No additional tools are used whenever possible
+
 
 #### Project status
 13.6.2026 : In progress
