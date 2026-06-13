@@ -20,6 +20,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 
 /**
  * IntQueueTest
@@ -31,13 +32,34 @@ public class IntQueueTest {
     private IntQueue queue;
 
     @BeforeEach
-    void setUp() {
+    void setUp(TestInfo info) {
         queue = new IntQueue(65536);
+
+        String title = "### " + info.getDisplayName() + " ###";
+        System.out.println("\n" + title);
+        System.out.println("-".repeat(title.length()));
     }
 
     @AfterEach
     void tearDown() {
         queue.close();
+    }
+
+    @Test
+    @DisplayName("Simple FIFO test")
+    void testBasicFIFO() {
+        queue.offer(1);
+        queue.offer(2);
+        queue.offer(3);
+
+        int value = queue.poll();
+        assertEquals(1, value, "FIFO rule violated");
+
+        value = queue.poll();
+        assertEquals(2, value, "FIFO rule violated");
+
+        value = queue.poll();
+        assertEquals(3, value, "FIFO rule violated");
     }
 
     @Test
