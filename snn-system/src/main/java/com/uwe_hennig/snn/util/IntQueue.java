@@ -124,7 +124,7 @@ public class IntQueue {
             int tail = (int) VH_TAIL.get(queuePtr, 0L);
 
             if (head == tail) {
-                return -1; // Queue leer
+                return -1; // Queue empty
             }
 
             long arrayIndex = head & mask;
