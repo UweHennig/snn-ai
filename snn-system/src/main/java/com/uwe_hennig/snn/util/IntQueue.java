@@ -79,10 +79,10 @@ public class IntQueue {
         int spins = 0;
         while (!VH_LOCK.compareAndSet(queuePtr, 0L, 0, 1)) {
             if (spins < 64) {
-                Thread.onSpinWait(); // Phase 1: Schnelles CPU-Spinning
+                Thread.onSpinWait(); // Phase 1: Fast CPU spinning
                 spins++;
             } else {
-                LockSupport.parkNanos(1); // Phase 2: OS-Thread-Parking bei Stau
+                LockSupport.parkNanos(1); // Phase 2: OS thread parking during congestion
             }
         }
     }
