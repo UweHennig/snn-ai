@@ -11,7 +11,7 @@ This approach differs fundamentally from conventional AI implementations:
 *    Communication is asynchronous at every level.
 *    The agent is, technically speaking, merely a mediator with translation duties.
 *    The productive environment is the learning unit.
-*    There is no higher‑level system that interferes with the learning process.
+*    There is no higher-level system that interferes with the learning process.
 *    Corrections relevant to learning are emitted by the environment.
 *    All data flowing through the system consists of delta values.
 *    Biological terminology is used wherever possible.

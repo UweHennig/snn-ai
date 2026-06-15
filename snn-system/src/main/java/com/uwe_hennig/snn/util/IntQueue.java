@@ -31,7 +31,8 @@ public class IntQueue {
         ValueLayout.JAVA_INT.withName("lock"),
         ValueLayout.JAVA_INT.withName("head"),
         ValueLayout.JAVA_INT.withName("tail"),
-    MemoryLayout.paddingLayout(4));
+        MemoryLayout.paddingLayout(4)
+    );
 
     private static final VarHandle VH_LOCK = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("lock"));
     private static final VarHandle VH_HEAD = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("head"));
@@ -113,6 +114,14 @@ public class IntQueue {
             unlock();
         }
     }
+
+    public boolean isEmpty() {
+        int head = (int) VH_HEAD.get(queuePtr, 0L);
+        int tail = (int) VH_TAIL.get(queuePtr, 0L);
+
+        return head == tail;
+    }
+
 
     /**
      * Retrieves and removes the oldest element from the front of the queue.
