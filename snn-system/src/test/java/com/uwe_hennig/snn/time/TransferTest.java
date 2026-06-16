@@ -29,7 +29,7 @@ public class TransferTest {
     private static final AtomicLong holder = new AtomicLong();
 
     @Test
-    @DisplayName("Simple time Test")
+    @DisplayName("Simple transfer Test")
     public void testThroughput() throws Exception {
         AtomicLong sentCounter = new AtomicLong(0);
         AtomicLong receivedCounter = new AtomicLong(0);
@@ -39,15 +39,17 @@ public class TransferTest {
             Thread currentThread = Thread.currentThread();
             if ((receivedCounter.get() % 100_000L) == 0) {
                 char x = 'P';
-                if (stimulusId >= 1_000) {
+                if (stimulusId >= 100_000) {
                     x = 'S';
                 }
                 System.out.printf("%nid=%8d - worker threadId=%3d - " + x, stimulusId, currentThread.threadId());
             }
-            SnnTransferservice.transfer(stimulusId + 1_000);
+            if(SnnTransferservice.transfer(stimulusId + 1_000)) {
+                sentCounter.incrementAndGet();
+            }
         };
 
-        SnnExecutor executor = SnnExecutor.of(1024L, 4, worker);
+        SnnExecutor executor = SnnExecutor.of(4096L, 8, worker);
         SnnTransferservice.of(worker);
 
         executor.start();
@@ -71,7 +73,7 @@ public class TransferTest {
             fail("Exception in TransferTest: " + e.getLocalizedMessage());
         }
 
-        System.out.println("Produce finished. Draining...");
+        System.out.println("\nProduce finished. Draining...");
 
         long drainTimeout = System.currentTimeMillis() + 2000;
         while (receivedCounter.get() < sentCounter.get() && System.currentTimeMillis() < drainTimeout) {
@@ -81,11 +83,11 @@ public class TransferTest {
         executor.stop(1000);
         executor.shutdown();
 
-        System.out.println("Sent: " + sentCounter.get());
+        System.out.println("\nSent: " + sentCounter.get());
         System.out.println("Received: " + receivedCounter.get());
 
         assertTrue(sentCounter.get() > 0, "No data sent!");
-        assertTrue(sentCounter.get() < receivedCounter.get(), "Data loss detected!");
+        assertTrue(sentCounter.get() == receivedCounter.get(), "Data loss detected!");
     }
 
     @BeforeEach
