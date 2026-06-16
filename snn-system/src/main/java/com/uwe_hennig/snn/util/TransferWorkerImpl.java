@@ -19,6 +19,6 @@ public class TransferWorkerImpl implements TransferWorker {
         // 2) then the target ID
         // 3) Get an instance of the object with this target ID
         // 4) Call on target objects: stimulate(stimulusId);
-        System.out.println("Transfering " + stimulusId);
+        System.out.printf("%nTransfering %d");
     }
 }

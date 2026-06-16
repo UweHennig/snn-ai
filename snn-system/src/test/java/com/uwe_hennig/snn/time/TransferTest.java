@@ -13,35 +13,34 @@ import org.junit.jupiter.api.TestInfo;
 import com.uwe_hennig.snn.util.SnnExecutor;
 import com.uwe_hennig.snn.util.SnnTransferservice;
 import com.uwe_hennig.snn.util.TransferWorker;
-import com.uwe_hennig.snn.util.TransferWorkerImpl;
 
 /**
  * TransferBeatTest
+ *
  * @author Uwe Hennig
  */
-public class TransferBeatTest {
+public class TransferTest {
 
     @Test
     @DisplayName("Simple time Test")
     public void testTime() throws Exception {
-        // long timeWindow, long minSize, long size
-        SnnClockImpl clock = SnnClockImpl.of(1000L, 100L, 100L);
-        TransferWorker worker = new TransferWorkerImpl();
+        TransferWorker worker = new TestTransferWorker();
         SnnExecutor executor = SnnExecutor.of(1024L, 4, worker);
-        SnnTransferservice.of(worker, clock);
 
-        double t0 = SnnClock.now();
         executor.start();
-        SnnTransferservice.transfer(42);
+        System.out.println("Starting transfer...");
+        for (int i = 0; i < 100; i++) {
+            SnnTransferservice.transfer(i);
+        }
         executor.stop();
-        double t1 = SnnClock.now();
-
-        // TODO Problem! Aufruf: now(), now(), beat() statt now(), beat(), now()
-
-        System.out.println("Counter nach Test: " + t0);
-        System.out.println("Counter nach Test: " + t1);
-
         executor.shutdown();
+    }
+
+    public final class TestTransferWorker implements TransferWorker {
+        @Override
+        public void emitt(int stimulusId) {
+            System.out.println("ID: " + stimulusId);
+        }
     }
 
     @BeforeEach

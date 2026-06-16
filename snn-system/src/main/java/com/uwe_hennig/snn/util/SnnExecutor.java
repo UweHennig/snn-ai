@@ -8,8 +8,6 @@ package com.uwe_hennig.snn.util;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.locks.LockSupport;
 
-import com.uwe_hennig.snn.time.BalanceWheel;
-
 /**
  * SnnExecutor
  * @author Uwe Hennig
