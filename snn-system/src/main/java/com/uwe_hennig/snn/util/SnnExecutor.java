@@ -47,11 +47,35 @@ public class SnnExecutor {
         return instance;
     }
 
-    public void addTask(int id) {
+    public boolean offer(int id) {
         if (!running) {
-            return;
+            return false;
         }
-        queue.offer(id);
+
+        if (queue.offer(id)) {
+            return true;
+        }
+
+        // Calling thread ist too fast!
+
+        long counter = 0;
+        while (running) {
+            if (queue.offer(id)) {
+                return true;
+            }
+
+            counter++;
+            if (counter < 100) {
+                Thread.onSpinWait();
+            } else if (counter < 150) {
+                Thread.yield();
+            } else if (counter < 200) {
+                LockSupport.parkNanos(1000);
+            } else {
+                return false;
+            }
+        }
+        return false;
     }
 
     public synchronized void start() {
@@ -67,16 +91,20 @@ public class SnnExecutor {
         }
     }
 
-    public synchronized void stop() {
+    public synchronized void stop(long timeout) {
         if (!running) {
             return;
         }
 
         running = false;
 
-        long timeout = System.currentTimeMillis() + 2000;
+        timeout += System.currentTimeMillis();
         while (!queue.isEmpty() && System.currentTimeMillis() < timeout) {
-            Thread.yield();
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
 
         for (Thread workerThread : workers) {
@@ -111,13 +139,7 @@ public class SnnExecutor {
         }
 
         while (!Thread.currentThread().isInterrupted()) {
-            if ( worker == null) {
-                LockSupport.parkNanos(1_000_000L);
-                continue;
-            }
-
             int stimulusId = queue.poll();
-
             if (stimulusId != -1) {
                 try {
                     worker.emitt(stimulusId);
@@ -133,4 +155,11 @@ public class SnnExecutor {
         }
     }
 
+    public final class BlackHole {
+        public static volatile int sink;
+
+        public static void consume(int value) {
+            sink ^= value;
+        }
+    }
 }

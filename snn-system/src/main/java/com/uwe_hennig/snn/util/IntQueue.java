@@ -116,12 +116,16 @@ public class IntQueue {
     }
 
     public boolean isEmpty() {
-        int head = (int) VH_HEAD.get(queuePtr, 0L);
-        int tail = (int) VH_TAIL.get(queuePtr, 0L);
+        lock();
+        try {
+            int head = (int) VH_HEAD.get(queuePtr, 0L);
+            int tail = (int) VH_TAIL.get(queuePtr, 0L);
 
-        return head == tail;
+            return head == tail;
+        } finally {
+            unlock();
+        }
     }
-
 
     /**
      * Retrieves and removes the oldest element from the front of the queue.

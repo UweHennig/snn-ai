@@ -23,15 +23,19 @@ public class SnnTransferservice {
     }
 
 
-    public static void transfer(int stimulusId) {
+    public static boolean transfer(int stimulusId) {
         if (instance != null) {
-            SnnExecutor.get().addTask(stimulusId);
+            return SnnExecutor.get().offer(stimulusId);
+        } else {
+            throw new RuntimeException("SnnTransferservice instance is null!");
         }
     }
 
     public static void syncTransfer(int stimulusId) {
         if (instance != null) {
             instance.transferWorker.emitt(stimulusId);
+        } else {
+            throw new RuntimeException("SnnTransferservice instance is null!");
         }
     }
 }
