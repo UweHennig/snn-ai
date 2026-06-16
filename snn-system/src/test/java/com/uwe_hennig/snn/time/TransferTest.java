@@ -37,8 +37,14 @@ public class TransferTest {
         TransferWorker worker = (stimulusId) -> {
             receivedCounter.incrementAndGet();
             Thread currentThread = Thread.currentThread();
-            System.out.println("TargetID: " + stimulusId + " threadId: " + currentThread.threadId());
-            SnnTransferservice.transfer(stimulusId + 1000);
+            if ((receivedCounter.get() % 100_000L) == 0) {
+                char x = 'P';
+                if (stimulusId >= 1_000) {
+                    x = 'S';
+                }
+                System.out.printf("%nid=%8d - worker threadId=%3d - " + x, stimulusId, currentThread.threadId());
+            }
+            SnnTransferservice.transfer(stimulusId + 1_000);
         };
 
         SnnExecutor executor = SnnExecutor.of(1024L, 4, worker);
