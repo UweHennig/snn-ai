@@ -10,8 +10,10 @@ import java.util.concurrent.locks.LockSupport;
 
 /**
  * SnnExecutor
+ * TODO We need to start from scratch, because consumers are becoming producers, and a deadlock is therefore inevitable!
  * @author Uwe Hennig
  */
+@Deprecated
 public class SnnExecutor {
     private static SnnExecutor instance;
 
@@ -25,6 +27,7 @@ public class SnnExecutor {
     private volatile boolean running  = false;
     private volatile boolean shutdown = false;
 
+    @Deprecated
     public SnnExecutor(long queueSize, int numberOfWorkers, TransferWorker worker) {
         this.queue = new IntQueue(queueSize);
         this.workers = new Thread[numberOfWorkers];
@@ -32,6 +35,7 @@ public class SnnExecutor {
         this.worker = worker;
     }
 
+    @Deprecated
     public static SnnExecutor of(long queueSize, int numberOfWorkers, TransferWorker worker) {
         if (instance == null) {
             synchronized (SnnExecutor.class) {
@@ -43,10 +47,12 @@ public class SnnExecutor {
         return instance;
     }
 
+    @Deprecated
     public static SnnExecutor get() {
         return instance;
     }
 
+    @Deprecated
     public boolean offer(int id) {
         if (!running) {
             return false;
@@ -78,6 +84,7 @@ public class SnnExecutor {
         return false;
     }
 
+    @Deprecated
     public synchronized void start() {
         if (shutdown || running) {
             return;
@@ -91,6 +98,7 @@ public class SnnExecutor {
         }
     }
 
+    @Deprecated
     public synchronized void stop(long timeout) {
         if (!running) {
             return;
@@ -114,6 +122,7 @@ public class SnnExecutor {
         }
     }
 
+    @Deprecated
     public synchronized void shutdown() {
         if (shutdown) {
             return;
@@ -155,6 +164,7 @@ public class SnnExecutor {
         }
     }
 
+    @Deprecated
     public final class BlackHole {
         public static volatile int sink;
 
