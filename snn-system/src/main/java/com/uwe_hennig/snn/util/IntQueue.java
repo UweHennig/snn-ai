@@ -17,6 +17,7 @@ import java.util.concurrent.locks.LockSupport;
 /**
  * IntQueue
  * is a FIFO integer queue implemented with arena off heap. The queue is designed for positive integers.
+ * TODO  Here we a  "Check-then-Act" problem!
  * @author Uwe Hennig
  */
 public class IntQueue {
