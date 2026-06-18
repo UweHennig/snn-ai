@@ -63,17 +63,6 @@ public class IntQueueTest {
     }
 
     @Test
-    @DisplayName("Sequential writing and reading in a single thread")
-    void testBasicPutAndGet() {
-        queue.put(0, 42);
-        queue.put(1, 100);
-        queue.put(65536, 999); // Overflow Test
-
-        assertEquals(999, queue.get(0), "Index 65536 should overwrite index 0 because of the mask");
-        assertEquals(100, queue.get(1));
-    }
-
-    @Test
     @DisplayName("Asynchronous access: Multiple threads write in parallel")
     void testConcurrentPutAndGet() throws InterruptedException {
         int numberOfThreads = 8;

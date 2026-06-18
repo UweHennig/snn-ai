@@ -151,29 +151,29 @@ public class IntQueue {
         }
     }
 
-    public void put(long index, int value) {
+    void put(long index, int value) {
         long arrayIndex = index & mask;
         elementHandle.set(this.queueSegment, 0L, 0L, arrayIndex, value);
     }
 
-    public int get(long index) {
+    int get(long index) {
         long arrayIndex = index & mask;
         return (int) elementHandle.get(this.queueSegment, 0L, 0L, arrayIndex);
     }
 
-    public void setHead(int head) {
+    void setHead(int head) {
         VH_HEAD.set(queuePtr, 0L, head);
     }
 
-    public void setTail(int tail) {
+    void setTail(int tail) {
         VH_TAIL.set(queuePtr, 0L, tail);
     }
 
-    public int getHead() {
+    int getHead() {
         return (int) VH_HEAD.get(queuePtr, 0L);
     }
 
-    public int getTail() {
+    int getTail() {
         return (int) VH_TAIL.get(queuePtr, 0L);
     }
 }
