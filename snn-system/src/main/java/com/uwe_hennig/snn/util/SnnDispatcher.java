@@ -13,6 +13,7 @@ package com.uwe_hennig.snn.util;
  */
 public class SnnDispatcher {
     private static final long QUEUE_TIMEOUT_MS = 1000;
+    private static SnnDispatcher instance;
 
     private final IntQueue ingestQueue;
     private final IntQueue workerQueue;
@@ -23,7 +24,7 @@ public class SnnDispatcher {
     private volatile boolean stopping = false;
     private volatile boolean shutdown = false;
 
-    public SnnDispatcher(int ingestQueueSize, int workerQueueSize, int workerThreadSize) {
+    private SnnDispatcher(int ingestQueueSize, int workerQueueSize, int workerThreadSize) {
         ingestQueueSize = nextPowerTwo(ingestQueueSize);
         workerQueueSize = nextPowerTwo(workerQueueSize);
 
@@ -31,6 +32,21 @@ public class SnnDispatcher {
         this.workerQueue = new IntQueue(workerQueueSize);
         this.workersQueueThreads = new Thread[workerThreadSize];
         moveThread = Thread.ofVirtual().unstarted(this::moveTask);
+    }
+
+    public static SnnDispatcher of(int ingestQueueSize, int workerQueueSize, int workerThreadSize) {
+        if (instance == null) {
+            synchronized (SnnDispatcher.class) {
+                if (instance == null) {
+                    instance = new SnnDispatcher(ingestQueueSize, workerQueueSize, workerThreadSize);
+                }
+            }
+        }
+        return instance;
+    }
+
+    public static SnnDispatcher getInstance() {
+        return instance;
     }
 
     public void start() {

@@ -5,6 +5,8 @@
  */
 package com.uwe_hennig.snn.util;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,13 +29,14 @@ public class SnnDispatcherTest {
     @Test
     @DisplayName("Simple SnnDispatcher test")
     public void simpleTest() {
-        // int ingestQueueSize, int workerQueueSize, int workerThreadSize
-        SnnDispatcher realDispatcher = new SnnDispatcher(1, 1, 1);
+        AtomicLong counter = new AtomicLong();
+        SnnDispatcher realDispatcher = SnnDispatcher.of(1, 1, 1);
         SnnDispatcher dispatcher = Mockito.spy(realDispatcher);
 
         Mockito.doAnswer(invocation -> {
             int id = invocation.getArgument(0);
-            System.out.println("MOCKED doIt: " + id);
+            counter.incrementAndGet();
+            System.out.printf("%n %4d: processed %d", counter.get(), id);
             return null;
         }).when(dispatcher).doIt(Mockito.anyInt());
 
@@ -46,6 +49,5 @@ public class SnnDispatcherTest {
         dispatcher.stop();
 
         dispatcher.shutdown();
-
     }
 }
