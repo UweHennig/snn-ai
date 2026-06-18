@@ -11,7 +11,6 @@ import com.uwe_hennig.snn.anatomy.neuron.WeightView;
 import com.uwe_hennig.snn.contracts.core.NeuronElement;
 import com.uwe_hennig.snn.contracts.core.NeuronElementType;
 import com.uwe_hennig.snn.contracts.core.StimulusType;
-import com.uwe_hennig.snn.services.NeuronElementRegistry;
 import com.uwe_hennig.snn.services.StimulusService;
 import com.uwe_hennig.snn.util.SnnTransferservice;
 
@@ -38,14 +37,15 @@ public final class Dendrit implements NeuronElement {
      */
     @Override
     public void stimulate(int stimulusIdentifier) {
+        int signalType = 0; // TODO
         float currentTime = 1000; // TODO
         float stimulusValue = StimulusService.getValue(stimulusIdentifier);
         int stimulusType = StimulusService.getType(stimulusIdentifier);
 
         if (StimulusType.STIMULUS.code() == stimulusType) {
             stimulusValue = weightView.applyStimulus(stimulusValue, currentTime);
-            StimulusService.update(stimulusIdentifier,
-                view.getViewId(), view.getSomaId(), stimulusType, stimulusValue);
+            StimulusService.update(stimulusIdentifier, view.getViewId(), view.getSomaId(), stimulusType, stimulusValue);
+            modulatorView.applyStimulus(stimulusValue, signalType, currentTime);
         }
 
         if (StimulusType.TIME_FEEDBACK.code() == stimulusType) {
