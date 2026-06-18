@@ -14,6 +14,7 @@
 		<java.version>26</java.version>
 		<junit-version>4.13.2</junit-version>
 		<snn-version>0.0.1-SNAPSHOT</snn-version>
+        <mockito.version>5.23.0</mockito.version>
 	</properties>
 	
    <licenses>
@@ -52,6 +53,12 @@
                 <version>6.1.0</version>
                 <scope>test</scope>
             </dependency> 
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-core</artifactId>
+                <version>5.23.0</version>
+                <scope>test</scope>
+            </dependency>            
         </dependencies>
     </dependencyManagement>
     
@@ -61,4 +68,20 @@
         	<module>snn-cerebro</module>
         <module>snn-system</module>
 	</modules>
+	
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+    
+                <configuration>
+                    <argLine>-javaagent:${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar</argLine>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+	
 </project>
