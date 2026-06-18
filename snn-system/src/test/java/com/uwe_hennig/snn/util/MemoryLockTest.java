@@ -87,9 +87,9 @@ public class MemoryLockTest {
                         VH_HEAD.set(ptr, 0L, 2000);
                         int value = (int)VH_HEAD.get(ptr, 0);
                         if (value != 1000) {
-                            System.err.println("A: " + counter.get() + " " + VH_HEAD.get(ptr, 0));
+                            System.err.println("B: " + counter.get() + " " + VH_HEAD.get(ptr, 0));
                         } else {
-                            System.out.println("A: " + counter.get() + " " + VH_HEAD.get(ptr, 0));
+                            System.out.println("B: " + counter.get() + " " + VH_HEAD.get(ptr, 0));
                         }
                     } finally {
                         lock.writeLock().unlock();
@@ -100,7 +100,7 @@ public class MemoryLockTest {
             threadA.start();
             threadB.start();
 
-            // 2 Seconds of pure chaos in the storage room
+            // 5 Seconds of pure chaos in the storage room
             Thread.sleep(5);
             running = false;
 
