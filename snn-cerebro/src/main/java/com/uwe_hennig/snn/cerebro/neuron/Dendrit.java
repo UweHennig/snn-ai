@@ -13,13 +13,14 @@ import com.uwe_hennig.snn.contracts.core.NeuronElementType;
 import com.uwe_hennig.snn.contracts.core.StimulusType;
 import com.uwe_hennig.snn.services.NeuronElementRegistry;
 import com.uwe_hennig.snn.services.StimulusService;
+import com.uwe_hennig.snn.util.SnnTransferservice;
 
 /**
  * Dendrit
  *
  * @author Uwe Hennig
  */
-public final class Dendrit implements NeuronElement{
+public final class Dendrit implements NeuronElement {
     private final DendritView   view;
     private final WeightView    weightView;
     private final ModulatorView modulatorView;
@@ -35,6 +36,7 @@ public final class Dendrit implements NeuronElement{
      *
      * @param stimulusIdentifier
      */
+    @Override
     public void stimulate(int stimulusIdentifier) {
         float currentTime = 1000; // TODO
         float stimulusValue = StimulusService.getValue(stimulusIdentifier);
@@ -50,8 +52,7 @@ public final class Dendrit implements NeuronElement{
             weightView.applyFeedback(stimulusValue);
         }
 
-        Soma soma = (Soma) NeuronElementRegistry.instance().getNeuronElement(view.getSomaId(), NeuronElementType.SOMA);
-        soma.stimulate(stimulusIdentifier);
+        SnnTransferservice.transfer(stimulusIdentifier, NeuronElementType.SOMA.code());
     }
 
     @Override

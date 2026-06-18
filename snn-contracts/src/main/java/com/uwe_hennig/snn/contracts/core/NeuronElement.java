@@ -13,4 +13,5 @@ package com.uwe_hennig.snn.contracts.core;
  */
 public interface NeuronElement {
     NeuronElementType getType();
+    void stimulate(int stimulusIdentifier);
 }

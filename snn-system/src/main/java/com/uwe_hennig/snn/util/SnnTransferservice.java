@@ -12,7 +12,7 @@ package com.uwe_hennig.snn.util;
 public final class SnnTransferservice {
     private SnnTransferservice() {}
 
-    public static void transfer(int stimulusId) {
-        SnnDispatcher.getInstance().offer(stimulusId);
+    public static void transfer(int stimulusId, int type) {
+        SnnDispatcher.getInstance().offer(stimulusId << 2 + (type & 0x03));
     }
 }

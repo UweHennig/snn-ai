@@ -5,6 +5,10 @@
  */
 package com.uwe_hennig.snn.util;
 
+import com.uwe_hennig.snn.contracts.core.NeuronElement;
+import com.uwe_hennig.snn.contracts.core.NeuronElementType;
+import com.uwe_hennig.snn.services.NeuronElementRegistry;
+
 /**
  * SnnDispatcher
  * @formatter:off
@@ -158,11 +162,11 @@ public class SnnDispatcher {
     }
 
     protected void doIt(int stimulusId) {
-        // TODO implementation
-        // 1) fetch Neuronelement
-        // 2) call neuronElement.stimulate(stimulusId);
+        NeuronElementType type = NeuronElementType.of(0x03 & stimulusId);
+        stimulusId = stimulusId >>> 2;
 
-        System.out.println("executing : " + stimulusId);
+        NeuronElement neuronElement = NeuronElementRegistry.instance().getNeuronElement(stimulusId, type);
+        neuronElement.stimulate(stimulusId);
     }
 
     private int nextPowerTwo(int value) {
