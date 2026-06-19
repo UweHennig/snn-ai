@@ -143,6 +143,7 @@ public class SnnDispatcher {
 
         ingestQueue.close();
         workerQueue.close();
+        instance = null;
     }
 
     private void execute() {
