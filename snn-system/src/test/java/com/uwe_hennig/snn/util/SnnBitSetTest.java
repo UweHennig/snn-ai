@@ -15,6 +15,7 @@ import org.junit.jupiter.api.TestInfo;
 
 /**
  * SnnBitSetTest
+ *
  * @author Uwe Hennig
  */
 public class SnnBitSetTest {
@@ -40,6 +41,43 @@ public class SnnBitSetTest {
             e.printStackTrace();
             fail("Exception in testSimpleBitSet " + e.getLocalizedMessage());
         }
+    }
+
+    @Test
+    @DisplayName("Simple SnnMultiBitSet test")
+    public void testMultiBitSet() {
+        final int numFields = 2;
+        final int numTypes  = 2;
+
+        SnnMultiBitSet mbs = new SnnMultiBitSet(numFields, numTypes);
+        mbs.set(0, 0, 1);
+        checkValue(mbs, true, 0, 0, 1);
+
+        mbs.set(0, 1, 2);
+        checkValue(mbs, true, 0, 1, 2);
+
+        mbs.set(1, 0, 3);
+        checkValue(mbs, true, 1, 0, 3);
+
+        mbs.set(1, 1, 4);
+        checkValue(mbs, true, 1, 1, 4);
+
+        mbs.unset(0, 0, 1);
+        checkValue(mbs, false, 0, 0, 1);
+
+        mbs.unset(0, 1, 2);
+        checkValue(mbs, false, 0, 1, 2);
+
+        mbs.unset(1, 0, 3);
+        checkValue(mbs, false, 1, 0, 3);
+
+        mbs.unset(1, 1, 4);
+        checkValue(mbs, false, 1, 1, 4);
+    }
+
+    private void checkValue(SnnMultiBitSet mbs, boolean expected, int field, int type, int index) {
+        boolean result = mbs.get(field, type, index);
+        assertEquals(expected, result, "invalid value in SnnMultiBitSet!");
     }
 
     @BeforeEach

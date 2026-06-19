@@ -38,6 +38,19 @@ public class SnnBitSet implements AutoCloseable {
         segment.set(java.lang.foreign.ValueLayout.JAVA_BYTE, byteIndex, newByte);
     }
 
+    public void unset(long bitIndex) {
+        long byteIndex = bitIndex >> 3;
+        int bitPosition = (int) (bitIndex & 7);
+
+        if (byteIndex >= byteSize) {
+            return;
+        }
+
+        byte currentByte = segment.get(java.lang.foreign.ValueLayout.JAVA_BYTE, byteIndex);
+        byte newByte = (byte) (currentByte & ~(1 << bitPosition));
+        segment.set(java.lang.foreign.ValueLayout.JAVA_BYTE, byteIndex, newByte);
+    }
+
     public boolean get(long bitIndex) {
         long byteIndex = bitIndex >> 3;
         int bitPosition = (int) (bitIndex & 7);
