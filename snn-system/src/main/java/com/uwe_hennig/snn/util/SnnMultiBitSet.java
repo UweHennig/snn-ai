@@ -7,14 +7,14 @@ package com.uwe_hennig.snn.util;
 
 /**
  * SnnMultiBitSet
- * @formatter:off
- * @formatter:on
+ *
  * @author Uwe Hennig
  */
-public class SnnMultiBitSet {
+public class SnnMultiBitSet implements AutoCloseable {
     private static final int INITIAL_BITSET_SITZE = 8;
-    private final SnnBitSet[] bitSets;
-    private final int numTypes;
+    private final int        numTypes;
+
+    private SnnBitSet[]      bitSets;
 
     public SnnMultiBitSet(int numFields, int numTypes) {
         this.numTypes = numTypes;
@@ -44,5 +44,15 @@ public class SnnMultiBitSet {
 
     private int getInternalIndex(int field, int type) {
         return field * numTypes + type;
+    }
+
+    @Override
+    public void close() throws Exception {
+        for (int i = 0; i < bitSets.length; i++) {
+            if (bitSets[i] != null) {
+                bitSets[i].close();
+            }
+        }
+        bitSets = null;
     }
 }
