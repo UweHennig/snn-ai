@@ -45,6 +45,8 @@ public class SnnDispatcher {
                     instance = new SnnDispatcher(ingestQueueSize, workerQueueSize, workerThreadSize);
                 }
             }
+        } else {
+            System.err.println("The instance already exists!");
         }
         return instance;
     }
