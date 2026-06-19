@@ -8,8 +8,10 @@ package com.uwe_hennig.snn.util;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 
 /**
  * SnnBitSetTest
@@ -35,7 +37,15 @@ public class SnnBitSetTest {
             assertEquals(false, flag10Mio);
 
         } catch (Exception e) {
+            e.printStackTrace();
             fail("Exception in testSimpleBitSet " + e.getLocalizedMessage());
         }
+    }
+
+    @BeforeEach
+    public void beforeEach(TestInfo info) {
+        String title = "### " + info.getDisplayName() + " ###";
+        System.out.println("\n" + title);
+        System.out.println("-".repeat(title.length()));
     }
 }
