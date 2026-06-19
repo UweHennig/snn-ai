@@ -7,7 +7,6 @@ package com.uwe_hennig.snn.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.Mockito.calls;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -48,9 +47,9 @@ public class SnnBitSetTest {
     @DisplayName("Simple SnnMultiBitSet test")
     public void testMultiBitSet() {
         final int numFields = 2;
-        final int numTypes  = 2;
+        final int numTypes = 2;
 
-        try(SnnMultiBitSet mbs = new SnnMultiBitSet(numFields, numTypes)) {
+        try (SnnMultiBitSet mbs = new SnnMultiBitSet(numFields, numTypes)) {
             mbs.set(0, 0, 1);
             checkValue(mbs, true, 0, 0, 1);
 
@@ -65,12 +64,18 @@ public class SnnBitSetTest {
 
             mbs.unset(0, 0, 1);
             checkValue(mbs, false, 0, 0, 1);
+            checkValue(mbs, true, 0, 1, 2);
+            checkValue(mbs, true, 1, 0, 3);
+            checkValue(mbs, true, 1, 1, 4);
 
             mbs.unset(0, 1, 2);
             checkValue(mbs, false, 0, 1, 2);
+            checkValue(mbs, true, 1, 0, 3);
+            checkValue(mbs, true, 1, 1, 4);
 
             mbs.unset(1, 0, 3);
             checkValue(mbs, false, 1, 0, 3);
+            checkValue(mbs, true, 1, 1, 4);
 
             mbs.unset(1, 1, 4);
             checkValue(mbs, false, 1, 1, 4);
