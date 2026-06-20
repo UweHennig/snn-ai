@@ -5,19 +5,20 @@
  */
 package com.uwe_hennig.snn.util;
 
+import static java.lang.foreign.ValueLayout.JAVA_BYTE;
+
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 
 /**
  * SnnBitSet
- * @formatter:off
- * @formatter:on
+ *
  * @author Uwe Hennig
  */
 public class SnnBitSet implements AutoCloseable {
-    private final Arena arena;
+    private final Arena   arena;
     private MemorySegment segment;
-    private long byteSize;
+    private long          byteSize;
 
     public SnnBitSet(long initialBits) {
         this.arena = Arena.ofConfined();
@@ -33,9 +34,9 @@ public class SnnBitSet implements AutoCloseable {
             ensureCapacity(byteIndex + 1);
         }
 
-        byte currentByte = segment.get(java.lang.foreign.ValueLayout.JAVA_BYTE, byteIndex);
+        byte currentByte = segment.get(JAVA_BYTE, byteIndex);
         byte newByte = (byte) (currentByte | (1 << bitPosition));
-        segment.set(java.lang.foreign.ValueLayout.JAVA_BYTE, byteIndex, newByte);
+        segment.set(JAVA_BYTE, byteIndex, newByte);
     }
 
     public void unset(long bitIndex) {
@@ -46,9 +47,51 @@ public class SnnBitSet implements AutoCloseable {
             return;
         }
 
-        byte currentByte = segment.get(java.lang.foreign.ValueLayout.JAVA_BYTE, byteIndex);
+        byte currentByte = segment.get(JAVA_BYTE, byteIndex);
         byte newByte = (byte) (currentByte & ~(1 << bitPosition));
-        segment.set(java.lang.foreign.ValueLayout.JAVA_BYTE, byteIndex, newByte);
+        segment.set(JAVA_BYTE, byteIndex, newByte);
+    }
+
+    // return next position of a bit with value 1 inlusive from
+    public long nextBit(long from) {
+        if (get(from)) {
+            return from;
+        }
+        long result = from;
+        while ((result >> 3) < byteSize) {
+            result++;
+            if (get(result)) {
+                return result;
+            }
+        }
+
+        return -1;
+    }
+
+    // returns highest bit position
+    public long highestBit() {
+        for (long i = byteSize - 1; i >= 0; i--) {
+            byte b = segment.get(JAVA_BYTE, i);
+
+            if (b != 0) {
+                int val = b & 0xFF;
+
+                int bitInByte = 7 - (Integer.numberOfLeadingZeros(val) - 24);
+
+                return i * 8 + bitInByte;
+            }
+        }
+
+        return -1;
+    }
+
+    public int cardinality() {
+        int count = 0;
+        for (long i = 0; i < byteSize; i++) {
+            byte b = segment.get(JAVA_BYTE, i);
+            count += Integer.bitCount(b & 0xFF);
+        }
+        return count;
     }
 
     public boolean get(long bitIndex) {
@@ -59,7 +102,7 @@ public class SnnBitSet implements AutoCloseable {
             return false;
         }
 
-        byte currentByte = segment.get(java.lang.foreign.ValueLayout.JAVA_BYTE, byteIndex);
+        byte currentByte = segment.get(JAVA_BYTE, byteIndex);
         return (currentByte & (1 << bitPosition)) != 0;
     }
 

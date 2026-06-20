@@ -37,9 +37,53 @@ public class SnnBitSetTest {
             boolean flag10Mio = bs.get(10_000_00);
             assertEquals(false, flag10Mio);
 
+            assertEquals(2, bs.cardinality(), "Invalid cardinality in testNextBit");
         } catch (Exception e) {
             e.printStackTrace();
             fail("Exception in testSimpleBitSet " + e.getLocalizedMessage());
+        }
+    }
+
+    @Test
+    @DisplayName("Search for next bit test")
+    public void testNextBit() {
+        try (SnnBitSet bs = new SnnBitSet(100)) {
+            for (long i = 10; i < 100; i += 10) {
+                bs.set(i);
+            }
+            long pos = 0;
+            long expected = 10;
+            while (true) {
+                pos = bs.nextBit(pos);
+                if (pos < 0 ) {
+                    break;
+                }
+                System.out.println("Next bit position: " + pos);
+                assertEquals(expected, pos, "Invalid position from nextSetBitPosition " + pos);
+                pos++;
+                expected += 10;
+            }
+
+            assertEquals(9, bs.cardinality(), "Invalid cardinality in testNextBit");
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("Exception in testSimpleBitSet " + e.getLocalizedMessage());
+        }
+    }
+
+    @Test
+    @DisplayName("Find highest set bit test")
+    public void testHighestBit() {
+        try (SnnBitSet bs = new SnnBitSet(100)) {
+            bs.set(95);
+            bs.set(90);
+            long highest = bs.highestBit();
+            assertEquals(95L, highest,"Invalid highest bit!");
+            int cardinality = bs.cardinality();
+            assertEquals(2, cardinality, "Invalid cardinality in testHighestBit");
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("Exception in testHighestBit " + e.getLocalizedMessage());
         }
     }
 
@@ -79,6 +123,9 @@ public class SnnBitSetTest {
 
             mbs.unset(1, 1, 4);
             checkValue(mbs, false, 1, 1, 4);
+
+            assertEquals(0, mbs.cardinality(), "Invalid cardinality in testMultiBitSet " + mbs.cardinality());
+
         } catch (Exception e) {
             e.printStackTrace();
             fail("Exception in testMultiBitSet " + e.getLocalizedMessage());
