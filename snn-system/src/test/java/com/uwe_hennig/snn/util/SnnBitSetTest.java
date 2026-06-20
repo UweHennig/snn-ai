@@ -8,6 +8,9 @@ package com.uwe_hennig.snn.util;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import java.util.BitSet;
+import java.util.Random;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -55,7 +58,7 @@ public class SnnBitSetTest {
             long expected = 10;
             while (true) {
                 pos = bs.nextBit(pos);
-                if (pos < 0 ) {
+                if (pos < 0) {
                     break;
                 }
                 System.out.println("Next bit position: " + pos);
@@ -78,7 +81,7 @@ public class SnnBitSetTest {
             bs.set(95);
             bs.set(90);
             long highest = bs.highestBit();
-            assertEquals(95L, highest,"Invalid highest bit!");
+            assertEquals(95L, highest, "Invalid highest bit!");
             int cardinality = bs.cardinality();
             assertEquals(2, cardinality, "Invalid cardinality in testHighestBit");
         } catch (Exception e) {
@@ -130,6 +133,78 @@ public class SnnBitSetTest {
             e.printStackTrace();
             fail("Exception in testMultiBitSet " + e.getLocalizedMessage());
         }
+    }
+
+    @Test
+    @DisplayName("Simple performance test")
+    public void testPerformance() {
+        Random rand = new Random(System.currentTimeMillis());
+        int iterations = 10_000_000;
+        int bitCount = 1_000_000;
+
+        try (SnnBitSet bs = new SnnBitSet(1_000_000)) {
+            // Warmup
+            for (int i = 0; i < 1_000; i++) {
+                int pos = rand.nextInt(1_000);
+                if (bs.get(pos)) {
+                    bs.unset(pos);
+                } else {
+                    bs.set(pos);
+                }
+            }
+            // Measurement
+            long start = System.nanoTime();
+            for (int i = 0; i < iterations; i++) {
+                int pos = rand.nextInt(bitCount);
+                if (bs.get(pos)) {
+                    bs.unset(pos);
+                } else {
+                    bs.set(pos);
+                }
+            }
+            long end = System.nanoTime();
+
+            long totalNs = end - start;
+            double nsPerOp = (double) totalNs / iterations;
+            double opsPerSec = 1_000_000_000.0 / nsPerOp;
+
+            System.out.println("--- SnnBitSet ---");
+            System.out.printf("Total duration : %,d ms%n", totalNs / 1_000_000);
+            System.out.printf("Latency        : %,6.2f ns/op%n", nsPerOp);
+            System.out.printf("Throughput     : %,13.2f ops/s%n", opsPerSec);
+        }
+
+        // Java BitSet
+        BitSet jbs = new BitSet();
+        // Warumup
+        for (int i = 0; i < 1_000; i++) {
+            int pos = rand.nextInt(1_000);
+            if (jbs.get(pos)) {
+                jbs.clear(pos);
+            } else {
+                jbs.set(pos);
+            }
+        }
+        // Measurement
+        long start = System.nanoTime();
+        for (int i = 0; i < iterations; i++) {
+            int pos = rand.nextInt(bitCount);
+            if (jbs.get(pos)) {
+                jbs.clear(pos);
+            } else {
+                jbs.set(pos);
+            }
+        }
+        long end = System.nanoTime();
+
+        long totalNs = end - start;
+        double nsPerOp = (double) totalNs / iterations;
+        double opsPerSec = 1_000_000_000.0 / nsPerOp;
+
+        System.out.println("--- JavaBitSet ---");
+        System.out.printf("Total duration : %,d ms%n", totalNs / 1_000_000);
+        System.out.printf("Latency        : %,6.2f ns/op%n", nsPerOp);
+        System.out.printf("Throughput     : %,13.2f ops/s%n", opsPerSec);
     }
 
     private void checkValue(SnnMultiBitSet mbs, boolean expected, int field, int type, int index) {
