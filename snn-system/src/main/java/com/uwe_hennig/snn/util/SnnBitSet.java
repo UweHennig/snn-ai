@@ -5,7 +5,7 @@
  */
 package com.uwe_hennig.snn.util;
 
-import static java.lang.foreign.ValueLayout.JAVA_BYTE;
+import static java.lang.foreign.ValueLayout.JAVA_LONG;
 
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
@@ -18,98 +18,108 @@ import java.lang.foreign.MemorySegment;
 public class SnnBitSet implements AutoCloseable {
     private final Arena   arena;
     private MemorySegment segment;
-    private long          byteSize;
+    private long          byteSize; // Immer ein Vielfaches von 8
 
     public SnnBitSet(long initialBits) {
         this.arena = Arena.ofConfined();
-        this.byteSize = (initialBits + 7) / 8;
+        this.byteSize = ((initialBits + 63) / 64) * 8;
         this.segment = arena.allocate(byteSize);
     }
 
     public void set(long bitIndex) {
-        long byteIndex = bitIndex >> 3; // bitIndex / 8
-        int bitPosition = (int) (bitIndex & 7); // bitIndex % 8
+        long longIndex = bitIndex >> 6; // bitIndex / 64
+        int bitPosition = (int) (bitIndex & 63); // bitIndex % 64
+        long offset = longIndex << 3; // longIndex * 8 (Byte-Offset)
 
-        if (byteIndex >= byteSize) {
-            ensureCapacity(byteIndex + 1);
+        if (offset >= byteSize) {
+            ensureCapacity(offset + 8);
         }
 
-        byte currentByte = segment.get(JAVA_BYTE, byteIndex);
-        byte newByte = (byte) (currentByte | (1 << bitPosition));
-        segment.set(JAVA_BYTE, byteIndex, newByte);
+        long currentLong = segment.get(JAVA_LONG, offset);
+        long newLong = currentLong | (1L << bitPosition);
+        segment.set(JAVA_LONG, offset, newLong);
     }
 
     public void unset(long bitIndex) {
-        long byteIndex = bitIndex >> 3;
-        int bitPosition = (int) (bitIndex & 7);
+        long longIndex = bitIndex >> 6;
+        int bitPosition = (int) (bitIndex & 63);
+        long offset = longIndex << 3;
 
-        if (byteIndex >= byteSize) {
+        if (offset >= byteSize) {
             return;
         }
 
-        byte currentByte = segment.get(JAVA_BYTE, byteIndex);
-        byte newByte = (byte) (currentByte & ~(1 << bitPosition));
-        segment.set(JAVA_BYTE, byteIndex, newByte);
+        long currentLong = segment.get(JAVA_LONG, offset);
+        long newLong = currentLong & ~(1L << bitPosition);
+        segment.set(JAVA_LONG, offset, newLong);
     }
 
-    // return next position of a bit with value 1 inlusive from
-    public long nextBit(long from) {
-        if (get(from)) {
-            return from;
-        }
-        long result = from;
-        while ((result >> 3) < byteSize) {
-            result++;
-            if (get(result)) {
-                return result;
-            }
+    public boolean get(long bitIndex) {
+        long longIndex = bitIndex >> 6;
+        int bitPosition = (int) (bitIndex & 63);
+        long offset = longIndex << 3;
+
+        if (offset >= byteSize) {
+            return false;
         }
 
-        return -1;
-    }
-
-    // returns highest bit position
-    public long highestBit() {
-        for (long i = byteSize - 1; i >= 0; i--) {
-            byte b = segment.get(JAVA_BYTE, i);
-
-            if (b != 0) {
-                int val = b & 0xFF;
-
-                int bitInByte = 7 - (Integer.numberOfLeadingZeros(val) - 24);
-
-                return i * 8 + bitInByte;
-            }
-        }
-
-        return -1;
+        long currentLong = segment.get(JAVA_LONG, offset);
+        return (currentLong & (1L << bitPosition)) != 0;
     }
 
     public int cardinality() {
         int count = 0;
-        for (long i = 0; i < byteSize; i++) {
-            byte b = segment.get(JAVA_BYTE, i);
-            count += Integer.bitCount(b & 0xFF);
+        for (long offset = 0; offset < byteSize; offset += 8) {
+            count += Long.bitCount(segment.get(JAVA_LONG, offset));
         }
         return count;
     }
 
-    public boolean get(long bitIndex) {
-        long byteIndex = bitIndex >> 3;
-        int bitPosition = (int) (bitIndex & 7);
-
-        if (byteIndex >= byteSize) {
-            return false;
+    /**
+     * Finds the highest-set bit position.
+     */
+    public long highestBit() {
+        for (long offset = byteSize - 8; offset >= 0; offset -= 8) {
+            long val = segment.get(JAVA_LONG, offset);
+            if (val != 0) {
+                // Long.numberOfLeadingZeros nutzt die CPU-Instruktion LZCNT
+                int bitInLong = 63 - Long.numberOfLeadingZeros(val);
+                return (offset << 3) + bitInLong; // (offset/8 * 64) + bitInLong
+            }
         }
-
-        byte currentByte = segment.get(JAVA_BYTE, byteIndex);
-        return (currentByte & (1 << bitPosition)) != 0;
+        return -1;
     }
 
-    private void ensureCapacity(long newByteSize) {
-        long targetSize = Math.max(byteSize * 2, newByteSize);
-        MemorySegment newSegment = arena.allocate(targetSize);
+    /**
+     * Finds the next set bit starting at position 'from'.
+     */
+    public long nextBit(long from) {
+        long longIndex = from >> 6;
+        long offset = longIndex << 3;
 
+        if (offset >= byteSize) {
+            return -1;
+        }
+
+        long val = segment.get(JAVA_LONG, offset);
+        val &= -(1L << (from & 63)); // Masks all bits below 'from'
+
+        if (val != 0) {
+            return (longIndex << 6) + Long.numberOfTrailingZeros(val);
+        }
+
+        for (offset += 8; offset < byteSize; offset += 8) {
+            val = segment.get(JAVA_LONG, offset);
+            if (val != 0) {
+                return (offset << 3) + Long.numberOfTrailingZeros(val);
+            }
+        }
+        return -1;
+    }
+
+    private void ensureCapacity(long minByteSize) {
+        long targetSize = Math.max(byteSize * 2, ((minByteSize + 7) / 8) * 8);
+        MemorySegment newSegment = arena.allocate(targetSize);
         MemorySegment.copy(segment, 0, newSegment, 0, byteSize);
         this.segment = newSegment;
         this.byteSize = targetSize;
@@ -117,6 +127,8 @@ public class SnnBitSet implements AutoCloseable {
 
     @Override
     public void close() {
-        arena.close();
+        if (arena.scope().isAlive()) {
+            arena.close();
+        }
     }
 }
