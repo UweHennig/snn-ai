@@ -18,6 +18,7 @@ import java.lang.invoke.VarHandle;
 
 /**
  * StimulusModel
+ * TODO trgIndex is an index in MulitList 
  *
  * @author Uwe Hennig
  */

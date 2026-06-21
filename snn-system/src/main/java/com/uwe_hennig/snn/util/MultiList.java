@@ -22,6 +22,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * MultiList
+ * TODO Outsource persistence
  * @author Uwe Hennig
  */
 public class MultiList implements AutoCloseable {
