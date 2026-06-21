@@ -107,4 +107,9 @@ public class StimulusView {
         return model.getValue(index);
     }
 
+    public int [] getTrgList(int index) {
+        // TODO
+        return null;
+    }
+
 }

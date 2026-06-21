@@ -18,7 +18,7 @@ import java.lang.invoke.VarHandle;
 
 /**
  * StimulusModel
- * TODO trgIndex is an index in MulitList 
+ * TODO trgIndex is an index in MulitList
  *
  * @author Uwe Hennig
  */
@@ -33,9 +33,10 @@ public class StimulusModel {
     public static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         JAVA_INT.withName("lock"),      // 0: free, 1: occupied
         MemoryLayout.paddingLayout(4),
-        JAVA_LONG.withName("expiry"),
         JAVA_INT.withName("srcIndex"),
         JAVA_INT.withName("trgIndex"),
+        JAVA_LONG.withName("trgRef"),
+        JAVA_LONG.withName("expiry"),
         JAVA_INT.withName("type"),
         JAVA_FLOAT.withName("value")
     ).withByteAlignment(8);
@@ -44,6 +45,7 @@ public class StimulusModel {
     static final VarHandle VH_EXPIRY    = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("expiry"));
     static final VarHandle VH_SRC_INDEX = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("srcIndex"));
     static final VarHandle VH_TRG_INDEX = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("trgIndex"));
+    static final VarHandle VH_TRG_REF   = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("trgRef"));
     static final VarHandle VH_TYPE      = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("type"));
     static final VarHandle VH_VALUE     = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("value"));
     // @formatter:on
@@ -108,7 +110,15 @@ public class StimulusModel {
     }
 
     void setTrg(int index, int value) {
-        VH_TRG_INDEX.set(segment, 0L, index, value);
+        VH_TRG_REF.set(segment, 0L, index, value);
+    }
+
+    long getTrgRef(int index) {
+        return (long) VH_TRG_REF.get(segment, 0L, index);
+    }
+
+    void setTrgRef(int index, int value) {
+        //VH_TRG_INDEX.set(segment, 0L, index, value);
     }
 
     int getType(int index) {
