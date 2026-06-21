@@ -110,7 +110,7 @@ public class StimulusModel {
     }
 
     void setTrg(int index, int value) {
-        VH_TRG_REF.set(segment, 0L, index, value);
+        VH_TRG_INDEX.set(segment, 0L, index, value);
     }
 
     long getTrgRef(int index) {
@@ -118,7 +118,7 @@ public class StimulusModel {
     }
 
     void setTrgRef(int index, int value) {
-        //VH_TRG_INDEX.set(segment, 0L, index, value);
+        VH_TRG_REF.set(segment, 0L, index, value);
     }
 
     int getType(int index) {

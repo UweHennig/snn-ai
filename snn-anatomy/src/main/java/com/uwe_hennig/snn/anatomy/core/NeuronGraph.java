@@ -12,10 +12,10 @@ package com.uwe_hennig.snn.anatomy.core;
  */
 public class NeuronGraph {
     private static volatile NeuronGraph INSTANCE;
-    private final Blockchain            blockchain;
+    private final MultiList            blockchain;
 
     private NeuronGraph(int maxFieldBlocks, int minFieldSize) {
-        blockchain = new Blockchain(maxFieldBlocks, minFieldSize);
+        blockchain = new MultiList(maxFieldBlocks, minFieldSize);
     }
 
     public static NeuronGraph of(int maxFieldBlocks, int minFieldSize) {

@@ -12,10 +12,10 @@ package com.uwe_hennig.snn.anatomy.core;
  */
 public class AxonGraph {
     private static volatile AxonGraph INSTANCE;
-    private final Blockchain          blockchain;
+    private final MultiList          blockchain;
 
     private AxonGraph(int maxFieldBlocks, int minFieldSize) {
-        blockchain = new Blockchain(maxFieldBlocks, minFieldSize);
+        blockchain = new MultiList(maxFieldBlocks, minFieldSize);
     }
 
     public static AxonGraph of(int maxFieldBlocks, int minFieldSize) {

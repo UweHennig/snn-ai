@@ -12,10 +12,10 @@ package com.uwe_hennig.snn.anatomy.core;
  */
 public class FieldGraph {
     private static volatile FieldGraph INSTANCE;
-    private final Blockchain           blockchain;
+    private final MultiList           blockchain;
 
     private FieldGraph(int maxFieldBlocks, int minFieldSize) {
-        blockchain = new Blockchain(maxFieldBlocks, minFieldSize);
+        blockchain = new MultiList(maxFieldBlocks, minFieldSize);
     }
 
     public static FieldGraph of(int maxFieldBlocks, int minFieldSize) {

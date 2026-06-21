@@ -1,5 +1,5 @@
 /**
- * @(#)Blockchain.java
+ * @(#)MultiList.java
  * Copyright (c) 2026 Uwe Hennig
  * All rights reserved.
  */
@@ -21,13 +21,13 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * <b>Blockchain</b> can store various lists of different lengths in memory.
+ * <b>MultiList</b> can store various lists of different lengths in memory.
  * The starting point offset of the list is returned by the method `allocate`.
  * This starting offset of a list should be stored in a domain object.
  * It is currently not possible to delete a single value or shorten entries.
  * @author Uwe Hennig
  */
-public class Blockchain {
+public class MultiList {
     private static final long FILE_META_TAIL_PTR = 0;
     private static final long FILE_META_CAPACITY = 8;
     private static final long FIRST_BLOCK_OFFSET = 16;
@@ -57,7 +57,7 @@ public class Blockchain {
      * @param maxBlocks Maximum number of blocks
      * @param dataCapacityBytes Capacity per block in bytes
      */
-    public Blockchain(long maxBlocks, int dataCapacityBytes) {
+    public MultiList(long maxBlocks, int dataCapacityBytes) {
         this.dataCapacityBytes = dataCapacityBytes;
 
         this.blockSize = (int) ((BLOCK_DATA_START + dataCapacityBytes + 7) & ~7);
@@ -196,7 +196,7 @@ public class Blockchain {
      * @return
      * @throws IOException
      */
-    public static Blockchain load(Path file) throws IOException {
+    public static MultiList load(Path file) throws IOException {
         try (FileChannel channel = FileChannel.open(file, StandardOpenOption.READ)) {
             long fileSize = channel.size();
 
@@ -208,7 +208,7 @@ public class Blockchain {
                 int blockSize = (16 + savedCapacity + 7) & ~7;
                 long maxBlocks = (fileSize - FIRST_BLOCK_OFFSET) / blockSize;
 
-                Blockchain storage = new Blockchain(maxBlocks, savedCapacity);
+                MultiList storage = new MultiList(maxBlocks, savedCapacity);
 
                 MemorySegment fullMap = channel.map(FileChannel.MapMode.READ_ONLY, 0, fileSize, tempArena);
                 storage.memorySegment.copyFrom(fullMap);
