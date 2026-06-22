@@ -23,7 +23,7 @@ public class FieldGraphTest {
     @Test
     @DisplayName("Simple FieldGraph Test")
     public void testSimple() {
-        MultiList multiList = new MultiList(100, 50);
+        MultiList multiList = new MultiList(50, 10);
 
         FieldNode node = new FieldNode(42, multiList);
 
@@ -50,6 +50,8 @@ public class FieldGraphTest {
         int[] neuronIds = node.getNeuronIds();
         printNodes("neuronIds", neuronIds);
         assertArrayEquals(expectedNeuronIds, neuronIds, "Invalid neuronIds");
+
+        multiList.close();
     }
 
     private void printNodes(String info, int[] targets) {
