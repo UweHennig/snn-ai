@@ -53,6 +53,7 @@ public class FieldNode {
         }
     }
 
+    // TODO ERROR!!
     public void addParentNode(FieldNode node) {
         addParentRefs(node.nodeRef);
     }
