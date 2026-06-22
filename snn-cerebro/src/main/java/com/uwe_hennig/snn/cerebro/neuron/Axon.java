@@ -5,10 +5,15 @@
  */
 package com.uwe_hennig.snn.cerebro.neuron;
 
+import static com.uwe_hennig.snn.contracts.core.NeuronElementType.AXON;
+import static com.uwe_hennig.snn.contracts.core.NeuronElementType.SYNAPSE;
+
 import com.uwe_hennig.snn.anatomy.neuron.AxonView;
 import com.uwe_hennig.snn.anatomy.neuron.ModulatorView;
 import com.uwe_hennig.snn.contracts.core.NeuronElement;
 import com.uwe_hennig.snn.contracts.core.NeuronElementType;
+import com.uwe_hennig.snn.services.StimulusService;
+import com.uwe_hennig.snn.util.SnnTransferservice;
 
 /**
  * Axon
@@ -24,12 +29,20 @@ public final class Axon implements NeuronElement {
         this.modulatorView = modulatorView;
     }
 
+    @Override
     public void stimulate(int stimulusIdentifier) {
-        // TODO
+        float currentTime = 1000; // TODO
+        float stimulusValue = StimulusService.getValue(stimulusIdentifier);
+        int stimulusType = StimulusService.getType(stimulusIdentifier);
+
+        // TODO complete implementation
+
+        StimulusService.update(stimulusIdentifier, view.getViewId(), -1, view.getSynapseRef(), SYNAPSE.code(), stimulusValue);
+        SnnTransferservice.transfer(stimulusIdentifier, SYNAPSE.code());
     }
 
     @Override
     public NeuronElementType getType() {
-        return NeuronElementType.AXON;
+        return AXON;
     }
 }

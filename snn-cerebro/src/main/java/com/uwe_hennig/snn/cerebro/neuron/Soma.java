@@ -5,12 +5,17 @@
  */
 package com.uwe_hennig.snn.cerebro.neuron;
 
+import static com.uwe_hennig.snn.contracts.core.NeuronElementType.AXON;
+import static com.uwe_hennig.snn.contracts.core.NeuronElementType.SOMA;
+
 import com.uwe_hennig.snn.anatomy.neuron.ModulatorView;
 import com.uwe_hennig.snn.anatomy.neuron.PlasticityView;
 import com.uwe_hennig.snn.anatomy.neuron.SomaView;
 import com.uwe_hennig.snn.anatomy.neuron.ThresholdView;
 import com.uwe_hennig.snn.contracts.core.NeuronElement;
 import com.uwe_hennig.snn.contracts.core.NeuronElementType;
+import com.uwe_hennig.snn.services.StimulusService;
+import com.uwe_hennig.snn.util.SnnTransferservice;
 
 /**
  * Soma
@@ -30,12 +35,20 @@ public final class Soma implements NeuronElement {
         this.thresholdView = thresholdView;
     }
 
+    @Override
     public void stimulate(int stimulusIdentifier) {
-        // TODO
+        float currentTime = 1000; // TODO
+        float stimulusValue = StimulusService.getValue(stimulusIdentifier);
+        int stimulusType = StimulusService.getType(stimulusIdentifier);
+
+        // TODO complete implementation
+
+        StimulusService.update(stimulusIdentifier, view.getViewId(), view.getAxonId(), -1, AXON.code(), stimulusValue);
+        SnnTransferservice.transfer(stimulusIdentifier, AXON.code());
     }
 
     @Override
     public NeuronElementType getType() {
-        return NeuronElementType.SOMA;
+        return SOMA;
     }
 }

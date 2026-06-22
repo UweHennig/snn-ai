@@ -33,6 +33,7 @@ public class SynapseView {
         initData();
     }
 
+    // TODO remove
     private void initData() {
         try {
             model.lock(index);
@@ -43,6 +44,34 @@ public class SynapseView {
         } finally {
             model.unlock(index);
         }
+    }
+
+    public SynapseModel getModel() {
+        return model;
+    }
+
+    public int getViewId() {
+        return index;
+    }
+
+    public int getFieldId() {
+        return model.getFiedlId(index);
+    }
+
+    public int getNeuronId() {
+        return model.getNeuronId(index);
+    }
+
+    public int getTargetId() {
+        return model.getTargetId(index);
+    }
+
+    public int getTargetType() {
+        return model.getTargetType(index);
+    }
+
+    public int getModulatorId() {
+        return model.getModulatorId(index);
     }
 
 }

@@ -33,6 +33,7 @@ public final class AxonView {
         initData();
     }
 
+    // TODO remove
     private void initData() {
         try {
             model.lock(index);
@@ -45,4 +46,27 @@ public final class AxonView {
         }
     }
 
+    public AxonModel getModel() {
+        return model;
+    }
+
+    public int getViewId() {
+        return index;
+    }
+
+    public int getFieldId() {
+        return model.getFiedlId(index);
+    }
+
+    public int getNeuronId() {
+        return model.getNeuronId(index);
+    }
+
+    public int getModulatorId() {
+        return model.getModulatorId(index);
+    }
+
+    public int getSynapseRef() {
+        return model.getSynapseRef(index);
+    }
 }

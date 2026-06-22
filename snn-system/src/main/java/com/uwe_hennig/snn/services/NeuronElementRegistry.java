@@ -60,8 +60,8 @@ public final class NeuronElementRegistry {
         }
     }
 
-    public NeuronElement getNeuronElement(int idx, NeuronElementType targetType) {
-        return switch (targetType) {
+    public NeuronElement getNeuronElement(int idx, NeuronElementType trgType) {
+        return switch (trgType) {
             case DENDRIT -> dendritArray[idx];
             case SOMA -> somaArray[idx];
             case AXON -> axonArray[idx];

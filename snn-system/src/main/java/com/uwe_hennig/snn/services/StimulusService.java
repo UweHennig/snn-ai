@@ -38,8 +38,8 @@ public class StimulusService {
         return INSTANCE.view.getValue(index);
     }
 
-    public static boolean update(int index, int src, int trg, int type, float value) {
-        return INSTANCE.view.updateStimulus(index, src, trg, type, value);
+    public static boolean update(int index, int src, int trg, int trgRef, int trgType, float value) {
+        return INSTANCE.view.updateStimulus(index, src, trg, trgRef, trgType, value);
     }
 
     public static int getSrc(int index) {

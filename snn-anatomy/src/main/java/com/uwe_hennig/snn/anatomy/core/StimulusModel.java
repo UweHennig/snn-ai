@@ -121,11 +121,11 @@ public class StimulusModel {
         VH_TRG_REF.set(segment, 0L, index, value);
     }
 
-    int getType(int index) {
+    int getTrgType(int index) {
         return (int) VH_TYPE.get(segment, 0L, index);
     }
 
-    void setType(int index, int type) {
+    void setTrgType(int index, int type) {
         VH_TYPE.set(segment, 0L, index, type);
     }
 

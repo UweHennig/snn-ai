@@ -46,7 +46,7 @@ public class StimulusView {
                         if (model.getExpiry(index) < now) {
                             model.setSrc(index, src);
                             model.setTrg(index, trg);
-                            model.setType(index, type);
+                            model.setTrgType(index, type);
                             model.setValue(index, value);
 
                             model.setExpiry(index, now + TTL_NANO);
@@ -63,7 +63,7 @@ public class StimulusView {
         return -1;
     }
 
-    public boolean updateStimulus(int index, int src, int trg, int type, float value) {
+    public boolean updateStimulus(int index, int src, int trg, int trgRef, int trgType, float value) {
         long now = System.nanoTime();
         if (model.getExpiry(index) >= now) {
             if (model.tryLock(index)) {
@@ -71,7 +71,8 @@ public class StimulusView {
                     if (model.getExpiry(index) >= now) {
                         model.setSrc(index, src);
                         model.setTrg(index, trg);
-                        model.setType(index, type);
+                        model.setTrgRef(index, trgRef);
+                        model.setTrgType(index, trgType);
                         model.setValue(index, value);
 
                         model.setExpiry(index, now + TTL_NANO);
@@ -100,7 +101,7 @@ public class StimulusView {
     }
 
     public int getType(int index) {
-        return model.getType(index);
+        return model.getTrgType(index);
     }
 
     public float getValue(int index) {

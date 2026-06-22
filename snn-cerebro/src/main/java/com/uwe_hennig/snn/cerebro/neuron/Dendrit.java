@@ -40,7 +40,7 @@ public final class Dendrit implements NeuronElement {
 
         if (StimulusType.STIMULUS.code() == stimulusType) {
             stimulusValue = weightView.applyStimulus(stimulusValue, currentTime);
-            StimulusService.update(stimulusIdentifier, view.getViewId(), view.getSomaId(), stimulusType, stimulusValue);
+            StimulusService.update(stimulusIdentifier, view.getViewId(), view.getSomaId(), -1, NeuronElementType.SOMA.code(), stimulusValue);
         }
 
         if (StimulusType.TIME_FEEDBACK.code() == stimulusType) {

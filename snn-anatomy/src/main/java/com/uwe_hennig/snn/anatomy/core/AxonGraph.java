@@ -12,10 +12,10 @@ package com.uwe_hennig.snn.anatomy.core;
  */
 public class AxonGraph {
     private static volatile AxonGraph INSTANCE;
-    private final MultiList          blockchain;
+    private final MultiList          multiList;
 
     private AxonGraph(int maxFieldBlocks, int minFieldSize) {
-        blockchain = new MultiList(maxFieldBlocks, minFieldSize);
+        multiList = new MultiList(maxFieldBlocks, minFieldSize);
     }
 
     public static AxonGraph of(int maxFieldBlocks, int minFieldSize) {
@@ -33,12 +33,12 @@ public class AxonGraph {
     }
 
     public int addSynapseIds(int[] synapseIds) {
-        int ref = (int) blockchain.allocate();
-        blockchain.put(ref, synapseIds);
+        int ref = (int) multiList.allocate();
+        multiList.put(ref, synapseIds);
         return ref;
     }
 
     public int[] getSynapseIds(int synapseRef) {
-        return blockchain.getInts(synapseRef);
+        return multiList.getInts(synapseRef);
     }
 }

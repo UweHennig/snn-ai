@@ -37,6 +37,7 @@ public final class SomaView {
         initData();
     }
 
+    // TODO remove
     private void initData() {
         try {
             model.lock(index);
@@ -51,4 +52,39 @@ public final class SomaView {
         }
     }
 
+    public SomaModel getModel() {
+        return model;
+    }
+
+    public int getViewId() {
+        return index;
+    }
+
+    public int getFieldId() {
+        return model.getFieldId(index);
+    }
+
+    public int getNeuronId() {
+        return model.getNeuronId(index);
+    }
+
+    public int getPotentialId() {
+        return model.getPotentialId(index);
+    }
+
+    public int getThresholdId() {
+        return model.getThresholdId(index);
+    }
+
+    public int getStp() {
+        return model.getStpId(index);
+    }
+
+    public int getLtpId() {
+        return model.getLtpId(index);
+    }
+
+    public int getAxonId() {
+        return model.getAxonId(index);
+    }
 }

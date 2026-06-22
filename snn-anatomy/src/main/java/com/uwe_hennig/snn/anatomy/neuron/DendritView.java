@@ -33,6 +33,7 @@ public final class DendritView {
         initData();
     }
 
+    // TODO remove
     private void initData() {
         try {
             model.lock(index);
@@ -44,6 +45,8 @@ public final class DendritView {
             model.unlock(index);
         }
     }
+
+    // ----- getter/setter -----
 
     public DendritModel getModel() {
         return model;

@@ -165,10 +165,10 @@ public class SnnDispatcher {
     }
 
     protected void doIt(int stimulusId) {
-        NeuronElementType type = NeuronElementType.of(0x03 & stimulusId);
+        NeuronElementType trgType = NeuronElementType.of(0x03 & stimulusId);
         stimulusId = stimulusId >>> 2;
 
-        NeuronElement neuronElement = NeuronElementRegistry.instance().getNeuronElement(stimulusId, type);
+        NeuronElement neuronElement = NeuronElementRegistry.instance().getNeuronElement(stimulusId, trgType);
         neuronElement.stimulate(stimulusId);
     }
 

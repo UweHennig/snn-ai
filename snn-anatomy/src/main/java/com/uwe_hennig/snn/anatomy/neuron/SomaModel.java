@@ -29,13 +29,13 @@ public final class SomaModel {
     // @formatter:off
     static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         JAVA_INT.withName("lock"),
-        MemoryLayout.paddingLayout(4),
         JAVA_INT.withName("fieldId"),
         JAVA_INT.withName("neuronId"),
         JAVA_INT.withName("potentialId"),
         JAVA_INT.withName("thresholdId"),
         JAVA_INT.withName("stpId"),
-        JAVA_INT.withName("ltpId")
+        JAVA_INT.withName("ltpId"),
+        JAVA_INT.withName("axonId")
     ).withByteAlignment(8);
 
     static final VarHandle VH_LOCK =
@@ -52,6 +52,8 @@ public final class SomaModel {
         LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("stpId"));
     static final VarHandle VH_LTP_ID =
         LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("ltpId"));
+    static final VarHandle VH_AXON_ID =
+        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("axonId"));
     // @formatter:on
 
     public SomaModel(int capacity) {
@@ -133,5 +135,13 @@ public final class SomaModel {
 
     void setLtpId(int index, int value) {
         VH_LTP_ID.set(segment, 0L, index, value);
+    }
+
+    int getAxonId(int index) {
+        return (int) VH_AXON_ID.get(segment, 0L, index);
+    }
+
+    void setAxonId(int index, int value) {
+        VH_AXON_ID.set(segment, 0L, index, value);
     }
 }
