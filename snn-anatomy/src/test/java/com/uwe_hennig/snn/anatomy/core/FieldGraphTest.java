@@ -24,37 +24,43 @@ public class FieldGraphTest {
     @DisplayName("Simple FieldGraph Test")
     public void testSimple() {
         MultiList multiList = new MultiList(50, 10);
+        try {
+            FieldNode n1 = new FieldNode(1, multiList);
+            FieldNode n2 = new FieldNode(2, multiList);
+            FieldNode n3 = new FieldNode(3, multiList);
+            FieldNode n4 = new FieldNode(3, multiList);
 
-        FieldNode node = new FieldNode(42, multiList);
+            n1.addChildNode(n2);
+            n1.addChildNode(n3);
+            long[] n1Expected = {n2.getNodeId(), n3.getNodeId()};
 
-        node.addParentIds(1, 2, 3);
-        node.addParentIds(4, 5, 6);
-        int[] expectedParentIds = { 1, 2, 3, 4, 5, 6 };
+            n2.addChildNode(n4);
+            long[] n2Expected = {n4.getNodeId()};
 
-        int[] parentIds = node.getParentIds();
-        printNodes("parentIds", parentIds);
-        assertArrayEquals(expectedParentIds, parentIds, "Invalid parentIds");
+            n3.addChildNode(n4);
+            long[] n3Expected = {n4.getNodeId()};
 
-        node.addChildIds(7, 8, 9);
-        node.addChildIds(10, 11, 12);
-        int[] expectedChildIds = { 7, 8, 9, 10, 11, 12 };
+            n4.addChildNode(n1);
+            long[] n4Expected = {n1.getNodeId()};
 
-        int[] childIds = node.getChildIds();
-        printNodes("childIds", childIds);
-        assertArrayEquals(expectedChildIds, childIds, "Invalid childIds");
 
-        node.addNeuronIds(13, 14, 15);
-        node.addNeuronIds(16, 17, 18);
-        int[] expectedNeuronIds = { 13, 14, 15, 16, 17, 18 };
+            printNodes("N1 Childs: ", n1.getChildRefs());
+            assertArrayEquals(n1Expected, n1.getChildRefs(), "Invalid n1 childIds");
 
-        int[] neuronIds = node.getNeuronIds();
-        printNodes("neuronIds", neuronIds);
-        assertArrayEquals(expectedNeuronIds, neuronIds, "Invalid neuronIds");
+            printNodes("N2 Childs: ", n2.getChildRefs());
+            assertArrayEquals(n2Expected, n2.getChildRefs(), "Invalid n2 childIds");
 
-        multiList.close();
+            printNodes("N3 Childs: ", n3.getChildRefs());
+            assertArrayEquals(n3Expected, n3.getChildRefs(), "Invalid n3 childIds");
+
+            printNodes("N4 Childs: ", n4.getChildRefs());
+            assertArrayEquals(n4Expected, n4.getChildRefs(), "Invalid n4 childIds");
+        } finally {
+            multiList.close();
+        }
     }
 
-    private void printNodes(String info, int[] targets) {
+    private void printNodes(String info, long[] targets) {
         System.out.print(info + ": ");
         for (int i = 0; i < targets.length - 1; i++) {
             System.out.print(targets[i] + ", ");
