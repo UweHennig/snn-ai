@@ -5,7 +5,7 @@
  */
 package com.uwe_hennig.snn.anatomy.neuron;
 
-import com.uwe_hennig.snn.anatomy.core.FieldGraph;
+import com.uwe_hennig.snn.anatomy.core.FieldNode;
 
 /**
  * FieldView Field is currently a container for neuron fields and neurons.
@@ -15,17 +15,15 @@ import com.uwe_hennig.snn.anatomy.core.FieldGraph;
 public final class FieldView {
     private final FieldModel model;
     private final int        index;
+    private final FieldNode  node;
 
-    private int parentsRef  = -1;
-    private int childrenRef = -1;
-    private int neuronsRef  = -1;
-
-    public FieldView(int index, FieldModel model) {
+    public FieldView(int index, FieldModel model, FieldNode node) {
         assert model != null : "Model must not bei null!";
         assert index < model.capacity && index >= 0 : " " + index + " >= " + model.capacity;
 
         this.index = index;
         this.model = model;
+        this.node  = node;
     }
 
     public FieldModel getModel() {
@@ -62,36 +60,7 @@ public final class FieldView {
         }
     }
 
-    public void addParentFields(int[] parentIds) {
-        assert FieldGraph.get() != null : "FieldGraph not created!";
-        parentsRef = FieldGraph.get().addParentFieldIds(parentIds);
-        model.setParentsRef(index, parentsRef);
-    }
+    // TODO addParentIds, addChildIds, addNeuronIds
+    // TODO getParentIds, getChildIds, getNeuronIds
 
-    public int[] getParentFields() {
-        assert FieldGraph.get() != null : "FieldGraph not created!";
-        return FieldGraph.get().getParentFieldIds(parentsRef);
-    }
-
-    public void addChildFields(int[] childIds) {
-        assert FieldGraph.get() != null : "FieldGraph not created!";
-        childrenRef = FieldGraph.get().addChildFieldIds(childIds);
-        model.setChildrenRef(index, childrenRef);
-    }
-
-    public int[] getChildIds() {
-        assert FieldGraph.get() != null : "FieldGraph not created!";
-        return FieldGraph.get().getChildFieldIds(childrenRef);
-    }
-
-    public void addNeuronIds(int[] neuronIds) {
-        assert FieldGraph.get() != null : "FieldGraph not created!";
-        neuronsRef = FieldGraph.get().addNeuronIds(neuronIds);
-        model.setNeuronsRef(index, neuronsRef);
-    }
-
-    public int[] getNeuronIds() {
-        assert FieldGraph.get() != null : "FieldGraph not created!";
-        return FieldGraph.get().getNeuronIds(neuronsRef);
-    }
 }

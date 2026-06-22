@@ -6,6 +6,7 @@
 package com.uwe_hennig.snn.anatomy.neuron;
 
 import static java.lang.foreign.ValueLayout.JAVA_INT;
+import static java.lang.foreign.ValueLayout.JAVA_LONG;
 
 import java.lang.foreign.Arena;
 import java.lang.foreign.GroupLayout;
@@ -31,9 +32,8 @@ public final class FieldModel {
         JAVA_INT.withName("lock"),
         JAVA_INT.withName("type"),
         JAVA_INT.withName("level"),
-        JAVA_INT.withName("parentsRef"),
-        JAVA_INT.withName("childrenRef"),
-        JAVA_INT.withName("neuronsRef")
+        JAVA_INT.withName("nodeId"),
+        JAVA_LONG.withName("nodeRef")
     ).withByteAlignment(8);
 
     static final VarHandle VH_LOCK =
@@ -42,12 +42,10 @@ public final class FieldModel {
         LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("type"));
     static final VarHandle VH_LEVEL =
         LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("level"));
-    static final VarHandle VH_PARENTS_REF =
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("parentsRef"));
-    static final VarHandle VH_CHILDREN_REF =
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("childrenRef"));
-    static final VarHandle VH_NEURONS_REF =
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("neuronsRef"));
+    static final VarHandle VH_NODE_ID =
+        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("nodeId"));
+    static final VarHandle VH_NODE_REF =
+        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("nodeRef"));
     // @formatter:on
 
     // ----- public -----
@@ -101,27 +99,20 @@ public final class FieldModel {
         VH_LEVEL.set(segment, 0L, index, value);
     }
 
-    int getParentsRef(int index) {
-        return (int) VH_PARENTS_REF.get(segment, 0L, index);
+    int getNodeId(int index) {
+        return (int) VH_NODE_ID.get(segment, 0L, index);
     }
 
-    void setParentsRef(int index, int value) {
-        VH_PARENTS_REF.set(segment, 0L, index, value);
+    void setNodeId(int index, int value) {
+        VH_NODE_ID.set(segment, 0L, index, value);
     }
 
-    int getChildrenRef(int index) {
-        return (int) VH_CHILDREN_REF.get(segment, 0L, index);
+    long getNodeRef(int index) {
+        return (long) VH_NODE_REF.get(segment, 0L, index);
     }
 
-    void setChildrenRef(int index, int value) {
-        VH_CHILDREN_REF.set(segment, 0L, index, value);
+    void setNodeRef(int index, long value) {
+        VH_NODE_REF.set(segment, 0L, index, value);
     }
 
-    int getNeuronsRef(int index) {
-        return (int) VH_NEURONS_REF.get(segment, 0L, index);
-    }
-
-    void setNeuronsRef(int index, int value) {
-        VH_NEURONS_REF.set(segment, 0L, index, value);
-    }
 }

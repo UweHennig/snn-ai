@@ -29,12 +29,9 @@ public class FieldTest {
         for (int i = 0; i < capacity; i++) {
             try {
                 model.lock(i);
-                model.setType(i, 5 + i);
-                model.setLevel(i, 2 + i);
+                model.setType(i, i + 1);
+                model.setLevel(i, i + 2);
 
-                model.setChildrenRef(i, 1 + i);
-                model.setNeuronsRef(i, 3 + i);
-                model.setParentsRef(i, 4 + i);
             } catch (Exception e) {
                 fail("Exception on testAsyncData " + e.getLocalizedMessage());
             } finally {
@@ -43,11 +40,8 @@ public class FieldTest {
         }
         for (int i = 0; i < capacity; i++) {
             try {
-                assertEquals(1L + i, model.getChildrenRef(i));
-                assertEquals(2L + i, model.getLevel(i));
-                assertEquals(3L + i, model.getNeuronsRef(i));
-                assertEquals(4L + i, model.getParentsRef(i));
-                assertEquals(5L + i, model.getType(i));
+                assertEquals(i + 1, model.getType(i));
+                assertEquals(i + 2, model.getLevel(i));
             } catch (Exception e) {
                 fail("Exception on testAsyncData " + e.getLocalizedMessage());
             }

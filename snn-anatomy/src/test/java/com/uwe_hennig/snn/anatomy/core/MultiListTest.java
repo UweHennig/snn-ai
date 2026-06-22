@@ -33,14 +33,14 @@ import org.junit.jupiter.api.TestInfo;
  * @author Uwe Hennig
  */
 public class MultiListTest {
-    private final static String FILENAME = "BlockchainTest.idx";
+    private final static String FILENAME = "MultiListTest.idx";
 
     private final long MAX_BLOCKS          = 100;
     private final int  MAX_ROW_BYTE_LENGTH = 128;
     private final int  NUM_THREADS         = 5;
 
     @Test
-    @DisplayName("Simple Blockchain Test")
+    @DisplayName("Simple MultiList Test")
     public void testSimple() {
         MultiList multiList = new MultiList(MAX_BLOCKS, MAX_ROW_BYTE_LENGTH);
 
@@ -80,7 +80,7 @@ public class MultiListTest {
     }
 
     @Test
-    @DisplayName("Simple Blockchain Delete Test")
+    @DisplayName("Simple MultiList Delete Test")
     public void testDelete() {
         MultiList testSimple = new MultiList(MAX_BLOCKS, MAX_ROW_BYTE_LENGTH);
 
@@ -95,7 +95,7 @@ public class MultiListTest {
     }
 
     @Test
-    @DisplayName("Blockchain multiple Put Test")
+    @DisplayName("MultiList multiple Put Test")
     public void testPut() {
         // TODO Check whether the memory overflow is being utilized or whether a new allocation is being made
         MultiList multiList = new MultiList(MAX_BLOCKS, MAX_ROW_BYTE_LENGTH);
@@ -117,7 +117,7 @@ public class MultiListTest {
     }
 
     @Test
-    @DisplayName("Blockchain asynchronuous Test")
+    @DisplayName("MultiList asynchronuous Test")
     public void testAsync() {
         MultiList multiList = new MultiList(MAX_BLOCKS, MAX_ROW_BYTE_LENGTH);
 
@@ -195,11 +195,11 @@ public class MultiListTest {
 
         try {
             Path path = getArenaPath(FILENAME);
-            MultiList blockchain = MultiList.load(path);
-            long[] loaded = blockchain.getLongs(startRowData);
+            MultiList multiList = MultiList.load(path);
+            long[] loaded = multiList.getLongs(startRowData);
             assertNotNull(loaded);
             assertArrayEquals(twoRowData, loaded);
-            blockchain.close();
+            multiList.close();
         } catch (IOException e) {
             e.printStackTrace();
             fail("Exception in testPersistence load " + e.getLocalizedMessage());

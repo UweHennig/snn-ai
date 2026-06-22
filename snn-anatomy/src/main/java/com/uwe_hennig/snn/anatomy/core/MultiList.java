@@ -48,26 +48,26 @@ public class MultiList {
     private final AtomicLong    tail;
 
     private final int  blockSize;
-    private final int  dataCapacityBytes;
+    private final int  minDataCapacityBytes;
     private final long maxMemorySize;
 
     /**
      * Creates a new off-heap memory.
      *
      * @param maxBlocks Maximum number of blocks
-     * @param dataCapacityBytes Capacity per block in bytes
+     * @param minDataCapacityBytes Capacity per block in bytes
      */
-    public MultiList(long maxBlocks, int dataCapacityBytes) {
-        this.dataCapacityBytes = dataCapacityBytes;
+    public MultiList(long maxBlocks, int minDataCapacityBytes) {
+        this.minDataCapacityBytes = minDataCapacityBytes;
 
-        this.blockSize = (int) ((BLOCK_DATA_START + dataCapacityBytes + 7) & ~7);
+        this.blockSize = (int) ((BLOCK_DATA_START + minDataCapacityBytes + 7) & ~7);
         this.maxMemorySize = FIRST_BLOCK_OFFSET + (maxBlocks * blockSize);
 
         this.arena = Arena.ofShared();
         this.memorySegment = arena.allocate(maxMemorySize, 8);
 
         this.tail = new AtomicLong(FIRST_BLOCK_OFFSET);
-        memorySegment.set(ValueLayout.JAVA_LONG, FILE_META_CAPACITY, dataCapacityBytes);
+        memorySegment.set(ValueLayout.JAVA_LONG, FILE_META_CAPACITY, minDataCapacityBytes);
 
         persistMeta(FIRST_BLOCK_OFFSET);
 
@@ -192,7 +192,7 @@ public class MultiList {
     /**
      * Load reads the data from a file and creates a complete memory image of Blockchain
      * @param file
-     * @param dataCapacityBytes
+     * @param minDataCapacityBytes
      * @return
      * @throws IOException
      */
@@ -232,7 +232,7 @@ public class MultiList {
         try {
             int totalElements = java.lang.reflect.Array.getLength(array);
             int elementSize = (int) layout.byteSize();
-            int elementsPerBlock = dataCapacityBytes / elementSize;
+            int elementsPerBlock = minDataCapacityBytes / elementSize;
 
             long currentBlockAddr = startAddress;
             int writtenElements = 0;

@@ -7,6 +7,7 @@ package com.uwe_hennig.snn.anatomy.core;
 
 /**
  * AxonGraph
+ * contains all synapses for each axon
  *
  * @author Uwe Hennig
  */
