@@ -11,14 +11,16 @@ package com.uwe_hennig.snn.anatomy.core;
  * @author Uwe Hennig
  */
 public class FieldNode {
+    private final int [] EMPTY_ARRAY = new int[0];
+
     private final MultiList multiList;
     private final long      nodeRef;
     private final int       nodeId;
 
     private long metaRef     = -1;
-    private long parentRef   = -1;
+    private long parentsRef  = -1;
     private long childrenRef = -1;
-    private long neuronRef   = -1;
+    private long neuronsRef  = -1;
 
     public FieldNode(int nodeId, MultiList multiList) {
         this.multiList = multiList;
@@ -28,19 +30,44 @@ public class FieldNode {
     }
 
     public long addParentIds(int... parentIds) {
-        if (parentRef == -1) {
-            parentRef = multiList.allocate();
+        if (parentsRef == -1) {
+            parentsRef = multiList.allocate();
             updateMetaRef();
         }
-        int[] parents = multiList.getInts(parentRef);
-        int[] updated = new int[parents.length + parentIds.length];
 
-        System.arraycopy(parents, 0, updated, 0, parents.length);
-        System.arraycopy(parentIds, 0, updated, parents.length, parentIds.length);
+        updateIdentifiers(parentsRef, parentIds);
 
-        multiList.put(parentRef, updated);
+        return parentsRef;
+    }
 
-        return parentRef;
+    public long addChildIds(int... childIds) {
+        if (childrenRef == -1) {
+            childrenRef = multiList.allocate();
+            updateMetaRef();
+        }
+        updateIdentifiers(childrenRef, childIds);
+
+        return childrenRef;
+    }
+
+    public long addNeuronIds(int ... neuronIds) {
+        if (neuronsRef == -1) {
+            neuronsRef = multiList.allocate();
+            updateMetaRef();
+        }
+        updateIdentifiers(neuronsRef, neuronIds);
+
+        return neuronsRef;
+    }
+
+    private void updateIdentifiers(long ref, int... values) {
+        int[] existing = multiList.getInts(ref);
+        int[] updated = new int[existing.length + values.length];
+
+        System.arraycopy(existing, 0, updated, 0, existing.length);
+        System.arraycopy(values, 0, updated, existing.length, values.length);
+
+        multiList.put(ref, updated);
     }
 
     public int getNodeId() {
@@ -52,7 +79,7 @@ public class FieldNode {
     }
 
     public long getParentsRef() {
-        return parentRef;
+        return parentsRef;
     }
 
     public long getChildrenRef() {
@@ -60,11 +87,31 @@ public class FieldNode {
     }
 
     public int[] getParentIds() {
-        return multiList.getInts(parentRef);
+        if (parentsRef != -1) {
+            return multiList.getInts(parentsRef);
+        } else {
+            return EMPTY_ARRAY;
+        }
+    }
+
+    public int[] getChildIds() {
+        if (childrenRef != -1) {
+            return multiList.getInts(childrenRef);
+        } else {
+            return EMPTY_ARRAY;
+        }
+    }
+
+    public int[] getNeuronIds() {
+        if (neuronsRef != -1) {
+            return multiList.getInts(neuronsRef);
+        } else {
+            return EMPTY_ARRAY;
+        }
     }
 
     private void updateMetaRef() {
-        long [] metaArray = {parentRef, childrenRef, neuronRef};
+        long[] metaArray = { parentsRef, childrenRef, neuronsRef };
         multiList.put(metaRef, metaArray);
     }
 }
