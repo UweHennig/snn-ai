@@ -6,7 +6,9 @@
 package com.uwe_hennig.snn.anatomy.core;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -34,15 +36,19 @@ public class FieldNode {
 
     // BFS
     public static void visit(FieldNode startNode, MultiList ml, Consumer<FieldNode> visitor) {
+        List<Long> visited = new ArrayList<>();
         Deque<Long> queue = new ArrayDeque<>();
         queue.add(startNode.nodeRef);
 
         while (!queue.isEmpty()) {
             long currentRef = queue.poll();
-            FieldNode node = createWrapper(currentRef, ml);
-            visitor.accept(node);
-            for (long outRef : node.getOutRefs()) {
-                queue.add(outRef);
+            if (!visited.contains(currentRef)) {
+                visited.add(currentRef);
+                FieldNode node = createWrapper(currentRef, ml);
+                visitor.accept(node);
+                for (long outRef : node.getOutRefs()) {
+                    queue.add(outRef);
+                }
             }
         }
     }
