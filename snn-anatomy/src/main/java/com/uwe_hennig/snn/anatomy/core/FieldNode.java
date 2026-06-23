@@ -22,16 +22,24 @@ public class FieldNode {
     private final MultiList multiList;
     private final long      viewId;
 
-    private long nodeRef     = -1;
-    private long parentsRef  = -1;
-    private long childrenRef = -1;
-    private long neuronsRef  = -1;
+    private long nodeRef         = -1;
+    private long inNeighborsRef  = -1;
+    private long outNeighborsRef = -1;
+    private long neuronsRef      = -1;
 
     public FieldNode(long viewId, MultiList multiList) {
         this.multiList = multiList;
 
         this.viewId = viewId;
         this.nodeRef = multiList.allocate();
+    }
+
+    public long getViewId() {
+        return viewId;
+    }
+
+    public long getNodeId() {
+        return nodeRef;
     }
 
     // BFS
@@ -46,42 +54,62 @@ public class FieldNode {
                 visited.add(currentRef);
                 FieldNode node = createWrapper(currentRef, ml);
                 visitor.accept(node);
-                for (long outRef : node.getOutRefs()) {
+                for (long outRef : node.getNeighborsRef()) {
                     queue.add(outRef);
                 }
             }
         }
     }
 
-    // TODO ERROR!!
-    public void addParentNode(FieldNode node) {
-        addParentRefs(node.nodeRef);
+    // --- Out Neighbors ---
+
+    public void addOutNeighbors(FieldNode node) {
+        addOutNeighborsRef(node.nodeRef);
     }
 
-    public void addChildNode(FieldNode node) {
-        addChildRefs(node.nodeRef);
-    }
-
-    public long addParentRefs(long... parentRefs) {
-        if (parentsRef == -1) {
-            parentsRef = multiList.allocate();
+    public long addOutNeighborsRef(long ... outRefs) {
+        if (outNeighborsRef == -1) {
+            outNeighborsRef = multiList.allocate();
             updateMetaRef();
         }
+        updateIdentifiers(outNeighborsRef, outRefs);
 
-        updateIdentifiers(parentsRef, parentRefs);
-
-        return parentsRef;
+        return outNeighborsRef;
     }
 
-    public long addChildRefs(long... childRefs) {
-        if (childrenRef == -1) {
-            childrenRef = multiList.allocate();
+    public long[] getOutNeighborsRef() {
+        if (outNeighborsRef != -1) {
+            return multiList.getLongs(outNeighborsRef);
+        } else {
+            return EMPTY_ARRAY;
+        }
+    }
+
+    // --- In Neighbors ---
+
+    public void addInNeighborsNode(FieldNode node) {
+        addInNeighborsRef(node.nodeRef);
+    }
+
+    public long addInNeighborsRef(long ... inRefs) {
+        if (inNeighborsRef == -1) {
+            inNeighborsRef = multiList.allocate();
             updateMetaRef();
         }
-        updateIdentifiers(childrenRef, childRefs);
+        updateIdentifiers(inNeighborsRef, inRefs);
 
-        return childrenRef;
+        return inNeighborsRef;
     }
+
+    public long[] getInNeighborsRef() {
+        if (inNeighborsRef != -1) {
+            return multiList.getLongs(inNeighborsRef);
+        } else {
+            return EMPTY_ARRAY;
+        }
+    }
+
+    // --- Neurons ---
 
     public long addNeuronId(long... neuronIds) {
         if (neuronsRef == -1) {
@@ -93,38 +121,6 @@ public class FieldNode {
         return neuronsRef;
     }
 
-    public long getViewId() {
-        return viewId;
-    }
-
-    public long getNodeId() {
-        return nodeRef;
-    }
-
-    public long getParentsRef() {
-        return parentsRef;
-    }
-
-    public long getChildrenRef() {
-        return childrenRef;
-    }
-
-    public long[] getParentRefs() {
-        if (parentsRef != -1) {
-            return multiList.getLongs(parentsRef);
-        } else {
-            return EMPTY_ARRAY;
-        }
-    }
-
-    public long[] getChildRefs() {
-        if (childrenRef != -1) {
-            return multiList.getLongs(childrenRef);
-        } else {
-            return EMPTY_ARRAY;
-        }
-    }
-
     public long[] getNeuronRefs() {
         if (neuronsRef != -1) {
             return multiList.getLongs(neuronsRef);
@@ -133,9 +129,11 @@ public class FieldNode {
         }
     }
 
-    public long[] getOutRefs() {
-        long[] childs = (childrenRef != -1) ? multiList.getLongs(childrenRef) : EMPTY_ARRAY;
-        long[] parents = (parentsRef != -1) ? multiList.getLongs(parentsRef) : EMPTY_ARRAY;
+    // --- Convenience ---
+
+    private long[] getNeighborsRef() {
+        long[] childs = (outNeighborsRef != -1) ? multiList.getLongs(outNeighborsRef) : EMPTY_ARRAY;
+        long[] parents = (inNeighborsRef != -1) ? multiList.getLongs(inNeighborsRef) : EMPTY_ARRAY;
 
         long[] both = new long[childs.length + parents.length];
 
@@ -156,7 +154,7 @@ public class FieldNode {
     }
 
     private void updateMetaRef() {
-        long[] metaArray = { viewId, parentsRef, childrenRef, neuronsRef };
+        long[] metaArray = { viewId, inNeighborsRef, outNeighborsRef, neuronsRef };
         multiList.put(nodeRef, metaArray);
     }
 
@@ -165,11 +163,11 @@ public class FieldNode {
     }
 
     private static FieldNode createWrapper(long nodeRef, MultiList multiList) {
-        long[] meta  = getMetaRefs(nodeRef, multiList);
+        long[] meta = getMetaRefs(nodeRef, multiList);
         FieldNode node = new FieldNode(meta[0], multiList);
         node.nodeRef = nodeRef;
-        node.parentsRef = meta[1];
-        node.childrenRef = meta[2];
+        node.inNeighborsRef = meta[1];
+        node.outNeighborsRef = meta[2];
         node.neuronsRef = meta[3];
         return node;
     }

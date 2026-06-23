@@ -23,7 +23,7 @@ public class FieldGraphTest {
 
     @Test
     @DisplayName("Simple FieldGraph Test")
-    public void testSimple() {
+    public void testOutNeighbors() {
         MultiList multiList = new MultiList(50, 10);
         try {
             FieldNode n1 = new FieldNode(1, multiList);
@@ -31,30 +31,30 @@ public class FieldGraphTest {
             FieldNode n3 = new FieldNode(3, multiList);
             FieldNode n4 = new FieldNode(3, multiList);
 
-            n1.addChildNode(n2);
-            n1.addChildNode(n3);
+            n1.addOutNeighbors(n2);
+            n1.addOutNeighbors(n3);
             long[] n1Expected = { n2.getNodeId(), n3.getNodeId() };
 
-            n2.addChildNode(n4);
+            n2.addOutNeighbors(n4);
             long[] n2Expected = { n4.getNodeId() };
 
-            n3.addChildNode(n4);
+            n3.addOutNeighbors(n4);
             long[] n3Expected = { n4.getNodeId() };
 
-            n4.addChildNode(n1);
+            n4.addOutNeighbors(n1);
             long[] n4Expected = { n1.getNodeId() };
 
-            printNodes("N1 Childs: ", n1.getChildRefs());
-            assertArrayEquals(n1Expected, n1.getChildRefs(), "Invalid n1 childIds");
+            printNodes("N1 Childs: ", n1.getOutNeighborsRef());
+            assertArrayEquals(n1Expected, n1.getOutNeighborsRef(), "Invalid n1 childIds");
 
-            printNodes("N2 Childs: ", n2.getChildRefs());
-            assertArrayEquals(n2Expected, n2.getChildRefs(), "Invalid n2 childIds");
+            printNodes("N2 Childs: ", n2.getOutNeighborsRef());
+            assertArrayEquals(n2Expected, n2.getOutNeighborsRef(), "Invalid n2 childIds");
 
-            printNodes("N3 Childs: ", n3.getChildRefs());
-            assertArrayEquals(n3Expected, n3.getChildRefs(), "Invalid n3 childIds");
+            printNodes("N3 Childs: ", n3.getOutNeighborsRef());
+            assertArrayEquals(n3Expected, n3.getOutNeighborsRef(), "Invalid n3 childIds");
 
-            printNodes("N4 Childs: ", n4.getChildRefs());
-            assertArrayEquals(n4Expected, n4.getChildRefs(), "Invalid n4 childIds");
+            printNodes("N4 Childs: ", n4.getOutNeighborsRef());
+            assertArrayEquals(n4Expected, n4.getOutNeighborsRef(), "Invalid n4 childIds");
 
             int[] count = { 0 };
             FieldNode.visit(n4, multiList, fn -> {
@@ -69,7 +69,7 @@ public class FieldGraphTest {
         }
     }
 
-    // TODO add Parent test and more!
+    // TODO add InNeighbors test and more!
 
     private void printNodes(String info, long[] targets) {
         System.out.print(info + ": ");
