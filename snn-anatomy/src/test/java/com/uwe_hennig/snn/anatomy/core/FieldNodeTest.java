@@ -1,5 +1,5 @@
 /**
- * @(#)FieldGraphTest.java
+ * @(#)FieldNodeTest.java
  * Copyright (c) 2026 Uwe Hennig
  * All rights reserved.
  */
@@ -8,6 +8,7 @@ package com.uwe_hennig.snn.anatomy.core;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -15,12 +16,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
 /**
- * FieldGraphTest
- * @formatter:off
- * @formatter:on
+ * FieldNodeTest
+ *
  * @author Uwe Hennig
  */
-public class FieldGraphTest {
+public class FieldNodeTest {
 
     @Test
     @DisplayName("Simple FieldGraph Out Test")
@@ -113,6 +113,9 @@ public class FieldGraphTest {
 
             assertEquals(4, count[0], "Not all visited!");
 
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("Exception " + e.getLocalizedMessage());
         } finally {
             multiList.close();
         }
@@ -139,7 +142,6 @@ public class FieldGraphTest {
     public void testStructure() {
         MultiList multiList = new MultiList(50, 10);
         try {
-            /* TODO
             FieldNode n1 = new FieldNode(0, multiList);
             FieldNode n2 = new FieldNode(0, multiList);
             FieldNode n3 = new FieldNode(0, multiList);
@@ -152,17 +154,20 @@ public class FieldGraphTest {
             n3.addOutNeighbors(n5);
 
             assertTrue(n1.getOutNeighborsRef().length == 1, "Invalide n1Out");
-            assertTrue(n1.getInNeighborsRef().length  == 0, "Invalide n1In");
+            assertTrue(n1.getInNeighborsRef().length == 0, "Invalide n1In");
 
             assertTrue(n2.getOutNeighborsRef().length == 1, "Invalide n2Out");
-            assertTrue(n2.getInNeighborsRef().length  == 0, "Invalide n2In");
+            assertTrue(n2.getInNeighborsRef().length == 0, "Invalide n2In");
 
             assertTrue(n3.getOutNeighborsRef().length == 2, "Invalide n3Out");
-            assertTrue(n3.getInNeighborsRef().length  == 2, "Invalide n3In");
+            assertTrue(n3.getInNeighborsRef().length == 2, "Invalide n3In");
 
             assertTrue(n4.getOutNeighborsRef().length == 0, "Invalide n4Out");
-            assertTrue(n4.getInNeighborsRef().length  == 2, "Invalide n4In");
-            */
+            assertTrue(n4.getInNeighborsRef().length == 1, "Invalide n4In");
+
+            assertTrue(n5.getOutNeighborsRef().length == 0, "Invalide n5Out");
+            assertTrue(n5.getInNeighborsRef().length == 1, "Invalide n5In");
+
         } finally {
             multiList.close();
         }

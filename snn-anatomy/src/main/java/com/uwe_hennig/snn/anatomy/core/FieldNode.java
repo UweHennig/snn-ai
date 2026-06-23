@@ -33,6 +33,7 @@ public class FieldNode {
 
         this.viewId = viewId;
         this.nodeRef = multiList.allocate();
+        updateMetaRef();
     }
 
     public long getViewId() {
@@ -66,6 +67,7 @@ public class FieldNode {
 
     public void addOutNeighbors(FieldNode node) {
         addOutNeighborsRef(node.nodeRef);
+        node.addInNeighborsRef(this.nodeRef);
     }
 
     public long addOutNeighborsRef(long ... outRefs) {
@@ -90,9 +92,10 @@ public class FieldNode {
 
     public void addInNeighbors(FieldNode node) {
         addInNeighborsRef(node.nodeRef);
+        node.addOutNeighborsRef(this.nodeRef);
     }
 
-    public long addInNeighborsRef(long ... inRefs) {
+    public long addInNeighborsRef(long... inRefs) {
         if (inNeighborsRef == -1) {
             inNeighborsRef = multiList.allocate();
             updateMetaRef();
@@ -112,7 +115,7 @@ public class FieldNode {
 
     // --- Neurons ---
 
-    public long addNeuronId(long ... neuronIds) {
+    public long addNeuronId(long... neuronIds) {
         if (neuronsRef == -1) {
             neuronsRef = multiList.allocate();
             updateMetaRef();
@@ -144,7 +147,7 @@ public class FieldNode {
         return both;
     }
 
-    private void updateIdentifiers(long ref, long ... values) {
+    private void updateIdentifiers(long ref, long... values) {
         long[] existing = multiList.getLongs(ref);
         long[] updated = add(existing, values);
 
@@ -170,7 +173,7 @@ public class FieldNode {
         return node;
     }
 
-    public static long[] add(long[] existing, long ... values) {
+    private static long[] add(long[] existing, long... values) {
         // case 1
         if (values.length == 0) {
             long[] result = existing.clone();
