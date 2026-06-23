@@ -7,6 +7,7 @@ package com.uwe_hennig.snn.anatomy.core;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
 import java.util.function.Consumer;
@@ -87,7 +88,7 @@ public class FieldNode {
 
     // --- In Neighbors ---
 
-    public void addInNeighborsNode(FieldNode node) {
+    public void addInNeighbors(FieldNode node) {
         addInNeighborsRef(node.nodeRef);
     }
 
@@ -111,7 +112,7 @@ public class FieldNode {
 
     // --- Neurons ---
 
-    public long addNeuronId(long... neuronIds) {
+    public long addNeuronId(long ... neuronIds) {
         if (neuronsRef == -1) {
             neuronsRef = multiList.allocate();
             updateMetaRef();
@@ -121,7 +122,7 @@ public class FieldNode {
         return neuronsRef;
     }
 
-    public long[] getNeuronRefs() {
+    public long[] getNeuronIds() {
         if (neuronsRef != -1) {
             return multiList.getLongs(neuronsRef);
         } else {
@@ -143,12 +144,9 @@ public class FieldNode {
         return both;
     }
 
-    private void updateIdentifiers(long ref, long... values) {
+    private void updateIdentifiers(long ref, long ... values) {
         long[] existing = multiList.getLongs(ref);
-        long[] updated = new long[existing.length + values.length];
-
-        System.arraycopy(existing, 0, updated, 0, existing.length);
-        System.arraycopy(values, 0, updated, existing.length, values.length);
+        long[] updated = add(existing, values);
 
         multiList.put(ref, updated);
     }
@@ -172,4 +170,57 @@ public class FieldNode {
         return node;
     }
 
+    public static long[] add(long[] existing, long ... values) {
+        // case 1
+        if (values.length == 0) {
+            long[] result = existing.clone();
+            Arrays.sort(result);
+            return result;
+        }
+
+        // case 2
+        if (values.length == 1) {
+            long singleValue = values[0];
+
+            for (long val : existing) {
+                if (val == singleValue) {
+                    long[] result = existing.clone();
+                    Arrays.sort(result);
+                    return result;
+                }
+            }
+            long[] result = new long[existing.length + 1];
+            System.arraycopy(existing, 0, result, 0, existing.length);
+            result[existing.length] = singleValue;
+            Arrays.sort(result);
+            return result;
+        }
+
+        // case 3
+        long[] aSorted = existing.clone();
+        Arrays.sort(aSorted);
+
+        int newElementsCount = 0;
+        for (int i = 0; i < values.length; i++) {
+            if (Arrays.binarySearch(aSorted, values[i]) >= 0) {
+                values[i] = -1;
+            } else {
+                newElementsCount++;
+            }
+        }
+
+        long[] result = new long[existing.length + newElementsCount];
+        System.arraycopy(aSorted, 0, result, 0, existing.length);
+
+        int targetIndex = existing.length;
+        for (int i = 0; i < values.length; i++) {
+            if (values[i] != -1) {
+                result[targetIndex] = values[i];
+                targetIndex++;
+            }
+        }
+
+        Arrays.sort(result);
+        return result;
+    }
 }
