@@ -168,6 +168,13 @@ public class FieldNodeTest {
             assertTrue(n5.getOutNeighborsRef().length == 0, "Invalide n5Out");
             assertTrue(n5.getInNeighborsRef().length == 1, "Invalide n5In");
 
+            int[] count = { 0 };
+            FieldNode.visit(n4, multiList, fn -> {
+                System.out.println("visited: " + fn.getNodeId());
+                count[0] += 1;
+            });
+            assertEquals(5, count[0], "Not all visited!");
+
         } finally {
             multiList.close();
         }
