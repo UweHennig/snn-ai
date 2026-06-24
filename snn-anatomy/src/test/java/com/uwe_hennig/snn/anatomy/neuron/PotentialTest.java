@@ -78,7 +78,7 @@ public class PotentialTest {
             for (int i = 0; i < n; i++) {
                 PotentialView view = views[i];
                 c += 1f;
-                view.addPotentital(c, currentTime);
+                view.addPotentitial(c, currentTime);
             }
 
             c = 0f;

@@ -33,32 +33,36 @@ public final class PotentialView {
     }
 
     public float decay(float currentTime) {
-        float currentPotential = model.getPotential(index);
-        float lastUpdate = model.getLastUpdateTime(index);
-        float elapsed = Math.max(currentTime - lastUpdate, 0f);
-        float repolarizationTime = model.getRepolarizationTime(index);
-        float restingPotential = model.getRestingPotential(index);
-
-        float potential = currentPotential + (repolarizationTime - currentPotential) * Math.clamp(elapsed / restingPotential, 0.0f, 1.0f);
-
         try {
             model.writeLock(index);
+            float currentPotential = model.getPotential(index);
+            float lastUpdate = model.getLastUpdateTime(index);
+            float elapsed = Math.max(currentTime - lastUpdate, 0f);
+            float repolarizationTime = model.getRepolarizationTime(index);
+            float restingPotential = model.getRestingPotential(index);
+
+            float potential = currentPotential + (repolarizationTime - currentPotential) * Math.clamp(elapsed / restingPotential, 0.0f, 1.0f);
+
             model.setPotential(index, potential);
             model.setLastUpdateTime(index, currentPotential);
+            return potential;
         } finally {
             model.writeUnlock(index);
         }
-
-        return potential;
     }
 
-    public float addPotentital(float potential, float currentTime) {
+    public float addPotentitial(float potential, float currentTime) {
         return withPotential(potential + model.getPotential(index), currentTime);
     }
 
     public float withActionPotential(float actionPotential, float currentTime) {
-        float newPot = Math.max(model.getRestingPotential(index), model.getPotential(index) - actionPotential);
-        return withPotential(newPot, currentTime);
+        try {
+            model.writeLock(index);
+            float newPot = Math.max(model.getRestingPotential(index), model.getPotential(index) - actionPotential);
+            return withPotential(newPot, currentTime);
+        } finally {
+            model.writeUnlock(index);
+        }
     }
 
     public float getPotentital() {
@@ -88,6 +92,7 @@ public final class PotentialView {
         return model.getPotential(index);
     }
 
+    // TODO remove
     private void initData() {
         try {
             model.writeLock(index);

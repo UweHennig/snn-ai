@@ -9,6 +9,7 @@ import com.uwe_hennig.snn.anatomy.neuron.DendritView;
 import com.uwe_hennig.snn.anatomy.neuron.WeightView;
 import com.uwe_hennig.snn.contracts.core.NeuronElement;
 import com.uwe_hennig.snn.contracts.core.NeuronElementType;
+import com.uwe_hennig.snn.contracts.core.StimulusType;
 import com.uwe_hennig.snn.services.StimulusService;
 import com.uwe_hennig.snn.util.SnnTransferservice;
 
@@ -36,11 +37,10 @@ public final class Dendrit implements NeuronElement {
         float currentTime = 1000; // TODO Model time
 
         float stimulusValue = StimulusService.getValue(stimulusIdentifier);
-        int stimulusType = StimulusService.getTrgType(stimulusIdentifier);
 
         if (StimulusService.isStimulus(stimulusIdentifier)) {
             stimulusValue = weightView.applyStimulus(stimulusValue, currentTime);
-            stimulusIdentifier = StimulusService.update(stimulusIdentifier, stimulusType, view.getViewId(), view.getSomaId(), -1, NeuronElementType.SOMA.code(), stimulusValue);
+            stimulusIdentifier = StimulusService.update(stimulusIdentifier, StimulusType.STIMULUS.code(), view.getViewId(), view.getSomaId(), -1, NeuronElementType.SOMA.code(), stimulusValue);
         }
 
         if (StimulusService.isTimeFeedback(stimulusIdentifier)) {

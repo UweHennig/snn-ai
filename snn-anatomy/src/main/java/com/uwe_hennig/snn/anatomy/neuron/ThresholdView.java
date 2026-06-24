@@ -11,6 +11,9 @@ package com.uwe_hennig.snn.anatomy.neuron;
  * @author Uwe Hennig
  */
 public final class ThresholdView {
+    private final float MIN_THRESHOLD = -55f;
+    private final float MAX_THRESHOLD = -50f;
+
     private final ThresholdModel model;
     private final int            index;
 
@@ -31,4 +34,32 @@ public final class ThresholdView {
         return index;
     }
 
+    // ----- Domain Logic -----
+
+    public void applyTimeFeedback(float deltaTimeFeedback) {
+        model.writeLock(index);
+        try {
+            float threshold = model.getThreshold(index);
+            threshold += deltaThreshold(deltaTimeFeedback);
+            threshold = Math.clamp(threshold, MIN_THRESHOLD, MAX_THRESHOLD);
+            model.setThreshold(index, threshold);
+        } finally {
+            model.writeUnlock(index);
+        }
+    }
+
+    public float getThreshold() {
+        return model.getThreshold(index);
+    }
+
+    // ----- convenience -----
+
+    float deltaThreshold(float deltaTimeFeedback) {
+        float feedbackTimeLimit = model.getTimeLimit(index);
+        float phase = Math.clamp(Math.abs(deltaTimeFeedback / feedbackTimeLimit), 0f, 1f);
+        float effect = phase * phase * phase;
+        float thresholdScale = model.getThresholdScale(index);
+        float deltaThreshold = thresholdScale * effect * Math.signum(deltaTimeFeedback);
+        return deltaThreshold;
+    }
 }
