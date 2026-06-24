@@ -38,10 +38,6 @@ public final class Soma implements NeuronElement {
     @Override
     public void stimulate(int stimulusIdentifier) {
         float currentTime = 1000; // TODO
-        long expiry = StimulusService.getExpiry(stimulusIdentifier);
-        if (expiry < currentTime) {
-            return;
-        }
 
         float stimulusValue = StimulusService.getValue(stimulusIdentifier);
         int stimulusType = StimulusService.getTrgType(stimulusIdentifier);

@@ -9,7 +9,6 @@ import com.uwe_hennig.snn.anatomy.neuron.DendritView;
 import com.uwe_hennig.snn.anatomy.neuron.WeightView;
 import com.uwe_hennig.snn.contracts.core.NeuronElement;
 import com.uwe_hennig.snn.contracts.core.NeuronElementType;
-import com.uwe_hennig.snn.contracts.core.StimulusType;
 import com.uwe_hennig.snn.services.StimulusService;
 import com.uwe_hennig.snn.util.SnnTransferservice;
 
@@ -35,13 +34,6 @@ public final class Dendrit implements NeuronElement {
     @Override
     public void stimulate(int stimulusIdentifier) {
         float currentTime = 1000; // TODO Model time
-
-        // TODO You have to free up the memory again!
-        // TODO Insert into SnnTransferservice.transfer!
-        long expiry = StimulusService.getExpiry(stimulusIdentifier);
-        if (expiry < currentTime) {
-            return;
-        }
 
         float stimulusValue = StimulusService.getValue(stimulusIdentifier);
         int stimulusType = StimulusService.getTrgType(stimulusIdentifier);
