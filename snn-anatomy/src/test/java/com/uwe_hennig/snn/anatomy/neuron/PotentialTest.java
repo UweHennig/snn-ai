@@ -88,7 +88,7 @@ public class PotentialTest {
                 float currentPotenial = view.getPotentital();
 
                 assertEquals(c, currentPotenial);
-                view.withActionPotential(1000f, currentTime);
+                view.addPotentitial(1000f, currentTime);
                 assertTrue(view.getPotentital() >= model.getRestingPotential(i));
             }
         } catch (Exception e) {

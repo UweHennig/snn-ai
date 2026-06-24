@@ -52,14 +52,9 @@ public final class PotentialView {
     }
 
     public float addPotentitial(float potential, float currentTime) {
-        return withPotential(potential + model.getPotential(index), currentTime);
-    }
-
-    public float withActionPotential(float actionPotential, float currentTime) {
         try {
             model.writeLock(index);
-            float newPot = Math.max(model.getRestingPotential(index), model.getPotential(index) - actionPotential);
-            return withPotential(newPot, currentTime);
+            return withPotential(potential + model.getPotential(index), currentTime);
         } finally {
             model.writeUnlock(index);
         }
@@ -82,13 +77,8 @@ public final class PotentialView {
     }
 
     private float withPotential(float potential, float currentTime) {
-        try {
-            model.writeLock(index);
-            model.setPotential(index, potential);
-            model.setLastUpdateTime(index, currentTime);
-        } finally {
-            model.writeUnlock(index);
-        }
+        model.setPotential(index, potential);
+        model.setLastUpdateTime(index, currentTime);
         return model.getPotential(index);
     }
 
