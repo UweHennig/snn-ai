@@ -7,6 +7,7 @@ package com.uwe_hennig.snn.services;
 
 import com.uwe_hennig.snn.anatomy.core.StimulusModel;
 import com.uwe_hennig.snn.anatomy.core.StimulusView;
+import com.uwe_hennig.snn.contracts.core.StimulusType;
 
 /**
  * StimulusService
@@ -30,16 +31,19 @@ public class StimulusService {
         return INSTANCE;
     }
 
-    public static int claim(int src, int trg, int type, float value) {
-        return INSTANCE.view.claimStimulus(src, trg, type, value);
+    public static int claim(int eventType, int src, int trg, int trgRef, int trgType, float value) {
+        return INSTANCE.view.claimStimulus(eventType, src, trg, trgRef, trgType, value);
     }
 
     public static float getValue(int index) {
         return INSTANCE.view.getValue(index);
     }
 
-    public static boolean update(int index, int eventType, int src, int trg, int trgRef, int trgType, float value) {
-        return INSTANCE.view.updateStimulus(index, eventType, src, trg, trgRef, trgType, value);
+    public static int update(int index, int eventType, int src, int trg, int trgRef, int trgType, float value) {
+        if (!INSTANCE.view.updateStimulus(index, eventType, src, trg, trgRef, trgType, value)) {
+            return claim(eventType, src, trg, trgRef, trgType, value);
+        }
+        return index;
     }
 
     public static int getSrc(int index) {
@@ -59,7 +63,15 @@ public class StimulusService {
     }
 
     public static boolean isTimeFeedback(int index) {
-        return false;// TODO
+        return StimulusType.TIME_FEEDBACK.code() == INSTANCE.view.getEventType(index);
+    }
+
+    public static boolean isValueFeedback(int index) {
+        return StimulusType.VALUE_FEEDBACK.code() == INSTANCE.view.getEventType(index);
+    }
+
+    public static boolean isStimulus(int index) {
+        return StimulusType.STIMULUS.code() == INSTANCE.view.getEventType(index);
     }
 }
 

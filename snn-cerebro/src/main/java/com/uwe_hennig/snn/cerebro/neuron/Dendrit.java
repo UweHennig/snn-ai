@@ -34,7 +34,10 @@ public final class Dendrit implements NeuronElement {
      */
     @Override
     public void stimulate(int stimulusIdentifier) {
-        float currentTime = 1000; // TODO
+        float currentTime = 1000; // TODO Model time
+
+        // TODO You have to free up the memory again!
+        // TODO Insert into SnnTransferservice.transfer!
         long expiry = StimulusService.getExpiry(stimulusIdentifier);
         if (expiry < currentTime) {
             return;
@@ -43,12 +46,12 @@ public final class Dendrit implements NeuronElement {
         float stimulusValue = StimulusService.getValue(stimulusIdentifier);
         int stimulusType = StimulusService.getTrgType(stimulusIdentifier);
 
-        if (StimulusType.STIMULUS.code() == stimulusType) {
+        if (StimulusService.isStimulus(stimulusIdentifier)) {
             stimulusValue = weightView.applyStimulus(stimulusValue, currentTime);
-            StimulusService.update(stimulusIdentifier, stimulusType, view.getViewId(), view.getSomaId(), -1, NeuronElementType.SOMA.code(), stimulusValue);
+            stimulusIdentifier = StimulusService.update(stimulusIdentifier, stimulusType, view.getViewId(), view.getSomaId(), -1, NeuronElementType.SOMA.code(), stimulusValue);
         }
 
-        if (StimulusType.TIME_FEEDBACK.code() == stimulusType) {
+        if (StimulusService.isTimeFeedback(stimulusIdentifier)) {
             weightView.applyFeedback(stimulusValue);
         }
 

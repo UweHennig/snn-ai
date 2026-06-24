@@ -34,7 +34,7 @@ public class StimulusView {
     }
 
     // TODO Multi Recipient
-    public int claimStimulus(int src, int trg, int type, float value) {
+    public int claimStimulus(int eventType, int src, int trg, int trgRef, int trgType, float value) {
         long now = System.nanoTime(); // TODO check
         int start = nextSearchStart.getAndAdd(32) & MASK;
 
@@ -45,9 +45,12 @@ public class StimulusView {
                 if (model.tryWriteLock(index)) {
                     try {
                         if (model.getExpiry(index) < now) {
+
+                            model.setEventType(index, eventType);
                             model.setSrc(index, src);
                             model.setTrg(index, trg);
-                            model.setTrgType(index, type);
+                            model.setTrgRef(index, trgRef);
+                            model.setTrgType(index, trgType);
                             model.setValue(index, value);
 
                             model.setExpiry(index, now + TTL_NANO);
@@ -70,6 +73,10 @@ public class StimulusView {
             if (model.tryWriteLock(index)) {
                 try {
                     if (model.getExpiry(index) >= now) {
+                        if (Math.abs(value) < 0.001) {
+                            model.setExpiry(index, now - TTL_NANO);
+                            return false;
+                        }
                         model.setSrc(index, src);
                         model.setTrg(index, trg);
                         model.setTrgRef(index, trgRef);
@@ -78,6 +85,7 @@ public class StimulusView {
                         model.setEventType(index, eventType);
 
                         model.setExpiry(index, now + TTL_NANO);
+
 
                         return true;
                     }

@@ -61,16 +61,19 @@ public class StimulusTest {
         }
 
         // ---- Claim a free Slot ----
-        int idx = view.claimStimulus(1, 2, 3, 4.5f);
+        // int eventType, int src, int trg, int trgRef, int trgType, float value
+        int idx = view.claimStimulus(1, 2, 3, 4, 5, 6.7f);
         assertTrue(idx >= 0, "Claim must return a valid index");
 
         long expiry = model.getExpiry(idx);
         assertTrue(expiry > now, "Expiry must be set to now + TTL");
 
-        assertEquals(1, model.getSrc(idx));
-        assertEquals(2, model.getTrg(idx));
-        assertEquals(3, model.getTrgType(idx));
-        assertEquals(4.5f, model.getValue(idx));
+        assertEquals(1, model.getEventType(idx));
+        assertEquals(2, model.getSrc(idx));
+        assertEquals(3, model.getTrg(idx));
+        assertEquals(4, model.getTrgRef(idx));
+        assertEquals(5, model.getTrgType(idx));
+        assertEquals(6.7f, model.getValue(idx));
 
         // ---- Update within TTL ----
         boolean ok = view.updateStimulus(idx, 0, 10, 20, -1, 30, 40.5f);
@@ -111,7 +114,8 @@ public class StimulusTest {
             model.tryWriteLock(i);
         }
 
-        int idx = view.claimStimulus(1, 1, 1, 1f);
+        //int eventType, int src, int trg, int trgRef, int trgType, float value
+        int idx = view.claimStimulus(1, 1, 1, 1, 1, 1f);
 
         assertTrue(idx > 4, "Claim must skip locked slot");
 
