@@ -40,7 +40,7 @@ public final class SomaView {
     // TODO remove
     private void initData() {
         try {
-            model.lock(index);
+            model.writeLock(index);
             model.setFieldId(index, fieldId);
             model.setNeuronId(index, neuronId);
             model.setPotentialId(index, potentialId);
@@ -48,7 +48,7 @@ public final class SomaView {
             model.setStpId(index, stpId);
             model.setLtpId(index, ltpId);
         } finally {
-            model.unlock(index);
+            model.writeUnlock(index);
         }
     }
 

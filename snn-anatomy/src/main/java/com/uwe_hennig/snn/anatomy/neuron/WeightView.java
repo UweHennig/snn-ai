@@ -36,7 +36,7 @@ public final class WeightView {
 
     // The method is called only by the dendrite corresponding to the timulusType
     public float applyStimulus(float potential, float currentTime) {
-        model.lock(index);
+        model.writeLock(index);
         try {
             float preSynapticTime = model.getPostSynapticTime(index);
 
@@ -48,13 +48,13 @@ public final class WeightView {
 
             return newPotential;
         } finally {
-            model.unlock(index);
+            model.writeUnlock(index);
         }
     }
 
     // The method is called only by the dendrite corresponding to the timulusType
     public int applyFeedback(float deltaTimeFeedback) {
-        model.lock(index);
+        model.writeLock(index);
         try {
             float preSynapticTime = model.getPreSynapticTime(index);
             float postSynapticTime = model.getPostSynapticTime(index);
@@ -69,7 +69,7 @@ public final class WeightView {
         } catch (Exception e) {
             return -1;
         } finally {
-            model.unlock(index);
+            model.writeUnlock(index);
         }
     }
 

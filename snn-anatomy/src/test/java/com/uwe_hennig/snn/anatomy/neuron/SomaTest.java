@@ -27,7 +27,7 @@ public class SomaTest {
         SomaModel model = new SomaModel(1);
         checkModel(model, 1);
         try {
-            model.lock(0);
+            model.writeLock(0);
             model.setFieldId(0, 1);
             model.setNeuronId(0, 2);
             model.setPotentialId(0, 3);
@@ -35,7 +35,7 @@ public class SomaTest {
             model.setStpId(0, 5);
             model.setLtpId(0, 6);
         } finally {
-            model.unlock(0);
+            model.writeUnlock(0);
         }
 
         assertEquals(1L, model.getFieldId(0));

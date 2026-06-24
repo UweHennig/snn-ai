@@ -50,7 +50,7 @@ public class WeightTest {
             model = new WeightModel(1);
             checkModel(model, 1);
 
-            model.lock(0);
+            model.writeLock(0);
             model.setWeight(0, 1f);
             assertEquals(1f, model.getWeight(0), "invalid weight in model");
 
@@ -71,7 +71,7 @@ public class WeightTest {
 
             model.setTimeLimit(0, 7f);
             assertEquals(7f, model.getTimeLimit(0), "invalid timeLimit in model");
-            model.unlock(0);
+            model.writeUnlock(0);
         } finally {
             if (model != null) {
                 model.close();
@@ -104,7 +104,7 @@ public class WeightTest {
 
                         if (w) {
                             long start = System.nanoTime();
-                            model.lock(v); // measure lock acquisition
+                            model.writeLock(v); // measure lock acquisition
                             long end = System.nanoTime();
 
                             lockTime.addAndGet(end - start);
@@ -113,7 +113,7 @@ public class WeightTest {
                             try {
                                 model.setWeight(v, rand.nextFloat());
                             } finally {
-                                model.unlock(v);
+                                model.writeUnlock(v);
                             }
                         } else {
                             float r = model.getWeight(v);
@@ -162,11 +162,11 @@ public class WeightTest {
                     float currentWeight = rand.nextFloat();
                     float timestamp = rand.nextFloat();
                     try {
-                        model.lock(v);
+                        model.writeLock(v);
                         model.setWeight(v, currentWeight);
                         model.setPreSynapticTime(v, timestamp);
                     } finally {
-                        model.unlock(v);
+                        model.writeUnlock(v);
                     }
                 });
             }
@@ -210,11 +210,11 @@ public class WeightTest {
                     float timestamp = rand.nextFloat();
 
                     try {
-                        model.lock(v);
+                        model.writeLock(v);
                         model.setWeight(v, currentWeight);
                         model.setPreSynapticTime(v, timestamp);
                     } finally {
-                        model.unlock(v);
+                        model.writeUnlock(v);
                     }
 
                     // Prevent JIT from optimizing the read away
@@ -263,12 +263,12 @@ public class WeightTest {
         try {
             for (int i = 0; i < RW_CAPACITY; i++) {
                 try {
-                    model.lock(i);
+                    model.writeLock(i);
                     model.setWeight(i, values);
                     model.setHebbTimeRange(i, values + 1f);
                     values += 2f;
                 } finally {
-                    model.unlock(i);
+                    model.writeUnlock(i);
                 }
             }
 

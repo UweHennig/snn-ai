@@ -31,13 +31,13 @@ public class DendritTest {
         assertEquals(1, model.capacity);
 
         try {
-            model.lock(0);
+            model.writeLock(0);
             model.setFieldId(0, 1);
             model.setNeuronId(0, 2);
             model.setSomaId(0, 3);
             model.setWeightId(0, 4);
         } finally {
-            model.unlock(0);
+            model.writeUnlock(0);
         }
 
         assertEquals(1, model.getFiedlId(0));

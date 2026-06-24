@@ -51,11 +51,11 @@ public final class PlasticityView {
         newPot = update(newPot, targetPot, targetTime, learnRate, elapsed);
 
         try {
-            model.lock(index);
+            model.writeLock(index);
             model.setCurrentPotential(index, newPot);
             model.setLastUpdateTime(index, currentTime);
         } finally {
-            model.unlock(index);
+            model.writeUnlock(index);
         }
 
         return newPot;
@@ -84,12 +84,12 @@ public final class PlasticityView {
         }
 
         try {
-            model.lock(index);
+            model.writeLock(index);
             model.setTargetPotential(index, targetPot);
             model.setRestingPotential(index, restingPot);
             model.setLastUpdateTime(index, currentTime);
         } finally {
-            model.unlock(index);
+            model.writeUnlock(index);
         }
     }
 
@@ -114,12 +114,12 @@ public final class PlasticityView {
         }
 
         try {
-            model.lock(index);
+            model.writeLock(index);
             model.setTargetRate(index, tauDominatorTarget);
             model.setRestingRate(index, tauDominatorTarget);
             model.setLastUpdateTime(index, currentTime);
         } finally {
-            model.unlock(index);
+            model.writeUnlock(index);
         }
     }
 

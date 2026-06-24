@@ -28,14 +28,14 @@ public class FieldTest {
 
         for (int i = 0; i < capacity; i++) {
             try {
-                model.lock(i);
+                model.writeLock(i);
                 model.setType(i, i + 1);
                 model.setLevel(i, i + 2);
 
             } catch (Exception e) {
                 fail("Exception on testAsyncData " + e.getLocalizedMessage());
             } finally {
-                model.unlock(i);
+                model.writeUnlock(i);
             }
         }
         for (int i = 0; i < capacity; i++) {

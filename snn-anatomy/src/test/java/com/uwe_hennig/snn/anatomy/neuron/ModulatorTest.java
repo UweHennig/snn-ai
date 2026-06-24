@@ -25,7 +25,7 @@ public class ModulatorTest {
         try {
             model = new ModulatorModel(1);
             checkModel(model, 1);
-            model.lock(0);
+            model.writeLock(0);
 
             model.setModulationGain(0, 1f);
             model.setGainDuration(0, 2f);
@@ -33,7 +33,7 @@ public class ModulatorTest {
             model.setLastEventTime(0, 4f);
         } finally {
             if (model != null) {
-                model.unlock(0);
+                model.writeUnlock(0);
             }
         }
 

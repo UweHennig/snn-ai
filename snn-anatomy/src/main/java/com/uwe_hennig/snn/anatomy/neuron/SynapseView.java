@@ -36,13 +36,13 @@ public class SynapseView {
     // TODO remove
     private void initData() {
         try {
-            model.lock(index);
+            model.writeLock(index);
             model.setFieldId(index, fieldId);
             model.setNeuronId(index, neuronId);
             model.setTargetId(index, targetId);
             model.setModulatorId(index, modulatorId);
         } finally {
-            model.unlock(index);
+            model.writeUnlock(index);
         }
     }
 

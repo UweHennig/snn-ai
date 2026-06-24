@@ -42,11 +42,11 @@ public final class PotentialView {
         float potential = currentPotential + (repolarizationTime - currentPotential) * Math.clamp(elapsed / restingPotential, 0.0f, 1.0f);
 
         try {
-            model.lock(index);
+            model.writeLock(index);
             model.setPotential(index, potential);
             model.setLastUpdateTime(index, currentPotential);
         } finally {
-            model.unlock(index);
+            model.writeUnlock(index);
         }
 
         return potential;
@@ -79,24 +79,24 @@ public final class PotentialView {
 
     private float withPotential(float potential, float currentTime) {
         try {
-            model.lock(index);
+            model.writeLock(index);
             model.setPotential(index, potential);
             model.setLastUpdateTime(index, currentTime);
         } finally {
-            model.unlock(index);
+            model.writeUnlock(index);
         }
         return model.getPotential(index);
     }
 
     private void initData() {
         try {
-            model.lock(index);
+            model.writeLock(index);
             // TODO fetch values from parameter service
             model.setPotential(index, -40f);
             model.setRepolarizationTime(index, 100f);
             model.setRestingPotential(index, -40);
         } finally {
-            model.unlock(index);
+            model.writeUnlock(index);
         }
     }
 

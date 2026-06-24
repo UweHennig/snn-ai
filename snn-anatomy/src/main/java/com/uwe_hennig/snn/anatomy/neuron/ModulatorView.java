@@ -68,11 +68,11 @@ public final class ModulatorView {
         }
 
         try {
-            model.lock(index);
+            model.writeLock(index);
             model.setModulationGain(index, modulationGain);
             model.setLastEventTime(index, currentTime);
         } finally {
-            model.unlock(index);
+            model.writeUnlock(index);
         }
     }
 

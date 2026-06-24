@@ -42,7 +42,7 @@ public class StimulusView {
             int index = (start + i) & MASK;
 
             if (model.getExpiry(index) < now) {
-                if (model.tryLock(index)) {
+                if (model.tryWriteLock(index)) {
                     try {
                         if (model.getExpiry(index) < now) {
                             model.setSrc(index, src);
@@ -55,7 +55,7 @@ public class StimulusView {
                             return index;
                         }
                     } finally {
-                        model.unlock(index);
+                        model.writeUnlock(index);
                     }
                 }
             }
@@ -67,7 +67,7 @@ public class StimulusView {
     public boolean updateStimulus(int index, int eventType, int src, int trg, int trgRef, int trgType, float value) {
         long now = System.nanoTime(); // TODO check
         if (model.getExpiry(index) >= now) {
-            if (model.tryLock(index)) {
+            if (model.tryWriteLock(index)) {
                 try {
                     if (model.getExpiry(index) >= now) {
                         model.setSrc(index, src);
@@ -82,7 +82,7 @@ public class StimulusView {
                         return true;
                     }
                 } finally {
-                    model.unlock(index);
+                    model.writeUnlock(index);
                 }
             }
         }

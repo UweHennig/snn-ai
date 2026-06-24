@@ -29,12 +29,12 @@ public final class NeuronView {
     }
 
     private void initData() {
-        model.lock(index);
+        model.writeLock(index);
         try {
             model.setFieldId(index, fieldId);
             model.setNeuronElementRef(index, neuronElementRef);
         } finally {
-            model.unlock(index);
+            model.writeUnlock(index);
         }
     }
 

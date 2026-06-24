@@ -40,10 +40,10 @@ public final class FieldView {
 
     public void setType(int type) {
         try {
-            model.lock(index);
+            model.writeLock(index);
             model.setType(index, type);
         } finally {
-            model.unlock(index);
+            model.writeUnlock(index);
         }
     }
 
@@ -53,10 +53,10 @@ public final class FieldView {
 
     public void setLevel(int level) {
         try {
-            model.lock(index);
+            model.writeLock(index);
             model.setLevel(index, level);
         } finally {
-            model.unlock(index);
+            model.writeUnlock(index);
         }
     }
 

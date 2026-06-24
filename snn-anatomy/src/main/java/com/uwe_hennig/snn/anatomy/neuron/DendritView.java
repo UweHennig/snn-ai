@@ -36,13 +36,13 @@ public final class DendritView {
     // TODO remove
     private void initData() {
         try {
-            model.lock(index);
+            model.writeLock(index);
             model.setFieldId(index, fieldId);
             model.setNeuronId(index, neuronId);
             model.setSomaId(index, somaId);
             model.setWeightId(index, weightView.getViewId());
         } finally {
-            model.unlock(index);
+            model.writeUnlock(index);
         }
     }
 

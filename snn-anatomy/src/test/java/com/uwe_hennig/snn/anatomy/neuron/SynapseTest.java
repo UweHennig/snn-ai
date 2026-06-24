@@ -28,14 +28,14 @@ public class SynapseTest {
         checkModel(model, 1);
 
         try {
-            model.lock(0);
+            model.writeLock(0);
             model.setFieldId(0, 1);
             model.setNeuronId(0, 2);
             model.setTargetId(0, 3);
             model.setModulatorId(0, 4);
             model.setTargetType(0, 5);
         } finally {
-            model.unlock(0);
+            model.writeUnlock(0);
         }
 
         assertEquals(1L, model.getFiedlId(0));

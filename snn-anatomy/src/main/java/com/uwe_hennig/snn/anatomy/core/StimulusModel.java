@@ -15,6 +15,7 @@ import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SequenceLayout;
 import java.lang.invoke.VarHandle;
+import java.util.concurrent.locks.LockSupport;
 
 /**
  * StimulusModel
@@ -69,22 +70,28 @@ public class StimulusModel {
 
     // ----- lock/unlock -----
 
-    void lock(int index) {
-        // 0 = unlocked, 1 = lock
-        while (!VH_LOCK.compareAndSet(segment, 0L, index, 0, 1)) {
-            Thread.onSpinWait();
+    void writeLock(int index) {
+        int spins = 0;
+        while (!VH_LOCK.compareAndSet(segment, 0L, index, -1)) {
+            if (spins < 64) {
+                Thread.onSpinWait();
+                spins++;
+            } else {
+                LockSupport.parkNanos(1);
+            }
         }
     }
 
-    void unlock(int index) {
+    void writeUnlock(int index) {
         VH_LOCK.setRelease(segment, 0L, index, 0);
     }
 
-    public boolean tryLock(long index) {
+
+    public boolean tryWriteLock(long index) {
         return (int) VH_LOCK.compareAndExchange(segment, 0L, index, 0, 1) == 0;
     }
 
-    public boolean isLocked(long index) {
+    public boolean isWriteLocked(long index) {
         return (int) VH_LOCK.get(segment, 0L, index) == 1;
     }
 

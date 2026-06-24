@@ -26,7 +26,7 @@ public class PlasticityTest {
         PlasticityModel model = null;
         try {
             model = new PlasticityModel(1);
-            model.lock(0);
+            model.writeLock(0);
             model.setCurrentPotential(0, 1f);
             model.setLastUpdateTime(0, 2f);
             model.setRestingPotential(0, 3f);
@@ -35,7 +35,7 @@ public class PlasticityTest {
             model.setTargetPotential(0, 6f);
             model.setTargetRate(0, 7f);
             model.setTargetTime(0, 8f);
-            model.unlock(0);
+            model.writeUnlock(0);
 
             checkNaN(model);
 
@@ -62,7 +62,7 @@ public class PlasticityTest {
         try {
             model = new PlasticityModel(1);
             // initial values
-            model.lock(0);
+            model.writeLock(0);
             float startTime = 200f;
             model.setCurrentPotential(0, -40f);
             model.setLastUpdateTime(0, startTime);
@@ -75,7 +75,7 @@ public class PlasticityTest {
 
             model.setTargetRate(0, 2f);
             model.setRestingRate(0, 2f);
-            model.unlock(0);
+            model.writeUnlock(0);
 
             System.out.println("### Initial values");
             System.out.println("currentPotential = " + model.getCurrentPotential(0));

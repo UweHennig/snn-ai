@@ -29,7 +29,7 @@ public class PotentialTest {
         checkModel(model, 1);
 
         try {
-            model.lock(0);
+            model.writeLock(0);
             model.setPotential(0, 1f);
             model.setLastUpdateTime(0, 2f);
             model.setRestingPotential(0, 3f);
@@ -38,7 +38,7 @@ public class PotentialTest {
             e.printStackTrace();
             fail("Exception in testPotentialModel " + e.getLocalizedMessage());
         } finally {
-            model.unlock(0);
+            model.writeUnlock(0);
         }
 
         assertEquals(1f, model.getPotential(0));
@@ -62,10 +62,10 @@ public class PotentialTest {
             PotentialView[] views = new PotentialView[n];
             for (int i = 0; i < n; i++) {
                 views[i] = new PotentialView(i, model);
-                model.lock(i);
+                model.writeLock(i);
                 model.setPotential(i, 0f);
                 model.setRestingPotential(i, 0f);
-                model.unlock(i);
+                model.writeUnlock(i);
             }
 
             for (int i = 0; i < n; i++) {

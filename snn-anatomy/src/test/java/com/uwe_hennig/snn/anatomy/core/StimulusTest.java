@@ -108,7 +108,7 @@ public class StimulusTest {
 
         // set slot 0..4 to locked
         for (int i = 0; i < 5; i++) {
-            model.tryLock(i);
+            model.tryWriteLock(i);
         }
 
         int idx = view.claimStimulus(1, 1, 1, 1f);
