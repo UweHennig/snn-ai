@@ -44,11 +44,11 @@ public final class Soma implements NeuronElement {
         }
 
         float stimulusValue = StimulusService.getValue(stimulusIdentifier);
-        int stimulusType = StimulusService.getType(stimulusIdentifier);
+        int stimulusType = StimulusService.getTrgType(stimulusIdentifier);
 
         // TODO complete implementation
 
-        StimulusService.update(stimulusIdentifier, view.getViewId(), view.getAxonId(), -1, AXON.code(), stimulusValue);
+        StimulusService.update(stimulusIdentifier, stimulusType, view.getViewId(), view.getAxonId(), -1, AXON.code(), stimulusValue);
         SnnTransferservice.transfer(stimulusIdentifier, AXON.code());
     }
 

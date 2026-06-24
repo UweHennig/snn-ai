@@ -73,7 +73,7 @@ public class StimulusTest {
         assertEquals(4.5f, model.getValue(idx));
 
         // ---- Update within TTL ----
-        boolean ok = view.updateStimulus(idx, 10, 20, -1, 30, 40.5f);
+        boolean ok = view.updateStimulus(idx, 0, 10, 20, -1, 30, 40.5f);
         assertTrue(ok, "Update must succeed while TTL is valid");
 
         assertEquals(10, model.getSrc(idx));
@@ -87,7 +87,7 @@ public class StimulusTest {
         // ---- TTL to drain artificially ----
         model.setExpiry(idx, System.nanoTime() - 1);
 
-        boolean fail = view.updateStimulus(idx, 99, 99, -1, 99, 99f);
+        boolean fail = view.updateStimulus(idx, 0, 99, 99, -1, 99, 99f);
         assertFalse(fail, "Update must fail after TTL expired");
 
         model.close();

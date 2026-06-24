@@ -38,8 +38,8 @@ public class StimulusService {
         return INSTANCE.view.getValue(index);
     }
 
-    public static boolean update(int index, int src, int trg, int trgRef, int trgType, float value) {
-        return INSTANCE.view.updateStimulus(index, src, trg, trgRef, trgType, value);
+    public static boolean update(int index, int eventType, int src, int trg, int trgRef, int trgType, float value) {
+        return INSTANCE.view.updateStimulus(index, eventType, src, trg, trgRef, trgType, value);
     }
 
     public static int getSrc(int index) {
@@ -50,12 +50,16 @@ public class StimulusService {
         return INSTANCE.view.getTrg(index);
     }
 
-    public static int getType(int index) {
-        return INSTANCE.view.getType(index);
+    public static int getTrgType(int index) {
+        return INSTANCE.view.getTrgType(index);
     }
 
     public static long getExpiry(int index) {
         return INSTANCE.view.getExpiry(index);
+    }
+
+    public static boolean isTimeFeedback(int index) {
+        return false;// TODO
     }
 }
 

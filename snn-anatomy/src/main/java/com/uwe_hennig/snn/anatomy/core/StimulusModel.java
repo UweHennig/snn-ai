@@ -32,22 +32,23 @@ public class StimulusModel {
     // @formatter:off
     public static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         JAVA_INT.withName("lock"),      // 0: free, 1: occupied
-        MemoryLayout.paddingLayout(4),
+        JAVA_INT.withName("eventType"),
         JAVA_INT.withName("srcIndex"),
         JAVA_INT.withName("trgIndex"),
         JAVA_LONG.withName("trgRef"),
         JAVA_LONG.withName("expiry"),
-        JAVA_INT.withName("type"),
+        JAVA_INT.withName("trgType"),
         JAVA_FLOAT.withName("value")
     ).withByteAlignment(8);
 
-    static final VarHandle VH_LOCK      = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("lock"));
-    static final VarHandle VH_EXPIRY    = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("expiry"));
-    static final VarHandle VH_SRC_INDEX = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("srcIndex"));
-    static final VarHandle VH_TRG_INDEX = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("trgIndex"));
-    static final VarHandle VH_TRG_REF   = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("trgRef"));
-    static final VarHandle VH_TYPE      = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("type"));
-    static final VarHandle VH_VALUE     = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("value"));
+    static final VarHandle VH_LOCK       = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("lock"));
+    static final VarHandle VH_EVENT_TYPE = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("eventType"));
+    static final VarHandle VH_EXPIRY     = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("expiry"));
+    static final VarHandle VH_SRC_INDEX  = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("srcIndex"));
+    static final VarHandle VH_TRG_INDEX  = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("trgIndex"));
+    static final VarHandle VH_TRG_REF    = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("trgRef"));
+    static final VarHandle VH_TRG_TYPE   = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("trgType"));
+    static final VarHandle VH_VALUE      = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("value"));
     // @formatter:on
 
     public StimulusModel(int capacity) {
@@ -97,6 +98,14 @@ public class StimulusModel {
         VH_EXPIRY.set(segment, 0L, index, value);
     }
 
+    int getEventType(int index) {
+        return (int) VH_EVENT_TYPE.get(segment, 0L, index);
+    }
+
+    void setEventType(int index, int value) {
+        VH_EVENT_TYPE.set(segment, 0L, index, value);
+    }
+
     int getSrc(int index) {
         return (int) VH_SRC_INDEX.get(segment, 0L, index);
     }
@@ -122,11 +131,11 @@ public class StimulusModel {
     }
 
     int getTrgType(int index) {
-        return (int) VH_TYPE.get(segment, 0L, index);
+        return (int) VH_TRG_TYPE.get(segment, 0L, index);
     }
 
-    void setTrgType(int index, int type) {
-        VH_TYPE.set(segment, 0L, index, type);
+    void setTrgType(int index, int value) {
+        VH_TRG_TYPE.set(segment, 0L, index, value);
     }
 
     float getValue(int index) {

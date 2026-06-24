@@ -5,8 +5,6 @@
  */
 package com.uwe_hennig.snn.cerebro.neuron;
 
-import static com.uwe_hennig.snn.contracts.core.NeuronElementType.AXON;
-
 import com.uwe_hennig.snn.anatomy.neuron.ModulatorView;
 import com.uwe_hennig.snn.anatomy.neuron.SynapseView;
 import com.uwe_hennig.snn.contracts.core.NeuronElement;
@@ -37,11 +35,11 @@ public final class Synapse implements NeuronElement {
         }
 
         float stimulusValue = StimulusService.getValue(stimulusIdentifier);
-        int stimulusType = StimulusService.getType(stimulusIdentifier);
+        int stimulusType = StimulusService.getTrgType(stimulusIdentifier);
 
         // TODO complete implementation
 
-        StimulusService.update(stimulusIdentifier, view.getViewId(), view.getTargetId(), -1, view.getTargetType(), stimulusValue);
+        StimulusService.update(stimulusIdentifier, stimulusType, view.getViewId(), view.getTargetId(), -1, view.getTargetType(), stimulusValue);
         SnnTransferservice.transfer(stimulusIdentifier, view.getTargetType());
     }
 

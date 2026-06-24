@@ -41,11 +41,11 @@ public final class Dendrit implements NeuronElement {
         }
 
         float stimulusValue = StimulusService.getValue(stimulusIdentifier);
-        int stimulusType = StimulusService.getType(stimulusIdentifier);
+        int stimulusType = StimulusService.getTrgType(stimulusIdentifier);
 
         if (StimulusType.STIMULUS.code() == stimulusType) {
             stimulusValue = weightView.applyStimulus(stimulusValue, currentTime);
-            StimulusService.update(stimulusIdentifier, view.getViewId(), view.getSomaId(), -1, NeuronElementType.SOMA.code(), stimulusValue);
+            StimulusService.update(stimulusIdentifier, stimulusType, view.getViewId(), view.getSomaId(), -1, NeuronElementType.SOMA.code(), stimulusValue);
         }
 
         if (StimulusType.TIME_FEEDBACK.code() == stimulusType) {

@@ -38,11 +38,11 @@ public final class Axon implements NeuronElement {
         }
 
         float stimulusValue = StimulusService.getValue(stimulusIdentifier);
-        int stimulusType = StimulusService.getType(stimulusIdentifier);
+        int stimulusType = StimulusService.getTrgType(stimulusIdentifier);
 
         // TODO complete implementation
 
-        StimulusService.update(stimulusIdentifier, view.getViewId(), -1, view.getSynapseRef(), SYNAPSE.code(), stimulusValue);
+        StimulusService.update(stimulusIdentifier, stimulusType, view.getViewId(), -1, view.getSynapseRef(), SYNAPSE.code(), stimulusValue);
         SnnTransferservice.transfer(stimulusIdentifier, SYNAPSE.code());
     }
 

@@ -33,8 +33,9 @@ public class StimulusView {
         return model;
     }
 
+    // TODO Multi Recipient
     public int claimStimulus(int src, int trg, int type, float value) {
-        long now = System.nanoTime();
+        long now = System.nanoTime(); // TODO check
         int start = nextSearchStart.getAndAdd(32) & MASK;
 
         for (int i = 0; i < 64; i++) {
@@ -63,8 +64,8 @@ public class StimulusView {
         return -1;
     }
 
-    public boolean updateStimulus(int index, int src, int trg, int trgRef, int trgType, float value) {
-        long now = System.nanoTime();
+    public boolean updateStimulus(int index, int eventType, int src, int trg, int trgRef, int trgType, float value) {
+        long now = System.nanoTime(); // TODO check
         if (model.getExpiry(index) >= now) {
             if (model.tryLock(index)) {
                 try {
@@ -74,6 +75,7 @@ public class StimulusView {
                         model.setTrgRef(index, trgRef);
                         model.setTrgType(index, trgType);
                         model.setValue(index, value);
+                        model.setEventType(index, eventType);
 
                         model.setExpiry(index, now + TTL_NANO);
 
@@ -100,12 +102,16 @@ public class StimulusView {
         return model.getTrg(index);
     }
 
-    public int getType(int index) {
+    public int getTrgType(int index) {
         return model.getTrgType(index);
     }
 
     public float getValue(int index) {
         return model.getValue(index);
+    }
+
+    public int getEventType(int index) {
+        return model.getEventType(index);
     }
 
     public int [] getTrgList(int index) {
