@@ -31,12 +31,16 @@ public final class Axon implements NeuronElement {
 
     @Override
     public void stimulate(int stimulusIdentifier) {
+        // TODO complete implementation
         float currentTime = 1000; // TODO
         float stimulusValue = StimulusService.getValue(stimulusIdentifier);
         int stimulusType = StimulusService.getTrgType(stimulusIdentifier);
 
-        // TODO complete implementation
+        if(StimulusService.isStimulus(stimulusIdentifier) /*&& StimulusService.isExternal()*/) {
+            //stimulusIdentifier = modulatorView.getAndUpdate(modulation -> modulation.disturbance(stimulus.value()));
+        }
 
+        // TODO for each synapse or bulk
         StimulusService.update(stimulusIdentifier, stimulusType, view.getViewId(), -1, view.getSynapseRef(), SYNAPSE.code(), stimulusValue);
         SnnTransferservice.transfer(stimulusIdentifier, SYNAPSE.code());
     }
