@@ -45,4 +45,10 @@ public final class Synapse implements NeuronElement {
     public NeuronElementType getType() {
         return NeuronElementType.SYNAPSE;
     }
+
+    @Override
+    public int getNeuronId() {
+        return view.getNeuronId();
+    }
+
 }

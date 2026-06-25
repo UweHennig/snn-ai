@@ -74,4 +74,10 @@ public final class Soma implements NeuronElement {
     public NeuronElementType getType() {
         return SOMA;
     }
+
+    @Override
+    public int getNeuronId() {
+        return view.getNeuronId();
+    }
+
 }

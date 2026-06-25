@@ -39,7 +39,7 @@ public final class ModulatorView {
     // ----- Domain Logic -----
 
     // The method is called on normal stimuli
-    public float applyStimulus(float stimulus, int signalType, float currentTime) {
+    public float applyStimulus(float stimulus, float currentTime) {
         if (!relevantGain(currentTime)) {
             // No influence
             return stimulus;

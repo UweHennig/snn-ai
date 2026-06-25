@@ -54,4 +54,10 @@ public final class Dendrit implements NeuronElement {
     public NeuronElementType getType() {
         return NeuronElementType.DENDRIT;
     }
+
+    @Override
+    public int getNeuronId() {
+        return view.getNeuronId();
+    }
+
 }
