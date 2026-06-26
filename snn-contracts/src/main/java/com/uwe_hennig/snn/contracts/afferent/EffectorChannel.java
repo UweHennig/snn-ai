@@ -1,23 +1,23 @@
 /**
- * @(#)ActionChannel.java
+ * @(#)EffectorChannel.java
  * Copyright (c) 2026 Uwe Hennig
  * All rights reserved.
  */
 package com.uwe_hennig.snn.contracts.afferent;
 
 /**
- * ActionChannel
+ * EffectorChannel
  * @formatter:off
  * @formatter:on
  * @author Uwe Hennig
  */
-public class ActionChannel {
+public class EffectorChannel {
     private final EnvAction<?> action;
     private final SnnEffector effector;
 
     private final Converter<Float, EnvSignal<?>> actionConverter;
 
-    public ActionChannel(SnnEffector effector, Converter<Float, EnvSignal<?>> actionConverter, EnvAction<?> action) {
+    public EffectorChannel(SnnEffector effector, Converter<Float, EnvSignal<?>> actionConverter, EnvAction<?> action) {
         this.action = action;
         this.actionConverter = actionConverter;
         this.effector = effector;

@@ -8,7 +8,7 @@ package com.uwe_hennig.snn.afferent.agent;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.uwe_hennig.snn.contracts.afferent.ActionChannel;
+import com.uwe_hennig.snn.contracts.afferent.EffectorChannel;
 import com.uwe_hennig.snn.contracts.afferent.Converter;
 import com.uwe_hennig.snn.contracts.afferent.EnvAction;
 import com.uwe_hennig.snn.contracts.afferent.EnvFeedback;
@@ -36,20 +36,20 @@ import com.uwe_hennig.snn.contracts.afferent.StateChannel;
  * @author Uwe Hennig
  */
 public abstract class AgentMediator {
-    protected final Map<Long, StateChannel>    stateChhannels   = new HashMap<>();
-    protected final Map<Long, ActionChannel>   actionChannels   = new HashMap<>();
+    protected final Map<Long, StateChannel>    stateChannels   = new HashMap<>();
+    protected final Map<Long, EffectorChannel> effectorChannels = new HashMap<>();
     protected final Map<Long, FeedbackChannel> feedbackChannels = new HashMap<>();
 
     // --- (EnvState, EnvSignal) → (SnnReceptor, Float) ---
 
     public void registerState(EnvState<?> state, Converter<EnvSignal<?>, Float> converter, SnnReceptor receptor) {
         StateChannel stateChannel = new StateChannel(state, converter, receptor);
-        stateChhannels.put(state.getIdentifier(), stateChannel);
+        stateChannels.put(state.getIdentifier(), stateChannel);
         state.setConsumer(this::onState);
     }
 
     protected void onState(EnvState<?> state, EnvSignal<?> signal) {
-        StateChannel stateChannel = stateChhannels.get(state.getIdentifier());
+        StateChannel stateChannel = stateChannels.get(state.getIdentifier());
         Converter<EnvSignal<?>, Float> converter = stateChannel.getConverter();
         SnnReceptor receptor = stateChannel.getReceptor();
 
@@ -81,15 +81,15 @@ public abstract class AgentMediator {
     // --- (SnnEffector, Float) → (EnvAction, EnvSignal) ---
 
     public void registerEffector(SnnEffector effector, Converter<Float, EnvSignal<?>> transformer, EnvAction<?> envAction) {
-        ActionChannel actionChannel = new ActionChannel(effector, transformer, envAction);
-        actionChannels.put(effector.getIdentifier(), actionChannel);
+        EffectorChannel effectorChannel = new EffectorChannel(effector, transformer, envAction);
+        effectorChannels.put(effector.getIdentifier(), effectorChannel);
         effector.setConsumer(this::onEffector);
     }
 
     protected void onEffector(SnnEffector effector, float value) {
-        ActionChannel actionChannel = actionChannels.get(effector.getIdentifier());
-        Converter<Float, EnvSignal<?>> converter = actionChannel.getConverter();
-        EnvAction<?> envAction = actionChannel.getAction();
+        EffectorChannel effectorChannel = effectorChannels.get(effector.getIdentifier());
+        Converter<Float, EnvSignal<?>> converter = effectorChannel.getConverter();
+        EnvAction<?> envAction = effectorChannel.getAction();
 
         if (converter != null && envAction != null) {
             EnvSignal<?> signal = converter.convert(value);
