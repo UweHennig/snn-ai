@@ -1,15 +1,15 @@
 /**
- * @(#)Signal.java
+ * @(#)EnvSignal.java
  * Copyright (c) 2026 Uwe Hennig
  * All rights reserved.
  */
 package com.uwe_hennig.snn.contracts.afferent;
 
 /**
- * Signal
+ * EnvSignal
  *
  * @author Uwe Hennig
  */
-public interface Signal<T> {
+public interface EnvSignal<T> {
     T data();
 }

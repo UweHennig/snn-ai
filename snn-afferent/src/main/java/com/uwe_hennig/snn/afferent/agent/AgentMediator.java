@@ -10,12 +10,13 @@ import java.util.Map;
 
 import com.uwe_hennig.snn.contracts.afferent.Converter;
 import com.uwe_hennig.snn.contracts.afferent.EnvState;
-import com.uwe_hennig.snn.contracts.afferent.Signal;
+import com.uwe_hennig.snn.contracts.afferent.EnvSignal;
 import com.uwe_hennig.snn.contracts.afferent.SnnReceptor;
 import com.uwe_hennig.snn.contracts.afferent.StateChannel;
 
 /**
- * AgentMediator The AgentMediator is responsible for organizing communication between the Environment and the SNN.
+ * AgentMediator
+ * The AgentMediator is responsible for organizing communication between the environment and the SNN.
  *
  * <pre>
  * Environment  <-> SNN
@@ -30,22 +31,29 @@ import com.uwe_hennig.snn.contracts.afferent.StateChannel;
 public abstract class AgentMediator {
     protected final Map<Long, StateChannel> stateChhannels = new HashMap<>();
 
-    public void registerState(EnvState<?> state, Converter<Signal<?>, Float> transformer, SnnReceptor receptor) {
-        StateChannel stateChannel = new StateChannel(state, transformer, receptor);
+    // --- (EnvState, EnvSignal) → (SnnReceptor, Float) ---
+
+    public void registerState(EnvState<?> state, Converter<EnvSignal<?>, Float> converter, SnnReceptor receptor) {
+        StateChannel stateChannel = new StateChannel(state, converter, receptor);
         stateChhannels.put(state.getIdentifier(), stateChannel);
         state.setConsumer(this::onState);
     }
 
-    // Dispatcher: (EnvState,Payload) → (Receptor, float)
-    protected void onState(EnvState<?> state, Signal<?> payload) {
+    protected void onState(EnvState<?> state, EnvSignal<?> signal) {
         StateChannel stateChannel = stateChhannels.get(state.getIdentifier());
-        Converter<Signal<?>, Float> converter = stateChannel.getConverter();
+        Converter<EnvSignal<?>, Float> converter = stateChannel.getConverter();
         SnnReceptor receptor = stateChannel.getReceptor();
 
         if (converter != null && receptor != null) {
-            float transformedValue = converter.convert(payload);
-            receptor.perceive(transformedValue);
+            float convertedValue = converter.convert(signal);
+            receptor.perceive(convertedValue);
         }
     }
+
+    // --- (SnnEffector, Float) → (EnvAction, EnvSignal) ---
+    // TODO
+
+    // --- (EnvFeedback, EnvSignal) → (SnnFeedback, Float) ---
+    // TODO
 
 }
