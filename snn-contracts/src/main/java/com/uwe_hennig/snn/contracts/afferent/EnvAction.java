@@ -10,5 +10,6 @@ package com.uwe_hennig.snn.contracts.afferent;
  *
  * @author Uwe Hennig
  */
-public interface EnvAction {
+public interface EnvAction<A> {
+    long getIdentifier();
 }

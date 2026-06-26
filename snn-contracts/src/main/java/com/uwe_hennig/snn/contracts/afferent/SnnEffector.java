@@ -12,4 +12,5 @@ package com.uwe_hennig.snn.contracts.afferent;
  */
 public interface SnnEffector {
     void setConsumer(EffectorConsumer consumer);
+    long getIdentifier();
 }
