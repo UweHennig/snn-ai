@@ -12,4 +12,5 @@ package com.uwe_hennig.snn.contracts.afferent;
  */
 public interface EnvAction<A> {
     long getIdentifier();
+    void invoke(EnvSignal<?> signal);
 }
