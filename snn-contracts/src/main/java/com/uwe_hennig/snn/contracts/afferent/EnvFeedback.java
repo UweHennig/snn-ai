@@ -10,6 +10,7 @@ package com.uwe_hennig.snn.contracts.afferent;
  *
  * @author Uwe Hennig
  */
-public interface EnvFeedback {
-
+public interface EnvFeedback<F> {
+    long getIdentifier();
+    void setConsumer(FeedbackConsumer agentConsumer);
 }
