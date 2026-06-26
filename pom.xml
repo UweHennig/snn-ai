@@ -48,6 +48,11 @@
                 <artifactId>snn-system</artifactId>
                 <version>${snn-version}</version>
             </dependency>        
+            <dependency>
+                <groupId>com.uwe-hennig</groupId>
+                <artifactId>snn-afferent</artifactId>
+                <version>${snn-version}</version>
+            </dependency>        
             <!-- Source: https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupite -->
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
@@ -69,6 +74,7 @@
         	<module>snn-anatomy</module>
         	<module>snn-cerebro</module>
         <module>snn-system</module>
+        <module>snn-afferent</module>
 	</modules>
 	
     <build>
