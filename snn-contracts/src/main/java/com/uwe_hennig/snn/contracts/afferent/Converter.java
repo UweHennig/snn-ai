@@ -1,16 +1,15 @@
 /**
- * @(#)EnvState.java
+ * @(#)Converter.java
  * Copyright (c) 2026 Uwe Hennig
  * All rights reserved.
  */
 package com.uwe_hennig.snn.contracts.afferent;
 
 /**
- * EnvState
- *
+ * Converter
+ * translates the SNN-RL communication
  * @author Uwe Hennig
  */
-public interface EnvState<S> {
-    long getIdentifier();
-    void setConsumer(StateConsumer consumer);
+public interface Converter<T, R> {
+    R convert(T input);
 }

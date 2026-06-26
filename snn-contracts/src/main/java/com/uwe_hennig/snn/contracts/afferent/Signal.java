@@ -1,16 +1,15 @@
 /**
- * @(#)EnvState.java
+ * @(#)Signal.java
  * Copyright (c) 2026 Uwe Hennig
  * All rights reserved.
  */
 package com.uwe_hennig.snn.contracts.afferent;
 
 /**
- * EnvState
+ * Signal
  *
  * @author Uwe Hennig
  */
-public interface EnvState<S> {
-    long getIdentifier();
-    void setConsumer(StateConsumer consumer);
+public interface Signal<T> {
+    T data();
 }
