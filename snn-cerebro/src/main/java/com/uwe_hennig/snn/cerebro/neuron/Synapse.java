@@ -5,10 +5,13 @@
  */
 package com.uwe_hennig.snn.cerebro.neuron;
 
+import static com.uwe_hennig.snn.contracts.core.NeuronElementType.AXON;
+
 import com.uwe_hennig.snn.anatomy.neuron.ModulatorView;
 import com.uwe_hennig.snn.anatomy.neuron.SynapseView;
 import com.uwe_hennig.snn.contracts.core.NeuronElement;
 import com.uwe_hennig.snn.contracts.core.NeuronElementType;
+import com.uwe_hennig.snn.services.NeuronElementRegistry;
 import com.uwe_hennig.snn.services.StimulusService;
 import com.uwe_hennig.snn.util.SnnTransferservice;
 
@@ -30,11 +33,13 @@ public final class Synapse implements NeuronElement {
     public void stimulate(int stimulusIdentifier) {
         // TODO complete implementation
         float currentTime = 1000; // TODO
+
         float stimulusValue = StimulusService.getValue(stimulusIdentifier);
         int stimulusType = StimulusService.getTrgType(stimulusIdentifier);
 
-        if (StimulusService.isStimulus(stimulusIdentifier)/*&& StimulusService.isExternal()*/) {
-          //stimulusIdentifier = modulatorView.getAndUpdate(modulation -> modulation.disturbance(stimulus.value()));
+        if (StimulusService.isStimulus(stimulusIdentifier) && isExternalStimulus(stimulusIdentifier)) {
+            stimulusValue = modulatorView.applyStimulus(stimulusValue, currentTime);
+            // TODO inhibitory/excitatory
         }
 
         StimulusService.update(stimulusIdentifier, stimulusType, view.getViewId(), view.getTargetId(), -1, view.getTargetType(), stimulusValue);
@@ -51,4 +56,8 @@ public final class Synapse implements NeuronElement {
         return view.getNeuronId();
     }
 
+    private boolean isExternalStimulus(int stimulusIdentifier) {
+        NeuronElement neuronElement = NeuronElementRegistry.instance().getNeuronElement(stimulusIdentifier, AXON);
+        return neuronElement != null && neuronElement.getNeuronId() != this.getNeuronId();
+    }
 }
