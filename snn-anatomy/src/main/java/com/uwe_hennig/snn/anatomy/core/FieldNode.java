@@ -1,5 +1,5 @@
 /**
- * @(#)FieldGraph.java
+ * @(#)FieldNode.java
  * Copyright (c) 2026 Uwe Hennig
  * All rights reserved.
  */
@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * FieldGraph
+ * FieldNode
  *
  * @author Uwe Hennig
  */

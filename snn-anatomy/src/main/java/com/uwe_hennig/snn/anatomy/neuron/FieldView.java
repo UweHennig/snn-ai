@@ -8,8 +8,9 @@ package com.uwe_hennig.snn.anatomy.neuron;
 import com.uwe_hennig.snn.anatomy.core.FieldNode;
 
 /**
- * FieldView Field is currently a container for neuron fields and neurons.
- *
+ * FieldView
+ * Field is currently a container for neuron fields and neurons.
+ * TODO check whether the class is being used. See FieldNode
  * @author Uwe Hennig
  */
 public final class FieldView {
