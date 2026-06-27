@@ -12,5 +12,8 @@ package com.uwe_hennig.snn.contracts.afferent;
  */
 public interface EnvFeedback<F> {
     long getIdentifier();
-    void setConsumer(FeedbackConsumer agentConsumer);
+    F getData();
+
+    void withConsumer(FeedbackConsumer consumer);
+    void invoke(EnvSignal<?> signal);
 }

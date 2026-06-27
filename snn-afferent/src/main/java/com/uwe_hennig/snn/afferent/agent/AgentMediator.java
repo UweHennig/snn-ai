@@ -36,7 +36,7 @@ import com.uwe_hennig.snn.contracts.afferent.StateChannel;
  * @author Uwe Hennig
  */
 public abstract class AgentMediator {
-    protected final Map<Long, StateChannel>    stateChannels   = new HashMap<>();
+    protected final Map<Long, StateChannel>    stateChannels    = new HashMap<>();
     protected final Map<Long, EffectorChannel> effectorChannels = new HashMap<>();
     protected final Map<Long, FeedbackChannel> feedbackChannels = new HashMap<>();
 
@@ -45,7 +45,7 @@ public abstract class AgentMediator {
     public void registerState(EnvState<?> state, Converter<EnvSignal<?>, Float> converter, SnnReceptor receptor) {
         StateChannel stateChannel = new StateChannel(state, converter, receptor);
         stateChannels.put(state.getIdentifier(), stateChannel);
-        state.setConsumer(this::onState);
+        state.withConsumer(this::onState);
     }
 
     protected void onState(EnvState<?> state, EnvSignal<?> signal) {
@@ -64,7 +64,7 @@ public abstract class AgentMediator {
     public void registerEnvFeedback(EnvFeedback<?> envFeedback, Converter<EnvSignal<?>, Float> converter, SnnFeedback snnFeedback) {
         FeedbackChannel feedbackChannel = new FeedbackChannel(envFeedback, converter, snnFeedback);
         feedbackChannels.put(envFeedback.getIdentifier(), feedbackChannel);
-        envFeedback.setConsumer(this::onFeedback);
+        envFeedback.withConsumer(this::onFeedback);
     }
 
     protected void onFeedback(EnvFeedback<?> envFeedback, EnvSignal<?> signal) {
@@ -83,7 +83,7 @@ public abstract class AgentMediator {
     public void registerEffector(SnnEffector effector, Converter<Float, EnvSignal<?>> transformer, EnvAction<?> envAction) {
         EffectorChannel effectorChannel = new EffectorChannel(effector, transformer, envAction);
         effectorChannels.put(effector.getIdentifier(), effectorChannel);
-        effector.setConsumer(this::onEffector);
+        effector.withConsumer(this::onEffector);
     }
 
     protected void onEffector(SnnEffector effector, float value) {

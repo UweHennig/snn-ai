@@ -11,6 +11,6 @@ package com.uwe_hennig.snn.contracts.afferent;
  * @author Uwe Hennig
  */
 public interface SnnEffector {
-    void setConsumer(EffectorConsumer consumer);
+    void withConsumer(EffectorConsumer consumer);
     long getIdentifier();
 }
