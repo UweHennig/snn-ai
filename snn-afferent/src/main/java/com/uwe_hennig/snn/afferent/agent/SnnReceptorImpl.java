@@ -20,11 +20,11 @@ import com.uwe_hennig.snn.util.SnnTransferservice;
  */
 public class SnnReceptorImpl implements SnnReceptor {
     private final int identifier;
-    private final int relatedNeuronElementId;
+    private final int relatedDendritId;
 
-    private SnnReceptorImpl(int identifier, int relatedNeuronElementId) {
+    private SnnReceptorImpl(int identifier, int relatedDendritId) {
         this.identifier = identifier;
-        this.relatedNeuronElementId = relatedNeuronElementId;
+        this.relatedDendritId = relatedDendritId;
     }
 
     public static SnnReceptor of(int identifier, int relatedNeuronElementId, StimulusType stimulusType) {
@@ -33,7 +33,7 @@ public class SnnReceptorImpl implements SnnReceptor {
 
     @Override
     public void perceive(float value) {
-        int stimulusId = StimulusService.claim(STIMULUS.code(), identifier, relatedNeuronElementId, -1, DENDRIT.code(), value);
+        int stimulusId = StimulusService.claim(STIMULUS.code(), identifier, relatedDendritId, -1, DENDRIT.code(), value);
         SnnTransferservice.transfer(stimulusId, DENDRIT.code());
     }
 }
