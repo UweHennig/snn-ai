@@ -19,6 +19,7 @@ import com.uwe_hennig.snn.contracts.peripheral.SnnEffector;
 import com.uwe_hennig.snn.contracts.peripheral.SnnFeedback;
 import com.uwe_hennig.snn.contracts.peripheral.SnnReceptor;
 import com.uwe_hennig.snn.peripheral.agent.AgentMediator;
+import com.uwe_hennig.snn.util.TimedExecution;
 
 /**
  * EchoAgent
@@ -26,9 +27,16 @@ import com.uwe_hennig.snn.peripheral.agent.AgentMediator;
  *
  * @author Uwe Hennig
  */
-public class EchoAgentCreator extends AgentMediator implements AgentCreator<EchoAgentCreator> {
+public class EchoAgent extends AgentMediator implements AgentCreator<EchoAgent> {
     private EchoEnvironment environment;
     private NeuroPeripheral neuroPeripheral;
+
+    public void start(Duration totalRuntime) {
+        TimedExecution timedExecution = TimedExecution.of(totalRuntime);
+        environment.start();
+        timedExecution.waitOnSignal();
+        environment.stop();
+    }
 
     @Override
     public void createEnvironment() {
@@ -38,7 +46,7 @@ public class EchoAgentCreator extends AgentMediator implements AgentCreator<Echo
     @Override
     public void createEffectorMapping() {
         List<SnnEffector> effectors = neuroPeripheral.getEffectors();
-        List<EnvAction> actions = environment.getEnvActionsPorts();
+        List<EnvAction> actions = environment.getEnvActions();
 
         if (actions.size() != effectors.size()) {
             throw new RuntimeException("Effector and action lists must have same size!");
@@ -58,7 +66,7 @@ public class EchoAgentCreator extends AgentMediator implements AgentCreator<Echo
     @Override
     public void createStateMapping() {
         List<SnnReceptor> receptors = neuroPeripheral.getReceptors();
-        List<EnvState> states = environment.getEnvStatePorts();
+        List<EnvState> states = environment.getEnvState();
 
         if (receptors.size() != states.size()) {
             throw new RuntimeException("Receptor and state lists must have same size!");
@@ -79,7 +87,7 @@ public class EchoAgentCreator extends AgentMediator implements AgentCreator<Echo
     @Override
     public void createFeedbackMapping() {
         List<SnnFeedback> snnFeedbacks = neuroPeripheral.getFeedbacks();
-        List<EnvFeedback> envFeedbacks = environment.getEnvFeedbackPorts();
+        List<EnvFeedback> envFeedbacks = environment.getEnvFeedback();
 
         if (snnFeedbacks.size() != envFeedbacks.size()) {
             throw new RuntimeException("SnnFeedback and EnvFeedback lists must have same size!");

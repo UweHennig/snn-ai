@@ -5,23 +5,16 @@
  */
 package com.uwe_hennig.snn.learning.contracts;
 
-import java.util.List;
-
 import com.uwe_hennig.snn.contracts.peripheral.EnvAction;
-import com.uwe_hennig.snn.contracts.peripheral.EnvFeedback;
 import com.uwe_hennig.snn.contracts.peripheral.EnvSignal;
-import com.uwe_hennig.snn.contracts.peripheral.EnvState;
+import com.uwe_hennig.snn.contracts.peripheral.EnvironmentPeripheral;
 
 /**
  * Environment
  *
  * @author Uwe Hennig
  */
-public interface Environment {
-    List<EnvAction> getEnvActionsPorts();
-    List<EnvState> getEnvStatePorts();
-    List<EnvFeedback> getEnvFeedbackPorts();
-
+public interface Environment extends EnvironmentPeripheral {
     // At least one action
     void onAction(EnvAction actionPort, EnvSignal<?> signal);
 

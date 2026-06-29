@@ -85,17 +85,17 @@ public class EchoEnvironment implements Environment {
 
 
     @Override
-    public List<EnvAction> getEnvActionsPorts() {
+    public List<EnvAction> getEnvActions() {
         return List.of(actionPort);
     }
 
     @Override
-    public List<EnvState> getEnvStatePorts() {
+    public List<EnvState> getEnvState() {
         return List.of(statePort);
     }
 
     @Override
-    public List<EnvFeedback> getEnvFeedbackPorts() {
+    public List<EnvFeedback> getEnvFeedback() {
         return List.of(valueFeedbackPort, timeFeedbackPort);
     }
 
