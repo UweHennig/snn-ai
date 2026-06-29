@@ -13,7 +13,7 @@ import java.util.List;
  * @author Uwe Hennig
  */
 public interface EnvironmentPeripheral {
-    List<EnvAction<?>> getEnvActions();
-    List<EnvState<?>> getEnvState();
-    List<EnvFeedback<?>> getEnvFeedback();
+    List<EnvAction> getEnvActions();
+    List<EnvState> getEnvState();
+    List<EnvFeedback> getEnvFeedback();
 }

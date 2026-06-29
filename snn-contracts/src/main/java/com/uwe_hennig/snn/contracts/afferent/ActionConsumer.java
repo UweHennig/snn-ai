@@ -12,5 +12,5 @@ package com.uwe_hennig.snn.contracts.afferent;
  * @author Uwe Hennig
  */
 public interface ActionConsumer {
-    void accept(EnvAction<?> action, EnvSignal<?> signal);
+    void accept(EnvAction action, EnvSignal<?> signal);
 }

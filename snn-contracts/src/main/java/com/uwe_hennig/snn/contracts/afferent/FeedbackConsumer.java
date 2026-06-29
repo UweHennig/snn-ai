@@ -12,5 +12,5 @@ package com.uwe_hennig.snn.contracts.afferent;
  */
 @FunctionalInterface
 public interface FeedbackConsumer {
-    void accept(EnvFeedback<?> envFeedback, EnvSignal<?> envSignal);
+    void accept(EnvFeedback envFeedback, EnvSignal<?> envSignal);
 }

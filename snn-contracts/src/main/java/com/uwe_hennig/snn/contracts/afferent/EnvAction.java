@@ -10,9 +10,8 @@ package com.uwe_hennig.snn.contracts.afferent;
  *
  * @author Uwe Hennig
  */
-public interface EnvAction<A> {
+public interface EnvAction {
     long getIdentifier();
-    A getData();
 
     void withConsumer(ActionConsumer consumer);
     void invoke(EnvSignal<?> signal);

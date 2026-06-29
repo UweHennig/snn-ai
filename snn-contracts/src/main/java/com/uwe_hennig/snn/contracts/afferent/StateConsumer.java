@@ -12,5 +12,5 @@ package com.uwe_hennig.snn.contracts.afferent;
  */
 @FunctionalInterface
 public interface StateConsumer {
-    void accept(EnvState<?> state, EnvSignal<?> signal);
+    void accept(EnvState state, EnvSignal<?> signal);
 }

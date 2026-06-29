@@ -10,9 +10,8 @@ package com.uwe_hennig.snn.contracts.afferent;
  *
  * @author Uwe Hennig
  */
-public interface EnvState<S> {
+public interface EnvState {
     long getIdentifier();
-    S getData();
 
     void withConsumer(StateConsumer consumer);
     void invoke(EnvSignal<?> signal);

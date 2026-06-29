@@ -12,18 +12,18 @@ package com.uwe_hennig.snn.contracts.afferent;
  * @author Uwe Hennig
  */
 public class StateChannel {
-    private final EnvState<?> state;
+    private final EnvState state;
     private final SnnReceptor receptor;
 
     private final Converter<EnvSignal<?>, Float> converter;
 
-    public StateChannel(EnvState<?> state, Converter<EnvSignal<?>, Float> converter, SnnReceptor receptor) {
+    public StateChannel(EnvState state, Converter<EnvSignal<?>, Float> converter, SnnReceptor receptor) {
         this.state = state;
         this.converter = converter;
         this.receptor = receptor;
     }
 
-    public EnvState<?> getState() {
+    public EnvState getState() {
         return state;
     }
 

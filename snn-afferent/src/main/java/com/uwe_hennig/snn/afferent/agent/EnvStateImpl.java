@@ -14,19 +14,17 @@ import com.uwe_hennig.snn.contracts.afferent.StateConsumer;
  *
  * @author Uwe Hennig
  */
-public class EnvStateImpl<S> implements EnvState<S> {
+public class EnvStateImpl implements EnvState {
     private final long identifier;
 
-    private S             state;
     private StateConsumer consumer;
 
-    private EnvStateImpl(long identifier, S state) {
+    private EnvStateImpl(long identifier) {
         this.identifier = identifier;
-        this.state = state;
     }
 
-    public static <S> EnvState<S> of(long identifier, S state) {
-        return new EnvStateImpl<S>(identifier, state);
+    public static EnvState of(long identifier) {
+        return new EnvStateImpl(identifier);
     }
 
     @Override
@@ -39,11 +37,6 @@ public class EnvStateImpl<S> implements EnvState<S> {
         if (consumer != null) {
             consumer.accept(this, signal);
         }
-    }
-
-    @Override
-    public S getData() {
-        return state;
     }
 
     @Override

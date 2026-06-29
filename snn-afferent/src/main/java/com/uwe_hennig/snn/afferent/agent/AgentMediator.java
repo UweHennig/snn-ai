@@ -42,13 +42,13 @@ public abstract class AgentMediator {
 
     // --- (EnvState, EnvSignal) → (SnnReceptor, Float) ---
 
-    public void registerState(EnvState<?> state, Converter<EnvSignal<?>, Float> converter, SnnReceptor receptor) {
+    public void registerState(EnvState state, Converter<EnvSignal<?>, Float> converter, SnnReceptor receptor) {
         StateChannel stateChannel = new StateChannel(state, converter, receptor);
         stateChannels.put(state.getIdentifier(), stateChannel);
         state.withConsumer(this::onState);
     }
 
-    protected void onState(EnvState<?> state, EnvSignal<?> signal) {
+    protected void onState(EnvState state, EnvSignal<?> signal) {
         StateChannel stateChannel = stateChannels.get(state.getIdentifier());
         Converter<EnvSignal<?>, Float> converter = stateChannel.getConverter();
         SnnReceptor receptor = stateChannel.getReceptor();
@@ -61,13 +61,13 @@ public abstract class AgentMediator {
 
     // --- (EnvFeedback, EnvSignal) → (SnnFeedback, Float) ---
 
-    public void registerEnvFeedback(EnvFeedback<?> envFeedback, Converter<EnvSignal<?>, Float> converter, SnnFeedback snnFeedback) {
+    public void registerEnvFeedback(EnvFeedback envFeedback, Converter<EnvSignal<?>, Float> converter, SnnFeedback snnFeedback) {
         FeedbackChannel feedbackChannel = new FeedbackChannel(envFeedback, converter, snnFeedback);
         feedbackChannels.put(envFeedback.getIdentifier(), feedbackChannel);
         envFeedback.withConsumer(this::onFeedback);
     }
 
-    protected void onFeedback(EnvFeedback<?> envFeedback, EnvSignal<?> signal) {
+    protected void onFeedback(EnvFeedback envFeedback, EnvSignal<?> signal) {
         FeedbackChannel feedbackChannel = feedbackChannels.get(envFeedback.getIdentifier());
         Converter<EnvSignal<?>, Float> converter = feedbackChannel.getConverter();
         SnnFeedback snnFeedback = feedbackChannel.getSnnFeedback();
@@ -80,7 +80,7 @@ public abstract class AgentMediator {
 
     // --- (SnnEffector, Float) → (EnvAction, EnvSignal) ---
 
-    public void registerEffector(SnnEffector effector, Converter<Float, EnvSignal<?>> transformer, EnvAction<?> envAction) {
+    public void registerEffector(SnnEffector effector, Converter<Float, EnvSignal<?>> transformer, EnvAction envAction) {
         EffectorChannel effectorChannel = new EffectorChannel(effector, transformer, envAction);
         effectorChannels.put(effector.getIdentifier(), effectorChannel);
         effector.withConsumer(this::onEffector);
@@ -89,7 +89,7 @@ public abstract class AgentMediator {
     protected void onEffector(SnnEffector effector, float value) {
         EffectorChannel effectorChannel = effectorChannels.get(effector.getIdentifier());
         Converter<Float, EnvSignal<?>> converter = effectorChannel.getConverter();
-        EnvAction<?> envAction = effectorChannel.getAction();
+        EnvAction envAction = effectorChannel.getAction();
 
         if (converter != null && envAction != null) {
             EnvSignal<?> signal = converter.convert(value);

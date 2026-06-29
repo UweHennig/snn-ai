@@ -10,10 +10,9 @@ package com.uwe_hennig.snn.contracts.afferent;
  *
  * @author Uwe Hennig
  */
-public interface EnvFeedback<F> {
+public interface EnvFeedback {
     long getIdentifier();
-    F getData();
-
     void withConsumer(FeedbackConsumer consumer);
     void invoke(EnvSignal<?> signal);
+    EnvFeedbackType getFeedbackType();
 }

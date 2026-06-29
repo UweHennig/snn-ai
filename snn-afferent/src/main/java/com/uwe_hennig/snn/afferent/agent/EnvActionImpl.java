@@ -14,19 +14,17 @@ import com.uwe_hennig.snn.contracts.afferent.EnvSignal;
  *
  * @author Uwe Hennig
  */
-public class EnvActionImpl<A> implements EnvAction<A> {
+public class EnvActionImpl implements EnvAction {
     private final long           identifier;
 
-    private A action;
     private ActionConsumer consumer;
 
-    private EnvActionImpl(long identifier, A action) {
+    private EnvActionImpl(long identifier) {
         this.identifier = identifier;
-        this.action = action;
     }
 
-    public static <A> EnvAction<A> of(long identifier, A action, ActionConsumer consumer) {
-        return new EnvActionImpl<A>(identifier, action);
+    public static <A> EnvAction of(long identifier, ActionConsumer consumer) {
+        return new EnvActionImpl(identifier);
     }
 
     @Override
@@ -39,11 +37,6 @@ public class EnvActionImpl<A> implements EnvAction<A> {
         if (consumer != null) {
             consumer.accept(this, signal);
         }
-    }
-
-    @Override
-    public A getData() {
-        return action;
     }
 
     @Override

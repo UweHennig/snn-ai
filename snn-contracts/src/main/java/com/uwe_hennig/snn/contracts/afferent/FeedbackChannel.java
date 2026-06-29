@@ -12,17 +12,17 @@ package com.uwe_hennig.snn.contracts.afferent;
  * @author Uwe Hennig
  */
 public class FeedbackChannel {
-    private final EnvFeedback<?> envFeedback;
+    private final EnvFeedback envFeedback;
     private final Converter<EnvSignal<?>, Float> converter;
     private final SnnFeedback snnFeedback;
 
-    public FeedbackChannel(EnvFeedback<?> envFeedback, Converter<EnvSignal<?>, Float> converter, SnnFeedback snnFeedback) {
+    public FeedbackChannel(EnvFeedback envFeedback, Converter<EnvSignal<?>, Float> converter, SnnFeedback snnFeedback) {
         this.envFeedback = envFeedback;
         this.converter = converter;
         this.snnFeedback = snnFeedback;
     }
 
-    public EnvFeedback<?> getEnvFeedback() {
+    public EnvFeedback getEnvFeedback() {
         return envFeedback;
     }
 

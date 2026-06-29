@@ -12,18 +12,18 @@ package com.uwe_hennig.snn.contracts.afferent;
  * @author Uwe Hennig
  */
 public class EffectorChannel {
-    private final EnvAction<?> action;
+    private final EnvAction action;
     private final SnnEffector effector;
 
     private final Converter<Float, EnvSignal<?>> actionConverter;
 
-    public EffectorChannel(SnnEffector effector, Converter<Float, EnvSignal<?>> actionConverter, EnvAction<?> action) {
+    public EffectorChannel(SnnEffector effector, Converter<Float, EnvSignal<?>> actionConverter, EnvAction action) {
         this.action = action;
         this.actionConverter = actionConverter;
         this.effector = effector;
     }
 
-    public EnvAction<?> getAction() {
+    public EnvAction getAction() {
         return action;
     }
 

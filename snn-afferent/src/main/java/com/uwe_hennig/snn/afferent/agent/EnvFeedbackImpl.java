@@ -6,6 +6,7 @@
 package com.uwe_hennig.snn.afferent.agent;
 
 import com.uwe_hennig.snn.contracts.afferent.EnvFeedback;
+import com.uwe_hennig.snn.contracts.afferent.EnvFeedbackType;
 import com.uwe_hennig.snn.contracts.afferent.EnvSignal;
 import com.uwe_hennig.snn.contracts.afferent.FeedbackConsumer;
 
@@ -14,19 +15,18 @@ import com.uwe_hennig.snn.contracts.afferent.FeedbackConsumer;
  *
  * @author Uwe Hennig
  */
-public class EnvFeedbackImpl<F> implements EnvFeedback<F> {
-    private final long identifier;
-    private F          feedback;
+public class EnvFeedbackImpl implements EnvFeedback {
+    private final long            identifier;
+    private final EnvFeedbackType type;
+    private FeedbackConsumer      consumer;
 
-    private FeedbackConsumer consumer;
-
-    private EnvFeedbackImpl(long identifier, F feedback) {
+    private EnvFeedbackImpl(long identifier, EnvFeedbackType type) {
         this.identifier = identifier;
-        this.feedback = feedback;
+        this.type = type;
     }
 
-    public static <F> EnvFeedback<F> of(long identifier, F feedback) {
-        return new EnvFeedbackImpl<F>(identifier, feedback);
+    public static EnvFeedback of(long identifier, EnvFeedbackType type) {
+        return new EnvFeedbackImpl(identifier, type);
     }
 
     @Override
@@ -42,13 +42,13 @@ public class EnvFeedbackImpl<F> implements EnvFeedback<F> {
     }
 
     @Override
-    public F getData() {
-        return feedback;
+    public void withConsumer(FeedbackConsumer consumer) {
+        this.consumer = consumer;
     }
 
     @Override
-    public void withConsumer(FeedbackConsumer consumer) {
-        this.consumer = consumer;
+    public EnvFeedbackType getFeedbackType() {
+        return type;
     }
 
 }
