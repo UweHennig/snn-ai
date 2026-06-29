@@ -3,11 +3,11 @@
  * Copyright (c) 2026 Uwe Hennig
  * All rights reserved.
  */
-package com.uwe_hennig.snn.afferent.agent;
+package com.uwe_hennig.snn.peripheral.agent;
 
-import com.uwe_hennig.snn.contracts.afferent.EnvSignal;
-import com.uwe_hennig.snn.contracts.afferent.EnvState;
-import com.uwe_hennig.snn.contracts.afferent.StateConsumer;
+import com.uwe_hennig.snn.contracts.peripheral.EnvSignal;
+import com.uwe_hennig.snn.contracts.peripheral.EnvState;
+import com.uwe_hennig.snn.contracts.peripheral.StateConsumer;
 
 /**
  * EnvStateImpl

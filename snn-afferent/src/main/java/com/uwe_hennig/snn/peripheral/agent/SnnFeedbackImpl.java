@@ -3,12 +3,12 @@
  * Copyright (c) 2026 Uwe Hennig
  * All rights reserved.
  */
-package com.uwe_hennig.snn.afferent.agent;
+package com.uwe_hennig.snn.peripheral.agent;
 
 import static com.uwe_hennig.snn.contracts.core.NeuronElementType.DENDRIT;
 
-import com.uwe_hennig.snn.contracts.afferent.SnnFeedback;
 import com.uwe_hennig.snn.contracts.core.StimulusType;
+import com.uwe_hennig.snn.contracts.peripheral.SnnFeedback;
 import com.uwe_hennig.snn.services.StimulusService;
 import com.uwe_hennig.snn.util.SnnTransferservice;
 

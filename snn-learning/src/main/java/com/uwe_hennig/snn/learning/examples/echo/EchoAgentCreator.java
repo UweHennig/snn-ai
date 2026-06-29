@@ -8,17 +8,17 @@ package com.uwe_hennig.snn.learning.examples.echo;
 import java.time.Duration;
 import java.util.List;
 
-import com.uwe_hennig.snn.afferent.agent.AgentMediator;
-import com.uwe_hennig.snn.contracts.afferent.AgentCreator;
-import com.uwe_hennig.snn.contracts.afferent.Converter;
-import com.uwe_hennig.snn.contracts.afferent.EnvAction;
-import com.uwe_hennig.snn.contracts.afferent.EnvFeedback;
-import com.uwe_hennig.snn.contracts.afferent.EnvSignal;
-import com.uwe_hennig.snn.contracts.afferent.EnvState;
-import com.uwe_hennig.snn.contracts.afferent.NeuroPeripheral;
-import com.uwe_hennig.snn.contracts.afferent.SnnEffector;
-import com.uwe_hennig.snn.contracts.afferent.SnnFeedback;
-import com.uwe_hennig.snn.contracts.afferent.SnnReceptor;
+import com.uwe_hennig.snn.contracts.peripheral.AgentCreator;
+import com.uwe_hennig.snn.contracts.peripheral.Converter;
+import com.uwe_hennig.snn.contracts.peripheral.EnvAction;
+import com.uwe_hennig.snn.contracts.peripheral.EnvFeedback;
+import com.uwe_hennig.snn.contracts.peripheral.EnvSignal;
+import com.uwe_hennig.snn.contracts.peripheral.EnvState;
+import com.uwe_hennig.snn.contracts.peripheral.NeuroPeripheral;
+import com.uwe_hennig.snn.contracts.peripheral.SnnEffector;
+import com.uwe_hennig.snn.contracts.peripheral.SnnFeedback;
+import com.uwe_hennig.snn.contracts.peripheral.SnnReceptor;
+import com.uwe_hennig.snn.peripheral.agent.AgentMediator;
 
 /**
  * EchoAgent

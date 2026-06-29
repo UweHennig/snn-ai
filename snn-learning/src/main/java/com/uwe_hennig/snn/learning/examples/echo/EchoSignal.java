@@ -5,7 +5,7 @@
  */
 package com.uwe_hennig.snn.learning.examples.echo;
 
-import com.uwe_hennig.snn.contracts.afferent.EnvSignal;
+import com.uwe_hennig.snn.contracts.peripheral.EnvSignal;
 
 /**
  * EchoSignal

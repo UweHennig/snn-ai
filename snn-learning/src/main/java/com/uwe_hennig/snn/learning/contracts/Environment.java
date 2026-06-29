@@ -5,13 +5,12 @@
  */
 package com.uwe_hennig.snn.learning.contracts;
 
-import java.time.Duration;
 import java.util.List;
 
-import com.uwe_hennig.snn.contracts.afferent.EnvAction;
-import com.uwe_hennig.snn.contracts.afferent.EnvFeedback;
-import com.uwe_hennig.snn.contracts.afferent.EnvSignal;
-import com.uwe_hennig.snn.contracts.afferent.EnvState;
+import com.uwe_hennig.snn.contracts.peripheral.EnvAction;
+import com.uwe_hennig.snn.contracts.peripheral.EnvFeedback;
+import com.uwe_hennig.snn.contracts.peripheral.EnvSignal;
+import com.uwe_hennig.snn.contracts.peripheral.EnvState;
 
 /**
  * Environment

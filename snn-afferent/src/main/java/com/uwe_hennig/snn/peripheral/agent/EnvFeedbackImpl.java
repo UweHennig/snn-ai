@@ -3,12 +3,12 @@
  * Copyright (c) 2026 Uwe Hennig
  * All rights reserved.
  */
-package com.uwe_hennig.snn.afferent.agent;
+package com.uwe_hennig.snn.peripheral.agent;
 
-import com.uwe_hennig.snn.contracts.afferent.EnvFeedback;
-import com.uwe_hennig.snn.contracts.afferent.EnvFeedbackType;
-import com.uwe_hennig.snn.contracts.afferent.EnvSignal;
-import com.uwe_hennig.snn.contracts.afferent.FeedbackConsumer;
+import com.uwe_hennig.snn.contracts.peripheral.EnvFeedback;
+import com.uwe_hennig.snn.contracts.peripheral.EnvFeedbackType;
+import com.uwe_hennig.snn.contracts.peripheral.EnvSignal;
+import com.uwe_hennig.snn.contracts.peripheral.FeedbackConsumer;
 
 /**
  * EnvFeedbackImpl

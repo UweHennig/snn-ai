@@ -3,7 +3,7 @@
  * Copyright (c) 2026 Uwe Hennig
  * All rights reserved.
  */
-package com.uwe_hennig.snn.contracts.afferent;
+package com.uwe_hennig.snn.contracts.peripheral;
 
 /**
  * StateChannel

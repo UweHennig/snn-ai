@@ -10,15 +10,15 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.uwe_hennig.snn.afferent.agent.EnvActionImpl;
-import com.uwe_hennig.snn.afferent.agent.EnvFeedbackImpl;
-import com.uwe_hennig.snn.afferent.agent.EnvStateImpl;
-import com.uwe_hennig.snn.contracts.afferent.EnvAction;
-import com.uwe_hennig.snn.contracts.afferent.EnvFeedback;
-import com.uwe_hennig.snn.contracts.afferent.EnvFeedbackType;
-import com.uwe_hennig.snn.contracts.afferent.EnvSignal;
-import com.uwe_hennig.snn.contracts.afferent.EnvState;
+import com.uwe_hennig.snn.contracts.peripheral.EnvAction;
+import com.uwe_hennig.snn.contracts.peripheral.EnvFeedback;
+import com.uwe_hennig.snn.contracts.peripheral.EnvFeedbackType;
+import com.uwe_hennig.snn.contracts.peripheral.EnvSignal;
+import com.uwe_hennig.snn.contracts.peripheral.EnvState;
 import com.uwe_hennig.snn.learning.contracts.Environment;
+import com.uwe_hennig.snn.peripheral.agent.EnvActionImpl;
+import com.uwe_hennig.snn.peripheral.agent.EnvFeedbackImpl;
+import com.uwe_hennig.snn.peripheral.agent.EnvStateImpl;
 import com.uwe_hennig.snn.util.Trigger;
 
 /**

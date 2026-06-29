@@ -3,22 +3,22 @@
  * Copyright (c) 2026 Uwe Hennig
  * All rights reserved.
  */
-package com.uwe_hennig.snn.afferent.agent;
+package com.uwe_hennig.snn.peripheral.agent;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import com.uwe_hennig.snn.contracts.afferent.EffectorChannel;
-import com.uwe_hennig.snn.contracts.afferent.Converter;
-import com.uwe_hennig.snn.contracts.afferent.EnvAction;
-import com.uwe_hennig.snn.contracts.afferent.EnvFeedback;
-import com.uwe_hennig.snn.contracts.afferent.EnvSignal;
-import com.uwe_hennig.snn.contracts.afferent.EnvState;
-import com.uwe_hennig.snn.contracts.afferent.FeedbackChannel;
-import com.uwe_hennig.snn.contracts.afferent.SnnEffector;
-import com.uwe_hennig.snn.contracts.afferent.SnnFeedback;
-import com.uwe_hennig.snn.contracts.afferent.SnnReceptor;
-import com.uwe_hennig.snn.contracts.afferent.StateChannel;
+import com.uwe_hennig.snn.contracts.peripheral.Converter;
+import com.uwe_hennig.snn.contracts.peripheral.EffectorChannel;
+import com.uwe_hennig.snn.contracts.peripheral.EnvAction;
+import com.uwe_hennig.snn.contracts.peripheral.EnvFeedback;
+import com.uwe_hennig.snn.contracts.peripheral.EnvSignal;
+import com.uwe_hennig.snn.contracts.peripheral.EnvState;
+import com.uwe_hennig.snn.contracts.peripheral.FeedbackChannel;
+import com.uwe_hennig.snn.contracts.peripheral.SnnEffector;
+import com.uwe_hennig.snn.contracts.peripheral.SnnFeedback;
+import com.uwe_hennig.snn.contracts.peripheral.SnnReceptor;
+import com.uwe_hennig.snn.contracts.peripheral.StateChannel;
 
 /**
  * AgentMediator

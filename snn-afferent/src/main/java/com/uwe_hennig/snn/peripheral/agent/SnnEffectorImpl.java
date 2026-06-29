@@ -3,10 +3,10 @@
  * Copyright (c) 2026 Uwe Hennig
  * All rights reserved.
  */
-package com.uwe_hennig.snn.afferent.agent;
+package com.uwe_hennig.snn.peripheral.agent;
 
-import com.uwe_hennig.snn.contracts.afferent.EffectorConsumer;
-import com.uwe_hennig.snn.contracts.afferent.SnnEffector;
+import com.uwe_hennig.snn.contracts.peripheral.EffectorConsumer;
+import com.uwe_hennig.snn.contracts.peripheral.SnnEffector;
 import com.uwe_hennig.snn.services.StimulusService;
 
 /**

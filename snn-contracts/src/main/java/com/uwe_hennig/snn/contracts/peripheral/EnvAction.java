@@ -1,18 +1,18 @@
 /**
- * @(#)EnvState.java
+ * @(#)EnvAction.java
  * Copyright (c) 2026 Uwe Hennig
  * All rights reserved.
  */
-package com.uwe_hennig.snn.contracts.afferent;
+package com.uwe_hennig.snn.contracts.peripheral;
 
 /**
- * EnvState
+ * EnvAction
  *
  * @author Uwe Hennig
  */
-public interface EnvState {
+public interface EnvAction {
     long getIdentifier();
 
-    void withConsumer(StateConsumer consumer);
+    void withConsumer(ActionConsumer consumer);
     void invoke(EnvSignal<?> signal);
 }
