@@ -19,7 +19,7 @@ import com.uwe_hennig.snn.contracts.peripheral.SnnEffector;
 import com.uwe_hennig.snn.contracts.peripheral.SnnFeedback;
 import com.uwe_hennig.snn.contracts.peripheral.SnnReceptor;
 import com.uwe_hennig.snn.peripheral.agent.AgentMediator;
-import com.uwe_hennig.snn.util.TimedExecution;
+import com.uwe_hennig.snn.util.OneShotTrigger;
 
 /**
  * EchoAgent
@@ -32,7 +32,7 @@ public class EchoAgent extends AgentMediator implements AgentCreator<EchoAgent> 
     private NeuroPeripheral neuroPeripheral;
 
     public void start(Duration totalRuntime) {
-        TimedExecution timedExecution = TimedExecution.of(totalRuntime);
+        OneShotTrigger timedExecution = OneShotTrigger.of(totalRuntime);
         environment.start();
         timedExecution.waitOnSignal();
         environment.stop();

@@ -1,5 +1,5 @@
 /**
- * @(#)TimedExecution.java
+ * @(#)OneShotTrigger.java
  * Copyright (c) 2026 Uwe Hennig
  * All rights reserved.
  */
@@ -12,20 +12,20 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * TimedExecution
+ * OneShotTrigger
  *
  * @author Uwe Hennig
  */
-public class TimedExecution {
+public class OneShotTrigger {
     private final CountDownLatch latch    = new CountDownLatch(1);
     private final Duration       executionDuration;
     private final AtomicBoolean  runsOnce = new AtomicBoolean(true);
 
-    public static TimedExecution of(Duration executionDuration) {
-        return new TimedExecution(executionDuration);
+    public static OneShotTrigger of(Duration executionDuration) {
+        return new OneShotTrigger(executionDuration);
     }
 
-    private TimedExecution(Duration executionDuration) {
+    private OneShotTrigger(Duration executionDuration) {
         this.executionDuration = executionDuration;
         CompletableFuture.runAsync(latch::countDown,
             CompletableFuture.delayedExecutor(executionDuration.toMillis(), TimeUnit.MILLISECONDS));
