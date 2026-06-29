@@ -52,6 +52,11 @@
                 <groupId>com.uwe-hennig</groupId>
                 <artifactId>snn-afferent</artifactId>
                 <version>${snn-version}</version>
+            <dependency>
+                <groupId>com.uwe-hennig</groupId>
+                <artifactId>snn-learning</artifactId>
+                <version>${snn-version}</version>
+            </dependency>        
             </dependency>        
             <!-- Source: https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupite -->
             <dependency>
@@ -70,11 +75,12 @@
     </dependencyManagement>
     
 	<modules>
-        <module>snn-contracts</module>
-        	<module>snn-anatomy</module>
-        	<module>snn-cerebro</module>
-        <module>snn-system</module>
-        <module>snn-afferent</module>
+	        <module>snn-contracts</module>
+		<module>snn-anatomy</module>
+		<module>snn-cerebro</module>
+	        <module>snn-system</module>
+	        <module>snn-afferent</module>
+	        <module>snn-learning</module>
 	</modules>
 	
     <build>
