@@ -16,8 +16,7 @@ import org.junit.jupiter.api.TestInfo;
 
 /**
  * OneShotTriggerTest
- * @formatter:off
- * @formatter:on
+ *
  * @author Uwe Hennig
  */
 public class OneShotTriggerTest {
@@ -32,8 +31,8 @@ public class OneShotTriggerTest {
         System.out.println("" + (end - start) + " msec");
         assertTrue(end - start >= 999, "Invalid wait time!");
     }
-    @Test
 
+    @Test
     @DisplayName("Simple OneShotTrigger run test")
     void testSimpleOneShotExecute() {
         long start = System.currentTimeMillis();
