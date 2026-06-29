@@ -8,9 +8,9 @@
 		<version>0.0.1-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
-	<artifactId>snn-afferent</artifactId>
+	<artifactId>snn-peripheral</artifactId>
 	<packaging>jar</packaging>
-	<name>Snn-Afferent</name>
+	<name>Snn-Peripheral</name>
 	<description>Interface Sim-To-Real</description>
 	<dependencies>
         <dependency>

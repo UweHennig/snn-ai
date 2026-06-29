@@ -50,7 +50,7 @@
             </dependency>        
             <dependency>
                 <groupId>com.uwe-hennig</groupId>
-                <artifactId>snn-afferent</artifactId>
+                <artifactId>snn-peripheral</artifactId>
                 <version>${snn-version}</version>
             </dependency>        
             <dependency>
@@ -79,7 +79,7 @@
 		<module>snn-anatomy</module>
 		<module>snn-cerebro</module>
 	        <module>snn-system</module>
-	        <module>snn-afferent</module>
+	        <module>snn-peripheral</module>
 	        <module>snn-learning</module>
 	</modules>
 	

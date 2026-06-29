@@ -23,7 +23,7 @@
         </dependency>           
         <dependency>
             <groupId>com.uwe-hennig</groupId>
-            <artifactId>snn-afferent</artifactId>
+            <artifactId>snn-peripheral</artifactId>
         </dependency>           
         <dependency>
             <groupId>org.junit.jupiter</groupId>
