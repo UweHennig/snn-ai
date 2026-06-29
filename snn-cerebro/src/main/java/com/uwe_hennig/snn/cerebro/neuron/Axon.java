@@ -40,9 +40,9 @@ public final class Axon implements NeuronElement {
 
         if (StimulusService.isStimulus(stimulusIdentifier) && isExternalStimulus(stimulusIdentifier)) {
             stimulusValue = modulatorView.applyStimulus(stimulusValue, currentTime);
-            // TODO inhibitory/excitatory
+        } else if (StimulusService.isStimulus(stimulusIdentifier)) {
+            stimulusValue = modulatorView.applyStimulus(stimulusType, currentTime);
         }
-
 
         // TODO for each synapse or bulk
         StimulusService.update(stimulusIdentifier, stimulusType, view.getViewId(), -1, view.getSynapseRef(), SYNAPSE.code(), stimulusValue);

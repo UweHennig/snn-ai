@@ -15,6 +15,7 @@ import com.uwe_hennig.snn.anatomy.neuron.ThresholdView;
 import com.uwe_hennig.snn.contracts.core.NeuronElement;
 import com.uwe_hennig.snn.contracts.core.NeuronElementType;
 import com.uwe_hennig.snn.contracts.core.StimulusType;
+import com.uwe_hennig.snn.services.NeuronElementRegistry;
 import com.uwe_hennig.snn.services.StimulusService;
 import com.uwe_hennig.snn.util.SnnTransferservice;
 
@@ -42,6 +43,10 @@ public final class Soma implements NeuronElement {
     public void stimulate(int stimulusIdentifier) {
         float currentTime = 1000; // TODO
         float stimulusValue = StimulusService.getValue(stimulusIdentifier);
+
+        if (StimulusService.isStimulus(stimulusIdentifier) && isExternalStimulus(stimulusIdentifier)) {
+            SnnTransferservice.transfer(stimulusIdentifier, AXON.code());
+        }
 
         stpView.updatePlasticityPotential(currentTime);
         ltpView.updatePlasticityPotential(currentTime);
@@ -80,4 +85,8 @@ public final class Soma implements NeuronElement {
         return view.getNeuronId();
     }
 
+    private boolean isExternalStimulus(int stimulusIdentifier) {
+        NeuronElement neuronElement = NeuronElementRegistry.instance().getNeuronElement(stimulusIdentifier, AXON);
+        return neuronElement != null && neuronElement.getNeuronId() != this.getNeuronId();
+    }
 }

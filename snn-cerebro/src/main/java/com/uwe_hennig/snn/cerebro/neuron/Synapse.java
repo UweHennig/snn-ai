@@ -39,7 +39,8 @@ public final class Synapse implements NeuronElement {
 
         if (StimulusService.isStimulus(stimulusIdentifier) && isExternalStimulus(stimulusIdentifier)) {
             stimulusValue = modulatorView.applyStimulus(stimulusValue, currentTime);
-            // TODO inhibitory/excitatory
+        } else if (StimulusService.isStimulus(stimulusIdentifier)) {
+            stimulusValue = modulatorView.applyStimulus(stimulusType, currentTime);
         }
 
         StimulusService.update(stimulusIdentifier, stimulusType, view.getViewId(), view.getTargetId(), -1, view.getTargetType(), stimulusValue);

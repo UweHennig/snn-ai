@@ -52,11 +52,11 @@
                 <groupId>com.uwe-hennig</groupId>
                 <artifactId>snn-afferent</artifactId>
                 <version>${snn-version}</version>
+            </dependency>        
             <dependency>
                 <groupId>com.uwe-hennig</groupId>
                 <artifactId>snn-learning</artifactId>
                 <version>${snn-version}</version>
-            </dependency>        
             </dependency>        
             <!-- Source: https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupite -->
             <dependency>
