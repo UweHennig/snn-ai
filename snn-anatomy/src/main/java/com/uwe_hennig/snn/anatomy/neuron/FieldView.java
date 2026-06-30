@@ -10,15 +10,16 @@ import java.util.Arrays;
 import com.uwe_hennig.snn.anatomy.core.MultiList;
 
 /**
- * FieldView Field is currently a container for neuron fields and neurons.
+ * FieldView
+ * is currently a container for fields and neurons.
  *
  * @author Uwe Hennig
  */
 public final class FieldView {
-    private static final long[] EMPTY_ARRAY = new long[0];
+    private static final int[] EMPTY_ARRAY = new int[0];
+    private final int          index;
 
     private final FieldModel model;
-    private final int        index;
     private final MultiList  multiList;
 
     public FieldView(int index, FieldModel model, MultiList multiList) {
@@ -26,13 +27,17 @@ public final class FieldView {
         assert multiList != null : "MultiList must not bei null!";
         assert index < model.capacity && index >= 0 : " " + index + " >= " + model.capacity;
 
-        this.index = index;
         this.model = model;
         this.multiList = multiList;
+        this.index = index;
     }
 
     public FieldModel getModel() {
         return model;
+    }
+
+    public MultiList getMultiList() {
+        return multiList;
     }
 
     public int getViewId() {
@@ -67,7 +72,7 @@ public final class FieldView {
 
     // --- Neurons ---
 
-    public long addNeuronId(long... neuronIds) {
+    public void addNeuronId(int ... neuronIds) {
         long neuronsRef = model.getNeuronRef(index);
 
         if (neuronsRef == -1) {
@@ -81,14 +86,12 @@ public final class FieldView {
         }
 
         updateIdentifiers(neuronsRef, neuronIds);
-
-        return neuronsRef;
     }
 
-    public long[] getNeuronIds() {
+    public int[] getNeuronIds() {
         long neuronsRef = model.getNeuronRef(index);
         if (neuronsRef != -1) {
-            return multiList.getLongs(neuronsRef);
+            return multiList.getInts(neuronsRef);
         } else {
             return EMPTY_ARRAY;
         }
@@ -96,16 +99,16 @@ public final class FieldView {
 
     // --- Out Neighbors ---
 
-    public long[] getOutNeighborsRef() {
+    public int[] getOutNeighbors() {
         long outNeighborsRef = model.getOutNeighborsRef(index);
         if (outNeighborsRef != -1) {
-            return multiList.getLongs(outNeighborsRef);
+            return multiList.getInts(outNeighborsRef);
         } else {
             return EMPTY_ARRAY;
         }
     }
 
-    public long addOutNeighborsRef(long... outRefs) {
+    public void addOutNeighbors(int ... outNodes) {
         long outNeighborsRef = model.getOutNeighborsRef(index);
 
         if (outNeighborsRef == -1) {
@@ -117,14 +120,12 @@ public final class FieldView {
                 model.writeUnlock(index);
             }
         }
-        updateIdentifiers(outNeighborsRef, outRefs);
-
-        return outNeighborsRef;
+        updateIdentifiers(outNeighborsRef, outNodes);
     }
 
     // --- In Neighbors ---
 
-    public long addInNeighborsRef(long... inRefs) {
+    public void addInNeighbors(int ... inNodes) {
         long inNeighborsRef = model.getInNeighborsRef(index);
 
         if (inNeighborsRef == -1) {
@@ -137,16 +138,14 @@ public final class FieldView {
             }
         }
 
-        updateIdentifiers(inNeighborsRef, inRefs);
-
-        return inNeighborsRef;
+        updateIdentifiers(inNeighborsRef, inNodes);
     }
 
-    public long[] getInNeighborsRef() {
+    public int[] getInNeighbors() {
         long inNeighborsRef = model.getInNeighborsRef(index);
 
         if (inNeighborsRef != -1) {
-            return multiList.getLongs(inNeighborsRef);
+            return multiList.getInts(inNeighborsRef);
         } else {
             return EMPTY_ARRAY;
         }
@@ -154,33 +153,33 @@ public final class FieldView {
 
     // --- Convenient ---
 
-    private void updateIdentifiers(long ref, long... values) {
-        long[] existing = multiList.getLongs(ref);
-        long[] updated = add(existing, values);
+    private void updateIdentifiers(long ref, int ... values) {
+        int[] existing = multiList.getInts(ref);
+        int[] updated = add(existing, values);
 
         multiList.put(ref, updated);
     }
 
-    private static long[] add(long[] existing, long... values) {
+    private static int[] add(int[] existing, int ... values) {
         // case 1
         if (values.length == 0) {
-            long[] result = existing.clone();
+            int[] result = existing.clone();
             Arrays.sort(result);
             return result;
         }
 
         // case 2
         if (values.length == 1) {
-            long singleValue = values[0];
+            int singleValue = values[0];
 
             for (long val : existing) {
                 if (val == singleValue) {
-                    long[] result = existing.clone();
+                    int[] result = existing.clone();
                     Arrays.sort(result);
                     return result;
                 }
             }
-            long[] result = new long[existing.length + 1];
+            int[] result = new int[existing.length + 1];
             System.arraycopy(existing, 0, result, 0, existing.length);
             result[existing.length] = singleValue;
             Arrays.sort(result);
@@ -188,7 +187,7 @@ public final class FieldView {
         }
 
         // case 3
-        long[] aSorted = existing.clone();
+        int[] aSorted = existing.clone();
         Arrays.sort(aSorted);
 
         int newElementsCount = 0;
@@ -200,7 +199,7 @@ public final class FieldView {
             }
         }
 
-        long[] result = new long[existing.length + newElementsCount];
+        int[] result = new int[existing.length + newElementsCount];
         System.arraycopy(aSorted, 0, result, 0, existing.length);
 
         int targetIndex = existing.length;

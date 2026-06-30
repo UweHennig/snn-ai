@@ -18,7 +18,7 @@ import java.util.concurrent.locks.LockSupport;
 
 /**
  * FieldModel
- *
+ * TODO Ref oder nicht. Rolle von Id und Ref.
  * @author Uwe Hennig
  */
 public final class FieldModel {
@@ -33,7 +33,7 @@ public final class FieldModel {
         JAVA_INT.withName("lock"),
         JAVA_INT.withName("type"),
         JAVA_INT.withName("level"),
-        MemoryLayout.paddingLayout(4),
+        JAVA_INT.withName("fieldId"),
         JAVA_LONG.withName("neuronRef"),
         JAVA_LONG.withName("outNeighborsRef"),
         JAVA_LONG.withName("inNeighborsRef")
@@ -47,6 +47,8 @@ public final class FieldModel {
     static final VarHandle VH_LEVEL =
         LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("level"));
 
+    static final VarHandle VH_FIELD_ID =
+        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("fieldId"));
     static final VarHandle VH_NEURON_REF =
         LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("neuronRef"));
     static final VarHandle VH_OUT_NEIGHBORS_REF =
@@ -133,5 +135,13 @@ public final class FieldModel {
 
     void setInNeighborsRef(int index, long value) {
         VH_IN_NEIGHBORS_REF.set(segment, 0L, index, value);
+    }
+
+    int getFieldId(int index) {
+        return (int)VH_FIELD_ID.get(segment, 0L, index);
+    }
+
+    void setFieldId(int index, long value) {
+        VH_FIELD_ID.set(segment, 0L, index, value);
     }
 }
