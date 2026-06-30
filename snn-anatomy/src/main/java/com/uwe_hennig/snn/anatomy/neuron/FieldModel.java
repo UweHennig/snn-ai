@@ -33,20 +33,26 @@ public final class FieldModel {
         JAVA_INT.withName("lock"),
         JAVA_INT.withName("type"),
         JAVA_INT.withName("level"),
-        JAVA_INT.withName("nodeId"),
-        JAVA_LONG.withName("nodeRef")
+        MemoryLayout.paddingLayout(4),
+        JAVA_LONG.withName("neuronRef"),
+        JAVA_LONG.withName("outNeighborsRef"),
+        JAVA_LONG.withName("inNeighborsRef")
     ).withByteAlignment(8);
 
     static final VarHandle VH_LOCK =
         LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("lock"));
+
     static final VarHandle VH_TYPE =
         LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("type"));
     static final VarHandle VH_LEVEL =
         LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("level"));
-    static final VarHandle VH_NODE_ID =
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("nodeId"));
-    static final VarHandle VH_NODE_REF =
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("nodeRef"));
+
+    static final VarHandle VH_NEURON_REF =
+        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("neuronRef"));
+    static final VarHandle VH_OUT_NEIGHBORS_REF =
+        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("outNeighborsRef"));
+    static final VarHandle VH_IN_NEIGHBORS_REF =
+        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("inNeighborsRef"));
     // @formatter:on
 
     // ----- public -----
@@ -105,20 +111,27 @@ public final class FieldModel {
         VH_LEVEL.set(segment, 0L, index, value);
     }
 
-    int getNodeId(int index) {
-        return (int) VH_NODE_ID.get(segment, 0L, index);
+    long getNeuronRef(int index) {
+        return (long)VH_NEURON_REF.get(segment, 0L, index);
     }
 
-    void setNodeId(int index, int value) {
-        VH_NODE_ID.set(segment, 0L, index, value);
+    void setNeuronRef(int index, long value) {
+        VH_NEURON_REF.set(segment, 0L, index, value);
     }
 
-    long getNodeRef(int index) {
-        return (long) VH_NODE_REF.get(segment, 0L, index);
+    long getOutNeighborsRef(int index) {
+        return (long)VH_OUT_NEIGHBORS_REF.get(segment, 0L, index);
     }
 
-    void setNodeRef(int index, long value) {
-        VH_NODE_REF.set(segment, 0L, index, value);
+    void setOutNeighborsRef(int index, long value) {
+        VH_OUT_NEIGHBORS_REF.set(segment, 0L, index, value);
     }
 
+    long getInNeighborsRef(int index) {
+        return (long)VH_IN_NEIGHBORS_REF.get(segment, 0L, index);
+    }
+
+    void setInNeighborsRef(int index, long value) {
+        VH_IN_NEIGHBORS_REF.set(segment, 0L, index, value);
+    }
 }
