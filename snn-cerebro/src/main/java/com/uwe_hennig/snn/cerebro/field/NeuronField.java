@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import com.uwe_hennig.snn.anatomy.allocator.FieldAllocator;
+import com.uwe_hennig.snn.anatomy.allocator.NeuronFieldAllocator;
 import com.uwe_hennig.snn.anatomy.core.MultiList;
 import com.uwe_hennig.snn.anatomy.neuron.NeuronFieldModel;
 import com.uwe_hennig.snn.anatomy.neuron.NeuronFieldView;
@@ -31,7 +31,7 @@ public class NeuronField {
     }
 
     public static NeuronField newNeuronField(int type, int level) {
-        NeuronFieldView view = FieldAllocator.instance().newFieldView(type, level);
+        NeuronFieldView view = NeuronFieldAllocator.instance().newFieldView(type, level);
         return new NeuronField(view);
     }
 
@@ -112,7 +112,7 @@ public class NeuronField {
     }
 
     private static NeuronField createWrapper(int index) {
-        NeuronFieldView view = FieldAllocator.instance().viewAt(index);
+        NeuronFieldView view = NeuronFieldAllocator.instance().viewAt(index);
         return new NeuronField(view);
     }
 }

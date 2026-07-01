@@ -1,5 +1,5 @@
 /**
- * @(#)FieldAllocator.java
+ * @(#)NeuronFieldAllocator.java
  * Copyright (c) 2026 Uwe Hennig
  * All rights reserved.
  */
@@ -10,27 +10,27 @@ import com.uwe_hennig.snn.anatomy.neuron.NeuronFieldModel;
 import com.uwe_hennig.snn.anatomy.neuron.NeuronFieldView;
 
 /**
- * FieldAllocator
+ * NeuronFieldAllocator
  *
  * @author Uwe Hennig
  */
-public class FieldAllocator {
-    private static FieldAllocator INSTANCE;
+public class NeuronFieldAllocator {
+    private static NeuronFieldAllocator INSTANCE;
 
     private final NeuronFieldModel model;
     private final MultiList multiList;
     private int nextOffset = 0;
 
-    public static FieldAllocator initInstance(int capacity, long maxMultiListBlocks, int minMuliListBytesPerBlock) {
-        INSTANCE = new FieldAllocator(capacity, maxMultiListBlocks, minMuliListBytesPerBlock);
+    public static NeuronFieldAllocator initInstance(int capacity, long maxMultiListBlocks, int minMuliListBytesPerBlock) {
+        INSTANCE = new NeuronFieldAllocator(capacity, maxMultiListBlocks, minMuliListBytesPerBlock);
         return INSTANCE;
     }
 
-    public static FieldAllocator instance() {
+    public static NeuronFieldAllocator instance() {
         return INSTANCE;
     }
 
-    private FieldAllocator(int capacity, long maxMultiListBlocks, int minMuliListBytesPerBlock) {
+    private NeuronFieldAllocator(int capacity, long maxMultiListBlocks, int minMuliListBytesPerBlock) {
         this.model = new NeuronFieldModel(capacity);
         this.multiList = new MultiList(maxMultiListBlocks, minMuliListBytesPerBlock);
     }
