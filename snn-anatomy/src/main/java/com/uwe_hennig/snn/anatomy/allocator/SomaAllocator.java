@@ -55,21 +55,22 @@ public class SomaAllocator {
 
         int offset = nextOffset++;
 
-        PotentialView potentialView = new PotentialView(offset, potentialModel);
-        ThresholdView thresholdView = new ThresholdView(offset, thresholdModel);
-        PlasticityView stpView = new PlasticityView(offset, stpModel);
-        PlasticityView ltpView = new PlasticityView(offset, ltpModel);
-
-        SomaView somaView = new SomaView(offset, model, potentialView, thresholdView, stpView, ltpView);
+        SomaView somaView = createViews(offset);
         somaView.setStructure(fieldId, neuronId, axonId);
 
         return somaView;
     }
 
     public SomaView viewAt(int viewId) {
-        // TODO capacity check and resuse in newSomaView
         if (viewId >= nextOffset) {
             return null;
+        }
+        return createViews(viewId);
+    }
+
+    private SomaView createViews(int viewId) {
+        if (viewId >= model.getCapacity()) {
+            throw new IllegalStateException("Out of Offheap memory");
         }
 
         PotentialView potentialView = new PotentialView(viewId, potentialModel);
