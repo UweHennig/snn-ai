@@ -62,4 +62,10 @@ public class AxonAllocator {
 
         return axonView;
     }
+
+    public void close() {
+        model.close();
+        modulatorModel.close();
+        multiList.close();
+    }
 }

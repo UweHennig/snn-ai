@@ -80,4 +80,12 @@ public class SomaAllocator {
         SomaView somaView = new SomaView(viewId, model, potentialView, thresholdView, stpView, ltpView);
         return somaView;
     }
+
+    public void close() {
+        model.close();
+        potentialModel.close();
+        thresholdModel.close();
+        stpModel.close();
+        ltpModel.close();
+    }
 }

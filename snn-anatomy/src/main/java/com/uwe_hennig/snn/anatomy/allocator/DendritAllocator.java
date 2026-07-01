@@ -58,4 +58,9 @@ public class DendritAllocator {
         WeightView weightView = new WeightView(viewId, weightModel);
         return new DendritView(viewId, model, weightView);
     }
+
+    public void close() {
+        model.close();
+        weightModel.close();
+    }
 }

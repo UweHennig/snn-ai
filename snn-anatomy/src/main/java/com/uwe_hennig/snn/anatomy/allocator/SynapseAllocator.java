@@ -61,4 +61,9 @@ public class SynapseAllocator {
 
         return view;
     }
+
+    public void close() {
+        model.close();
+        modulatorModel.close();
+    }
 }

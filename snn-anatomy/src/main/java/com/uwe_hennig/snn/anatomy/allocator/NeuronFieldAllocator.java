@@ -55,4 +55,9 @@ public class NeuronFieldAllocator {
 
         return new NeuronFieldView(viewId, model, multiList);
     }
+
+    public void close() {
+        model.close();
+        multiList.close();
+    }
 }
