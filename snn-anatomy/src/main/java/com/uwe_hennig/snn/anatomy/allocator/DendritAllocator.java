@@ -51,4 +51,11 @@ public class DendritAllocator {
         return view;
     }
 
+    public DendritView viewAt(int viewId) {
+        if (viewId >= nextOffset) {
+            return null;
+        }
+        WeightView weightView = new WeightView(viewId, weightModel);
+        return new DendritView(viewId, model, weightView);
+    }
 }
