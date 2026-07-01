@@ -13,15 +13,17 @@ import com.uwe_hennig.snn.anatomy.core.MultiList;
  * @author Uwe Hennig
  */
 public final class AxonView {
-    private final int       index;
-    private final AxonModel model;
+    private final int           index;
+    private final AxonModel     model;
+    private final ModulatorView modulatorView;
 
-    public AxonView(int index, AxonModel model, ModulatorView modulatorView, MultiList multilist) {
+    public AxonView(int index, AxonModel model, ModulatorView modulatorView, MultiList multiList) {
         assert model != null : "Model must not be null!";
         assert index < model.capacity && index >= 0 : " " + index + " >= " + model.capacity;
 
         this.index = index;
         this.model = model;
+        this.modulatorView = modulatorView;
     }
 
     public AxonModel getModel() {
@@ -50,6 +52,7 @@ public final class AxonView {
             model.setFieldId(index, fieldId);
             model.setNeuronId(index, neuronId);
             model.setSynapseRef(index, synapseRef);
+            model.setModulatorId(index, modulatorView.getViewId());
         } finally {
             model.writeUnlock(index);
         }

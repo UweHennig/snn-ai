@@ -6,7 +6,8 @@
 package com.uwe_hennig.snn.anatomy.neuron;
 
 /**
- * DendritView Unlike conventional SNNs, the Dendrit network handles the weights
+ * DendritView
+ * Unlike conventional SNNs, the Dendrit network handles the weights
  *
  * @author Uwe Hennig
  */
@@ -51,12 +52,13 @@ public final class DendritView {
         return model.getSomaId(index);
     }
 
-    public void setStructure(int fieldId, int neuronId, int saomaId) {
+    public void setStructure(int fieldId, int neuronId, int somaId) {
         model.writeLock(index);
         try {
             model.setFieldId(index, fieldId);
             model.setNeuronId(index, neuronId);
-            model.setSomaId(index, saomaId);
+            model.setSomaId(index, somaId);
+            model.setWeightId(index, weightView.getViewId());
         } finally {
             model.writeUnlock(index);
         }

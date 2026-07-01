@@ -7,13 +7,14 @@ package com.uwe_hennig.snn.anatomy.neuron;
 
 /**
  * SomaView
+ *
  * @author Uwe Hennig
  */
 public final class SomaView {
-    private final int       index;
-    private final SomaModel model;
-    private final PotentialView potentialView;
-    private final ThresholdView thresholdView;
+    private final int            index;
+    private final SomaModel      model;
+    private final PotentialView  potentialView;
+    private final ThresholdView  thresholdView;
     private final PlasticityView stpView;
     private final PlasticityView ltpView;
 

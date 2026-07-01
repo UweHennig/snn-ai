@@ -52,13 +52,13 @@ public class SynapseView {
         return model.getModulatorId(index);
     }
 
-    public void setStructure(int fieldId, int neuronIde, int targetId, int modulatorId) {
+    public void setStructure(int fieldId, int neuronId, int targetId) {
         model.writeLock(index);
         try {
             model.setFieldId(index, fieldId);
-            model.setNeuronId(index, neuronIde);
+            model.setNeuronId(index, neuronId);
             model.setTargetId(index, targetId);
-            model.setModulatorId(index, modulatorId);
+            model.setModulatorId(index, modulatorView.getViewId());
         } finally {
             model.writeUnlock(index);
         }
