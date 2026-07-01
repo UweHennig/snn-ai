@@ -47,7 +47,7 @@ public class SynapseAllocator {
         ModulatorView modulatorView = new ModulatorView(offset, modulatorModel);
         SynapseView view = new SynapseView(offset, model, modulatorView);
 
-        view.setStructure(fieldId, neuronId, -1, fieldId);
+        view.setStructure(fieldId, neuronId, -1);
         return view;
     }
 
