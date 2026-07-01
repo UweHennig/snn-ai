@@ -5,6 +5,8 @@
  */
 package com.uwe_hennig.snn.anatomy.neuron;
 
+import com.uwe_hennig.snn.anatomy.core.MultiList;
+
 /**
  * AxonView
  *
@@ -14,36 +16,12 @@ public final class AxonView {
     private final int       index;
     private final AxonModel model;
 
-    private final int fieldId;
-    private final int neuronId;
-    private final int modulatorId;
-    private final int synapseRef;
-
-    public AxonView(int index, AxonModel model, int fieldId, int neuronId, int modulatorId, int synapseRef) {
+    public AxonView(int index, AxonModel model, ModulatorView modulatorView, MultiList multilist) {
         assert model != null : "Model must not be null!";
         assert index < model.capacity && index >= 0 : " " + index + " >= " + model.capacity;
 
         this.index = index;
         this.model = model;
-        this.fieldId = fieldId;
-        this.neuronId = neuronId;
-        this.modulatorId = modulatorId;
-        this.synapseRef = synapseRef;
-
-        initData();
-    }
-
-    // TODO remove
-    private void initData() {
-        try {
-            model.lock(index);
-            model.setFieldId(index, fieldId);
-            model.setNeuronId(index, neuronId);
-            model.setModulatorId(index, modulatorId);
-            model.setSynapseRef(index, synapseRef);
-        } finally {
-            model.unlock(index);
-        }
     }
 
     public AxonModel getModel() {
@@ -54,8 +32,8 @@ public final class AxonView {
         return index;
     }
 
-    public int getFieldId() {
-        return model.getFiedlId(index);
+    public int getSynapseRef() {
+        return model.getSynapseRef(index);
     }
 
     public int getNeuronId() {
@@ -66,7 +44,14 @@ public final class AxonView {
         return model.getModulatorId(index);
     }
 
-    public int getSynapseRef() {
-        return model.getSynapseRef(index);
+    public void setStructure(int fieldId, int neuronId, int synapseRef) {
+        model.writeLock(index);
+        try {
+            model.setFieldId(index, fieldId);
+            model.setNeuronId(index, neuronId);
+            model.setSynapseRef(index, synapseRef);
+        } finally {
+            model.writeUnlock(index);
+        }
     }
 }

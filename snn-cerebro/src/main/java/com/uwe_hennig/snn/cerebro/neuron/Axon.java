@@ -24,7 +24,7 @@ import com.uwe_hennig.snn.util.SnnTransferservice;
 public final class Axon implements NeuronElement {
     private final AxonView      view;
     private final ModulatorView modulatorView;
-
+    // TODO remove ModulatorView modulatorView - see AxonView view
     public Axon(AxonView view, ModulatorView modulatorView) {
         this.view = view;
         this.modulatorView = modulatorView;

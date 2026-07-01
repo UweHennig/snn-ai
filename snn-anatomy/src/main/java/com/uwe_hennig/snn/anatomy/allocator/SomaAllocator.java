@@ -13,7 +13,6 @@ import com.uwe_hennig.snn.anatomy.neuron.SomaModel;
 import com.uwe_hennig.snn.anatomy.neuron.SomaView;
 import com.uwe_hennig.snn.anatomy.neuron.ThresholdModel;
 import com.uwe_hennig.snn.anatomy.neuron.ThresholdView;
-import com.uwe_hennig.snn.anatomy.neuron.WeightModel;
 
 /**
  * SomaAllocator
