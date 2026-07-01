@@ -23,7 +23,7 @@ public class FieldTest {
     @DisplayName("Simple FieldModel Test")
     public void testFieldModel() {
         final int capacity = 10;
-        FieldModel model = new FieldModel(capacity);
+        NeuronFieldModel model = new NeuronFieldModel(capacity);
         checkModel(model, capacity);
 
         for (int i = 0; i < capacity; i++) {
@@ -49,19 +49,19 @@ public class FieldTest {
         model.close();
     }
 
-    private void checkModel(FieldModel model, int capacity) {
+    private void checkModel(NeuronFieldModel model, int capacity) {
         System.out.printf("%nModel information");
         System.out.printf("%nCapacity       : %6d", model.capacity);
-        System.out.printf("%nLayout size    : %6d bytes", FieldModel.LAYOUT.byteSize());
+        System.out.printf("%nLayout size    : %6d bytes", NeuronFieldModel.LAYOUT.byteSize());
         System.out.printf("%nByte size      : %6d bytes", model.segment.byteSize());
-        System.out.printf("%nStructure      : %s%n%n", FieldModel.LAYOUT);
+        System.out.printf("%nStructure      : %s%n%n", NeuronFieldModel.LAYOUT);
 
         assertNotNull(model.arena, "Arena is null!");
         assertNotNull(model.segment, "Segment is null!");
         assertNotNull(model.sequenceLayout, "SequenceLayout is null!");
 
         assertEquals(capacity, model.capacity, "Invalid capacity!");
-        assertEquals(FieldModel.LAYOUT.byteSize() * model.capacity, model.segment.byteSize(), "Invalid segment size!");
+        assertEquals(NeuronFieldModel.LAYOUT.byteSize() * model.capacity, model.segment.byteSize(), "Invalid segment size!");
     }
 
     @BeforeEach

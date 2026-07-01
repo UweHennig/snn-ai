@@ -1,5 +1,5 @@
 /**
- * @(#)FieldModel.java
+ * @(#)NeuronFieldModel.java
  * Copyright (c) 2026 Uwe Hennig
  * All rights reserved.
  */
@@ -17,11 +17,11 @@ import java.lang.invoke.VarHandle;
 import java.util.concurrent.locks.LockSupport;
 
 /**
- * FieldModel
- * TODO Ref oder nicht. Rolle von Id und Ref.
+ * NeuronFieldModel
+ *
  * @author Uwe Hennig
  */
-public final class FieldModel {
+public final class NeuronFieldModel {
     public final int   capacity;
     public final Arena arena;
 
@@ -59,7 +59,7 @@ public final class FieldModel {
 
     // ----- public -----
 
-    public FieldModel(int capacity) {
+    public NeuronFieldModel(int capacity) {
         assert capacity > 0 : "invalid capacity";
 
         this.capacity = capacity;
@@ -129,7 +129,7 @@ public final class FieldModel {
         VH_OUT_NEIGHBORS_REF.set(segment, 0L, index, value);
     }
 
-    long getInNeighborsRef(int index) {
+    long getInNeighbourRef(int index) {
         return (long)VH_IN_NEIGHBORS_REF.get(segment, 0L, index);
     }
 

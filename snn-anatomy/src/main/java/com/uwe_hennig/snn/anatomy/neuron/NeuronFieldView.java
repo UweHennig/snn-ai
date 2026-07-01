@@ -1,5 +1,5 @@
 /**
- * @(#)FieldView.java
+ * @(#)NeuronFieldView.java
  * Copyright (c) 2026 Uwe Hennig
  * All rights reserved.
  */
@@ -10,19 +10,19 @@ import java.util.Arrays;
 import com.uwe_hennig.snn.anatomy.core.MultiList;
 
 /**
- * FieldView
+ * NeuronFieldView
  * is currently a container for fields and neurons.
  *
  * @author Uwe Hennig
  */
-public final class FieldView {
+public final class NeuronFieldView {
     private static final int[] EMPTY_ARRAY = new int[0];
     private final int          index;
 
-    private final FieldModel model;
+    private final NeuronFieldModel model;
     private final MultiList  multiList;
 
-    public FieldView(int index, FieldModel model, MultiList multiList) {
+    public NeuronFieldView(int index, NeuronFieldModel model, MultiList multiList) {
         assert model != null : "Model must not bei null!";
         assert multiList != null : "MultiList must not bei null!";
         assert index < model.capacity && index >= 0 : " " + index + " >= " + model.capacity;
@@ -32,7 +32,7 @@ public final class FieldView {
         this.index = index;
     }
 
-    public FieldModel getModel() {
+    public NeuronFieldModel getModel() {
         return model;
     }
 
@@ -99,50 +99,50 @@ public final class FieldView {
 
     // --- Out Neighbors ---
 
-    public int[] getOutNeighbors() {
-        long outNeighborsRef = model.getOutNeighborsRef(index);
-        if (outNeighborsRef != -1) {
-            return multiList.getInts(outNeighborsRef);
+    public int[] getOutNeighbours() {
+        long outNeighboursRef = model.getOutNeighborsRef(index);
+        if (outNeighboursRef != -1) {
+            return multiList.getInts(outNeighboursRef);
         } else {
             return EMPTY_ARRAY;
         }
     }
 
-    public void addOutNeighbors(int ... outNodes) {
-        long outNeighborsRef = model.getOutNeighborsRef(index);
+    public void addOutNeighbours(int ... outNodes) {
+        long outNeighboursRef = model.getOutNeighborsRef(index);
 
-        if (outNeighborsRef == -1) {
-            outNeighborsRef = multiList.allocate();
+        if (outNeighboursRef == -1) {
+            outNeighboursRef = multiList.allocate();
             model.writeLock(index);
             try {
-                model.setOutNeighborsRef(index, outNeighborsRef);
+                model.setOutNeighborsRef(index, outNeighboursRef);
             } finally {
                 model.writeUnlock(index);
             }
         }
-        updateIdentifiers(outNeighborsRef, outNodes);
+        updateIdentifiers(outNeighboursRef, outNodes);
     }
 
     // --- In Neighbors ---
 
-    public void addInNeighbors(int ... inNodes) {
-        long inNeighborsRef = model.getInNeighborsRef(index);
+    public void addInNeighbours(int ... inNodes) {
+        long inNeighboursRef = model.getInNeighbourRef(index);
 
-        if (inNeighborsRef == -1) {
-            inNeighborsRef = multiList.allocate();
+        if (inNeighboursRef == -1) {
+            inNeighboursRef = multiList.allocate();
             model.writeLock(index);
             try {
-                model.setInNeighborsRef(index, inNeighborsRef);
+                model.setInNeighborsRef(index, inNeighboursRef);
             } finally {
                 model.writeUnlock(index);
             }
         }
 
-        updateIdentifiers(inNeighborsRef, inNodes);
+        updateIdentifiers(inNeighboursRef, inNodes);
     }
 
-    public int[] getInNeighbors() {
-        long inNeighborsRef = model.getInNeighborsRef(index);
+    public int[] getInNeighbours() {
+        long inNeighborsRef = model.getInNeighbourRef(index);
 
         if (inNeighborsRef != -1) {
             return multiList.getInts(inNeighborsRef);
