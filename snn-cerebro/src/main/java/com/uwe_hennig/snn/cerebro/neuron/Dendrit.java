@@ -10,6 +10,7 @@ import com.uwe_hennig.snn.anatomy.neuron.WeightView;
 import com.uwe_hennig.snn.contracts.core.NeuronElement;
 import com.uwe_hennig.snn.contracts.core.NeuronElementType;
 import com.uwe_hennig.snn.contracts.core.StimulusType;
+import com.uwe_hennig.snn.contracts.core.ViewIdentity;
 import com.uwe_hennig.snn.services.StimulusService;
 import com.uwe_hennig.snn.util.SnnTransferservice;
 
@@ -18,7 +19,7 @@ import com.uwe_hennig.snn.util.SnnTransferservice;
  *
  * @author Uwe Hennig
  */
-public final class Dendrit implements NeuronElement {
+public final class Dendrit extends ViewIdentity implements NeuronElement {
     private final DendritView   view;
     private final WeightView    weightView;
 
@@ -58,6 +59,11 @@ public final class Dendrit implements NeuronElement {
     @Override
     public int getNeuronId() {
         return view.getNeuronId();
+    }
+
+    @Override
+    public int getViewId() {
+        return view.getViewId();
     }
 
 }

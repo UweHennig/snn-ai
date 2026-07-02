@@ -12,6 +12,7 @@ import com.uwe_hennig.snn.anatomy.neuron.AxonView;
 import com.uwe_hennig.snn.anatomy.neuron.ModulatorView;
 import com.uwe_hennig.snn.contracts.core.NeuronElement;
 import com.uwe_hennig.snn.contracts.core.NeuronElementType;
+import com.uwe_hennig.snn.contracts.core.ViewIdentity;
 import com.uwe_hennig.snn.services.NeuronElementRegistry;
 import com.uwe_hennig.snn.services.StimulusService;
 import com.uwe_hennig.snn.util.SnnTransferservice;
@@ -21,7 +22,7 @@ import com.uwe_hennig.snn.util.SnnTransferservice;
  *
  * @author Uwe Hennig
  */
-public final class Axon implements NeuronElement {
+public final class Axon  extends ViewIdentity implements NeuronElement {
     private final AxonView      view;
     private final ModulatorView modulatorView;
     // TODO remove ModulatorView modulatorView - see AxonView view
@@ -62,5 +63,10 @@ public final class Axon implements NeuronElement {
     @Override
     public int getNeuronId() {
         return view.getNeuronId();
+    }
+
+    @Override
+    public int getViewId() {
+        return view.getViewId();
     }
 }

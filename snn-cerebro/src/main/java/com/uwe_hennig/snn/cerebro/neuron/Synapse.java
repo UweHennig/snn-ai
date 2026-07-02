@@ -11,6 +11,7 @@ import com.uwe_hennig.snn.anatomy.neuron.ModulatorView;
 import com.uwe_hennig.snn.anatomy.neuron.SynapseView;
 import com.uwe_hennig.snn.contracts.core.NeuronElement;
 import com.uwe_hennig.snn.contracts.core.NeuronElementType;
+import com.uwe_hennig.snn.contracts.core.ViewIdentity;
 import com.uwe_hennig.snn.services.NeuronElementRegistry;
 import com.uwe_hennig.snn.services.StimulusService;
 import com.uwe_hennig.snn.util.SnnTransferservice;
@@ -20,7 +21,7 @@ import com.uwe_hennig.snn.util.SnnTransferservice;
  *
  * @author Uwe Hennig
  */
-public final class Synapse implements NeuronElement {
+public final class Synapse extends ViewIdentity implements NeuronElement {
     private final SynapseView   view;
     private final ModulatorView modulatorView;
 
@@ -60,5 +61,10 @@ public final class Synapse implements NeuronElement {
     private boolean isExternalStimulus(int stimulusIdentifier) {
         NeuronElement neuronElement = NeuronElementRegistry.instance().getNeuronElement(stimulusIdentifier, AXON);
         return neuronElement != null && neuronElement.getNeuronId() != this.getNeuronId();
+    }
+
+    @Override
+    public int getViewId() {
+        return view.getViewId();
     }
 }
