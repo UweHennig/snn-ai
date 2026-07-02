@@ -43,6 +43,12 @@ public class NeuronFieldBuilderTest {
         assertEquals(1, g.associative().size(), "Invalid associative size!");
         assertEquals(1, g.efferent().size(), "Invalid efferent size!");
         assertEquals(0, g.feedback().size(), "Invalid feedback size!");
+
+        int [] counter = {0};
+        NeuronField.visit(g.associative().get(0), _ -> {
+            counter[0]+=1;
+        });
+        assertEquals(3, counter[0]);
     }
 
     @Test
@@ -68,6 +74,12 @@ public class NeuronFieldBuilderTest {
 
         assertTrue(aff.getOutNeighbours().contains(ass1));
         assertTrue(aff.getOutNeighbours().contains(ass2));
+
+        int [] counter = {0};
+        NeuronField.visit(ass1, _ -> {
+            counter[0]+=1;
+        });
+        assertEquals(3, counter[0]);
     }
 
 
@@ -92,6 +104,12 @@ public class NeuronFieldBuilderTest {
 
         assertEquals(NeuronFieldType.FEEDBACK, fb.type());
         assertTrue(fb.getOutNeighbours().contains(as));
+
+        int [] counter = {0};
+        NeuronField.visit(as, _ -> {
+            counter[0]+=1;
+        });
+        assertEquals(2, counter[0]);
     }
 
     @Test
@@ -120,8 +138,13 @@ public class NeuronFieldBuilderTest {
 
         assertTrue(ass.getInNeighbours().contains(aff));
         assertTrue(deep.getInNeighbours().contains(ass));
-    }
 
+        int [] counter = {0};
+        NeuronField.visit(deep, _ -> {
+            counter[0]+=1;
+        });
+        assertEquals(3, counter[0]);
+    }
 
     @BeforeEach
     public void beforeEach(TestInfo info) {

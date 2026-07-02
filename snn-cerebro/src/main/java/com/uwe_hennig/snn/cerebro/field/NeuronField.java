@@ -90,18 +90,35 @@ public class NeuronField extends ViewIdentity {
         return result;
     }
 
+    public static int [] getAllNeighbours(NeuronField current) {
+        int[] in = current.view.getInNeighbours();
+        int[] out = current.view.getOutNeighbours();
+
+        int[] all = new int[in.length + out.length];
+
+        System.arraycopy(in, 0, all, 0, in.length);
+        System.arraycopy(out, 0, all, in.length, out.length);
+
+        return all;
+    }
+
     public static void visit(NeuronField start, Consumer<NeuronField> visitor) {
         Deque<Integer> queue = new ArrayDeque<>();
         Set<Integer> visited = new HashSet<>();
 
         queue.add(start.view.getViewId());
+
         while (!queue.isEmpty()) {
             int currentIdx = queue.poll();
+
             if (visited.add(currentIdx)) {
                 NeuronField current = createWrapper(currentIdx);
                 visitor.accept(current);
-                for (int outIdx : current.view.getOutNeighbours()) {
-                    queue.add(outIdx);
+
+                int [] all = getAllNeighbours(current);
+
+                for (int next : all) {
+                    queue.add(next);
                 }
             }
         }
