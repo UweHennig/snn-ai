@@ -24,8 +24,7 @@ import org.junit.jupiter.api.TestInfo;
 
 /**
  * IntQueueTest
- * @formatter:off
- * @formatter:on
+ *
  * @author Uwe Hennig
  */
 public class IntQueueTest {
@@ -106,7 +105,7 @@ public class IntQueueTest {
         // Validation
         int totalOperations = numberOfThreads * operationsPerThread;
         for (int i = 0; i < totalOperations; i++) {
-            assertEquals(i * 2, queue.get(i), "Wert bei Index " + i + " ist inkorrekt.");
+            assertEquals(i * 2, queue.get(i), "Value at index " + i + " is incorrect.");
         }
 
         executor.shutdown();
@@ -164,31 +163,27 @@ public class IntQueueTest {
     }
 
     @Test
-    @DisplayName("FIFO-Grenzfälle: Volle und leere Queue blockiert sauber")
+    @DisplayName("FIFO edge cases: Full and empty queue block cleanly.")
     void testQueueBoundaries() {
-        // 1. Fall: Eine frisch instanziierte Queue muss sofort -1 (leer) liefern
-        assertEquals(-1, queue.poll(), "Eine neue Queue muss leer sein (-1 zurückgeben)");
+        assertEquals(-1, queue.poll(), "A new queue must be empty (return -1)");
 
-        // 2. Fall: Queue bis zur maximalen Kapazität füllen
         for (int i = 0; i < 65536; i++) {
-            assertTrue(queue.offer(i), "Einfügen an Index " + i + " fehlgeschlagen.");
+            assertTrue(queue.offer(i), "Insertion at index " + i + " failed.");
         }
 
-        // 3. Fall: Die Queue ist voll. Das nächste offer() MUSS false liefern
-        assertFalse(queue.offer(999), "Queue ist voll, offer() hätte false liefern müssen");
+        assertFalse(queue.offer(999), "The queue is full; `offer()` should have returned `false`");
 
-        // 4. Fall: Ein Element befreien, danach muss wieder genau EIN Platz frei sein
-        assertEquals(0, queue.poll(), "Das erste Element (0) wurde nicht korrekt entnommen");
-        assertTrue(queue.offer(8888), "Nach einem poll() hätte wieder Platz für ein offer() sein müssen");
-        assertFalse(queue.offer(9999), "Queue sollte nach nur einem Freiraum sofort wieder voll sein");
+        assertEquals(0, queue.poll(), "The first element (0) was not retrieved correctly");
+        assertTrue(queue.offer(8888), "After a poll(), there should have been room for an offer() again");
+        assertFalse(queue.offer(9999), "The queue should be full again immediately after just one space becomes available");
     }
 
     @Test
-    @DisplayName("Asynchroner Belastungstest: Multi-Producer und Multi-Consumer")
+    @DisplayName("Asynchronous stress test: Multi-Producer and Multi-Consumer")
     void testConcurrentProducerConsumer() throws InterruptedException {
         int producersCount = 4;
         int consumersCount = 4;
-        int itemsPerProducer = 5000; // Insgesamt 20.000 Elemente
+        int itemsPerProducer = 5000;
         int totalItems = producersCount * itemsPerProducer;
 
         ExecutorService executor = Executors.newFixedThreadPool(producersCount + consumersCount);
@@ -205,11 +200,10 @@ public class IntQueueTest {
             final int producerId = p;
             executor.submit(() -> {
                 try {
-                    startLatch.await(); // Auf gemeinsamen Startschuss warten
+                    startLatch.await();
                     for (int i = 0; i < itemsPerProducer; i++) {
                         int value = (producerId * 100000) + i;
 
-                        // Da die Queue volllaufen kann, im Loop versuchen, bis Platz ist
                         while (!queue.offer(value)) {
                             Thread.onSpinWait(); // Kurz warten, falls voll
                         }
@@ -246,18 +240,16 @@ public class IntQueueTest {
             });
         }
 
-        // Startschuss! Alle Threads feuern gleichzeitig los
         startLatch.countDown();
 
-        // Maximal 10 Sekunden auf Beendigung warten
         boolean finishedCleanly = finishLatch.await(10, TimeUnit.SECONDS);
-        assertTrue(finishedCleanly, "Timeout! Mögliche Verklemmung (Deadlock) in den Locks.");
+        assertTrue(finishedCleanly, "Timeout! Possible deadlock in the locks.");
 
-        // --- VALIDIERUNG ---
-        assertEquals(totalItems, totalItemsConsumed.get(), "Es wurden nicht alle Elemente konsumiert");
+        // --- VALIDATION ---
+        assertEquals(totalItems, totalItemsConsumed.get(), "Not all elements have been consumed");
         assertEquals(sumOfProducedValues.sum(), sumOfConsumedValues.sum(),
-            "Die Summe der geschriebenen Werte stimmt nicht mit den gelesenen Werten überein (Datenverlust/Korruption!)");
-        assertEquals(-1, queue.poll(), "Die Queue sollte am Ende komplett leer sein");
+            "The sum of the written values does not match the read values (data loss/corruption!)");
+        assertEquals(-1, queue.poll(), "The queue should be completely empty at the end");
 
         executor.shutdown();
     }
