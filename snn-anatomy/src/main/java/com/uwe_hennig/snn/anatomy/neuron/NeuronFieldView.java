@@ -57,6 +57,17 @@ public final class NeuronFieldView {
         }
     }
 
+    public void resetRefs() {
+        try {
+            model.writeLock(index);
+            model.setNeuronRef(index, -1);
+            model.setOutNeighboursRef(index, -1);
+            model.setInNeighboursRef(index, -1);
+        } finally {
+            model.writeUnlock(index);
+        }
+    }
+
     // --- Neurons ---
 
     public void addNeuronId(int ... neuronIds) {
@@ -87,7 +98,7 @@ public final class NeuronFieldView {
     // --- Out Neighbors ---
 
     public int[] getOutNeighbours() {
-        long outNeighboursRef = model.getOutNeighborsRef(index);
+        long outNeighboursRef = model.getOutNeighboursRef(index);
         if (outNeighboursRef != -1) {
             return multiList.getInts(outNeighboursRef);
         } else {
@@ -96,13 +107,13 @@ public final class NeuronFieldView {
     }
 
     public void addOutNeighbours(int ... outNodes) {
-        long outNeighboursRef = model.getOutNeighborsRef(index);
+        long outNeighboursRef = model.getOutNeighboursRef(index);
 
         if (outNeighboursRef == -1) {
             outNeighboursRef = multiList.allocate();
             model.writeLock(index);
             try {
-                model.setOutNeighborsRef(index, outNeighboursRef);
+                model.setOutNeighboursRef(index, outNeighboursRef);
             } finally {
                 model.writeUnlock(index);
             }
@@ -119,7 +130,7 @@ public final class NeuronFieldView {
             inNeighboursRef = multiList.allocate();
             model.writeLock(index);
             try {
-                model.setInNeighborsRef(index, inNeighboursRef);
+                model.setInNeighboursRef(index, inNeighboursRef);
             } finally {
                 model.writeUnlock(index);
             }

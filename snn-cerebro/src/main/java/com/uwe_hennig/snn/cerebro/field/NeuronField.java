@@ -18,13 +18,14 @@ import java.util.function.Consumer;
 
 import com.uwe_hennig.snn.anatomy.neuron.NeuronFieldView;
 import com.uwe_hennig.snn.contracts.core.NeuronFieldType;
+import com.uwe_hennig.snn.contracts.core.ViewIdentity;
 
 /**
  * NeuronField
  *
  * @author Uwe Hennig
  */
-public class NeuronField {
+public class NeuronField extends ViewIdentity {
     private final NeuronFieldView view;
 
     public NeuronField(NeuronFieldView view) {
@@ -32,6 +33,11 @@ public class NeuronField {
     }
 
     public int getFieldId() {
+        return view.getViewId();
+    }
+
+    @Override
+    public int getViewId() {
         return view.getViewId();
     }
 

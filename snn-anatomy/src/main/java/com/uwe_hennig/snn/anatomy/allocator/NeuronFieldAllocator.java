@@ -21,8 +21,8 @@ public class NeuronFieldAllocator {
     private final MultiList multiList;
     private int nextOffset = 0;
 
-    public static NeuronFieldAllocator initInstance(int capacity, long maxMultiListBlocks, int minMuliListBytesPerBlock) {
-        INSTANCE = new NeuronFieldAllocator(capacity, maxMultiListBlocks, minMuliListBytesPerBlock);
+    public static NeuronFieldAllocator initInstance(int capacity, long maxMultiListBlocks, int minMuliListElementsPerBlock) {
+        INSTANCE = new NeuronFieldAllocator(capacity, maxMultiListBlocks, minMuliListElementsPerBlock * 4);
         return INSTANCE;
     }
 
@@ -42,6 +42,7 @@ public class NeuronFieldAllocator {
         int offset = nextOffset++;
 
         NeuronFieldView view = new NeuronFieldView(offset, model, multiList);
+        view.resetRefs();
         view.setType(type);
 
         return view;
