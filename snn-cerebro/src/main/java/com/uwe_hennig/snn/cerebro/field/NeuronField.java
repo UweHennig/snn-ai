@@ -27,13 +27,8 @@ import com.uwe_hennig.snn.contracts.core.NeuronFieldType;
 public class NeuronField {
     private final NeuronFieldView view;
 
-    private NeuronField(NeuronFieldView view) {
+    public NeuronField(NeuronFieldView view) {
         this.view = view;
-    }
-
-    public static NeuronField newNeuronField(int type) {
-        NeuronFieldView view = instance().newFieldView(type);
-        return new NeuronField(view);
     }
 
     public int getFieldId() {
@@ -57,9 +52,9 @@ public class NeuronField {
         view.addNeuronId(neuronIds);
     }
 
-    public void addOutNeighbour(NeuronField field) {
-        view.addOutNeighbours(field.getFieldId());
-        field.view.addInNeighbours(field.getFieldId());
+    public void addOutNeighbour(NeuronFieldView fieldView) {
+        view.addOutNeighbours(fieldView.getViewId());
+        fieldView.addInNeighbours(view.getViewId());
     }
 
     public List<NeuronField> getOutNeighbours() {

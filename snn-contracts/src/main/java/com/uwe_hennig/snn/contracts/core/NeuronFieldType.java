@@ -11,7 +11,7 @@ package com.uwe_hennig.snn.contracts.core;
  * @author Uwe Hennig
  */
 public enum NeuronFieldType {
-    AFFERENT(1), ASSOCIATIVE(2), EFFERENT(3), UNDEFINED(4);
+    AFFERENT(1), ASSOCIATIVE(2), EFFERENT(3), FEEDBACK(4), UNDEFINED(5);
 
     private final int code;
 
@@ -28,6 +28,7 @@ public enum NeuronFieldType {
             case 1 -> AFFERENT;
             case 2 -> ASSOCIATIVE;
             case 3 -> EFFERENT;
+            case 4 -> FEEDBACK;
             default -> UNDEFINED;
         };
     }
