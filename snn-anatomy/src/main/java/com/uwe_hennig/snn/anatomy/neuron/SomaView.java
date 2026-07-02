@@ -38,6 +38,10 @@ public final class SomaView {
         return index;
     }
 
+    public int getFieldId() {
+        return model.getFieldId(index);
+    }
+
     public int getNeuronId() {
         return model.getNeuronId(index);
     }
