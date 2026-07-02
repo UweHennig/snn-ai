@@ -57,19 +57,6 @@ public final class NeuronFieldView {
         }
     }
 
-    public int level() {
-        return model.getLevel(index);
-    }
-
-    public void setLevel(int level) {
-        try {
-            model.writeLock(index);
-            model.setLevel(index, level);
-        } finally {
-            model.writeUnlock(index);
-        }
-    }
-
     // --- Neurons ---
 
     public void addNeuronId(int ... neuronIds) {

@@ -5,6 +5,9 @@
  */
 package com.uwe_hennig.snn.cerebro.field;
 
+import static com.uwe_hennig.snn.anatomy.allocator.NeuronFieldAllocator.instance;
+import static com.uwe_hennig.snn.contracts.core.NeuronFieldType.fieldType;
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -13,10 +16,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import com.uwe_hennig.snn.anatomy.allocator.NeuronFieldAllocator;
-import com.uwe_hennig.snn.anatomy.core.MultiList;
-import com.uwe_hennig.snn.anatomy.neuron.NeuronFieldModel;
 import com.uwe_hennig.snn.anatomy.neuron.NeuronFieldView;
+import com.uwe_hennig.snn.contracts.core.NeuronFieldType;
 
 /**
  * NeuronField
@@ -30,8 +31,8 @@ public class NeuronField {
         this.view = view;
     }
 
-    public static NeuronField newNeuronField(int type, int level) {
-        NeuronFieldView view = NeuronFieldAllocator.instance().newFieldView(type, level);
+    public static NeuronField newNeuronField(int type) {
+        NeuronFieldView view = instance().newFieldView(type);
         return new NeuronField(view);
     }
 
@@ -39,14 +40,8 @@ public class NeuronField {
         return view.getViewId();
     }
 
-    public int level() {
-        // TODO Enum
-        return view.level();
-    }
-
-    public int type() {
-        // TODO Enum
-        return view.type();
+    public NeuronFieldType type() {
+        return fieldType(view.type());
     }
 
     public List<Integer> getNeuronIds() {
@@ -112,7 +107,7 @@ public class NeuronField {
     }
 
     private static NeuronField createWrapper(int index) {
-        NeuronFieldView view = NeuronFieldAllocator.instance().viewAt(index);
+        NeuronFieldView view = instance().viewAt(index);
         return new NeuronField(view);
     }
 }

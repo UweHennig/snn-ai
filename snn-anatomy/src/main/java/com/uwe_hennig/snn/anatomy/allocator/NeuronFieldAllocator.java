@@ -35,14 +35,13 @@ public class NeuronFieldAllocator {
         this.multiList = new MultiList(maxMultiListBlocks, minMuliListBytesPerBlock);
     }
 
-    public NeuronFieldView newFieldView(int type, int level) {
+    public NeuronFieldView newFieldView(int type) {
         if (nextOffset >= model.getCapacity()) {
             throw new IllegalStateException("Out of Offheap memory");
         }
         int offset = nextOffset++;
 
         NeuronFieldView view = new NeuronFieldView(offset, model, multiList);
-        view.setLevel(level);
         view.setType(type);
 
         return view;

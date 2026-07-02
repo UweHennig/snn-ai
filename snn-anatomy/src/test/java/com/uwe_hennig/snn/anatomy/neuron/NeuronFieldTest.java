@@ -1,5 +1,5 @@
 /**
- * @(#)FieldTest.java
+ * @(#)NeuronFieldTest.java
  * Copyright (c) 2026 Uwe Hennig
  * All rights reserved.
  */
@@ -15,10 +15,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
 /**
- * FieldTest
+ * NeuronFieldTest
+ *
  * @author Uwe Hennig
  */
-public class FieldTest {
+public class NeuronFieldTest {
     @Test
     @DisplayName("Simple FieldModel Test")
     public void testFieldModel() {
@@ -30,7 +31,6 @@ public class FieldTest {
             try {
                 model.writeLock(i);
                 model.setType(i, i + 1);
-                model.setLevel(i, i + 2);
 
             } catch (Exception e) {
                 fail("Exception on testAsyncData " + e.getLocalizedMessage());
@@ -41,7 +41,6 @@ public class FieldTest {
         for (int i = 0; i < capacity; i++) {
             try {
                 assertEquals(i + 1, model.getType(i));
-                assertEquals(i + 2, model.getLevel(i));
             } catch (Exception e) {
                 fail("Exception on testAsyncData " + e.getLocalizedMessage());
             }

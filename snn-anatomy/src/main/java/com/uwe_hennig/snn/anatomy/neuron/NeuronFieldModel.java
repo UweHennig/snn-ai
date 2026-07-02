@@ -32,8 +32,8 @@ public final class NeuronFieldModel {
     static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         JAVA_INT.withName("lock"),
         JAVA_INT.withName("type"),
-        JAVA_INT.withName("level"),
         JAVA_INT.withName("fieldId"),
+        MemoryLayout.paddingLayout(4),
         JAVA_LONG.withName("neuronRef"),
         JAVA_LONG.withName("outNeighborsRef"),
         JAVA_LONG.withName("inNeighborsRef")
@@ -44,8 +44,6 @@ public final class NeuronFieldModel {
 
     static final VarHandle VH_TYPE =
         LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("type"));
-    static final VarHandle VH_LEVEL =
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("level"));
 
     static final VarHandle VH_FIELD_ID =
         LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("fieldId"));
@@ -103,14 +101,6 @@ public final class NeuronFieldModel {
 
     void setType(int index, int value) {
         VH_TYPE.set(segment, 0L, index, value);
-    }
-
-    int getLevel(int index) {
-        return (int) VH_LEVEL.get(segment, 0L, index);
-    }
-
-    void setLevel(int index, int value) {
-        VH_LEVEL.set(segment, 0L, index, value);
     }
 
     long getNeuronRef(int index) {
