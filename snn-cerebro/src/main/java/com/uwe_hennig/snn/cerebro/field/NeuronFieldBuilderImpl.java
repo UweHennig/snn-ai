@@ -30,6 +30,12 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder {
     private List<NeuronField> efferent = new ArrayList<>();
     private List<NeuronField> feedback = new ArrayList<>();
 
+    public NeuronFieldBuilderImpl() {
+        if (NeuronFieldAllocator.instance() == null) {
+            throw new IllegalStateException("Initialize NeuronFieldAllocator before starting NeuronFieldBuilder");
+        }
+    }
+
     @Override
     public NeuronFieldBuilder withAfferent(int count, Consumer<NeuronFieldBuilder> each) {
         return internal(NeuronFieldType.AFFERENT, count, each);
