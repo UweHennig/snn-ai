@@ -40,6 +40,7 @@ public class MemoryLockTest {
     // --- WRITE LOCK ---
     boolean writeLock(MemorySegment ptr) {
         int spins = 0;
+        // better timeout or while(true)
         while (!VH_LOCK.compareAndSet(ptr, 0L, 0, -1) && spins < 100) {
             if (spins < 64) {
                 Thread.onSpinWait();
@@ -70,6 +71,7 @@ public class MemoryLockTest {
 
     boolean readLock(MemorySegment segment) {
         int spins = 0;
+        // better while(true) or timeout
         while (spins < 100) {
             int current = segment.get(ValueLayout.JAVA_INT, 0);
             current = (int) VH_LOCK.getVolatile(segment, 0L);
