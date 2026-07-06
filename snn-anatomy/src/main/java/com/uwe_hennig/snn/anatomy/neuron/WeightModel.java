@@ -81,7 +81,7 @@ public final class WeightModel {
 
     void writeLock(int index) {
         int spins = 0;
-        // set the flag to indicate a write request
+        // set the WRITER_WAITING flag to indicate a write request
         while (true) {
             int current = (int) VH_LOCK.getVolatile(segment, 0L, index);
             if ((current & WRITER_WAITING) == 0) {
@@ -94,12 +94,12 @@ public final class WeightModel {
             backoff(spins++);
         }
 
-        // set writeLock
+        // set the lock
         spins = 0;
         while (true) {
             int current = (int) VH_LOCK.getVolatile(segment, 0L, index);
 
-            // no reader aktive and writeflag is set or initial state.
+            // no reader aktive and write flag is set or initial state.
             if (current == WRITER_WAITING || current == 0) {
                 if (VH_LOCK.compareAndSet(segment, 0L, index, current, WRITER_ACTIVE)) {
                     return;
