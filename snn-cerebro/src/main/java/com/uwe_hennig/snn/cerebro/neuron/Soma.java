@@ -42,38 +42,40 @@ public final class Soma extends ViewIdentity implements NeuronElement {
 
     @Override
     public void stimulate(int stimulusIdentifier) {
-        float currentTime = 1000; // TODO
-        float stimulusValue = StimulusService.getValue(stimulusIdentifier);
+        try {
+            // Master Lock
+            view.writeLock();
+            float currentTime = 1000; // TODO
 
-        if (StimulusService.isStimulus(stimulusIdentifier) && isExternalStimulus(stimulusIdentifier)) {
-            SnnTransferservice.transfer(stimulusIdentifier, AXON.code());
-        }
-
-        stpView.updatePlasticityPotential(currentTime);
-        ltpView.updatePlasticityPotential(currentTime);
-        potentialView.decay(currentTime);
-
-        if (StimulusService.isTimeFeedback(stimulusIdentifier)) {
-            thresholdView.applyTimeFeedback(stimulusValue);
-            stpView.applyTimeFeedback(stimulusValue, currentTime);
-            ltpView.applyTimeFeedback(stimulusValue, currentTime);
-        }
-
-        if (StimulusService.isValueFeedback(stimulusIdentifier)) {
-            stpView.applyValueFeedback(stimulusValue, currentTime);
-            ltpView.applyValueFeedback(stimulusValue, currentTime);
-        }
-
-        if (StimulusService.isStimulus(stimulusIdentifier)) {
-            potentialView.addPotentitial(stimulusValue, currentTime);
-            if (potentialView.getPotentital() > thresholdView.getThreshold()) {
-                float actionPotential = ltpView.getCurrentPotential() + stpView.getCurrentPotential();
-                stimulusIdentifier = StimulusService.update(stimulusIdentifier, StimulusType.STIMULUS.code(), view.getViewId(), view.getAxonId(), -1,
-                    AXON.code(), actionPotential);
+            float stimulusValue = StimulusService.getValue(stimulusIdentifier);
+            if (StimulusService.isStimulus(stimulusIdentifier) && isExternalStimulus(stimulusIdentifier)) {
+                SnnTransferservice.transfer(stimulusIdentifier, AXON.code());
             }
-        }
+            stpView.updatePlasticityPotential(currentTime);
+            ltpView.updatePlasticityPotential(currentTime);
+            potentialView.decay(currentTime);
+            if (StimulusService.isTimeFeedback(stimulusIdentifier)) {
+                thresholdView.applyTimeFeedback(stimulusValue);
+                stpView.applyTimeFeedback(stimulusValue, currentTime);
+                ltpView.applyTimeFeedback(stimulusValue, currentTime);
+            }
+            if (StimulusService.isValueFeedback(stimulusIdentifier)) {
+                stpView.applyValueFeedback(stimulusValue, currentTime);
+                ltpView.applyValueFeedback(stimulusValue, currentTime);
+            }
+            if (StimulusService.isStimulus(stimulusIdentifier)) {
+                potentialView.addPotentitial(stimulusValue, currentTime);
+                if (potentialView.getPotentital() > thresholdView.getThreshold()) {
+                    float actionPotential = ltpView.getCurrentPotential() + stpView.getCurrentPotential();
+                    stimulusIdentifier = StimulusService.update(stimulusIdentifier, StimulusType.STIMULUS.code(), view.getViewId(), view.getAxonId(), -1,
+                        AXON.code(), actionPotential);
+                }
+            }
+            SnnTransferservice.transfer(stimulusIdentifier, AXON.code());
 
-        SnnTransferservice.transfer(stimulusIdentifier, AXON.code());
+        } finally {
+            view.writeUnlock();
+        }
     }
 
     @Override

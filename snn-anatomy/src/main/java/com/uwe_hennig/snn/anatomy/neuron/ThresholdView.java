@@ -26,6 +26,8 @@ public final class ThresholdView {
 
     }
 
+    // ----- Getter/Setter -----
+
     public ThresholdModel getModel() {
         return model;
     }
@@ -34,22 +36,17 @@ public final class ThresholdView {
         return index;
     }
 
+    public float getThreshold() {
+        return model.getThreshold(index);
+    }
+
     // ----- Domain Logic -----
 
     public void applyTimeFeedback(float deltaTimeFeedback) {
-        model.writeLock(index);
-        try {
-            float threshold = model.getThreshold(index);
-            threshold += deltaThreshold(deltaTimeFeedback);
-            threshold = Math.clamp(threshold, MIN_THRESHOLD, MAX_THRESHOLD);
-            model.setThreshold(index, threshold);
-        } finally {
-            model.writeUnlock(index);
-        }
-    }
-
-    public float getThreshold() {
-        return model.getThreshold(index);
+        float threshold = model.getThreshold(index);
+        threshold += deltaThreshold(deltaTimeFeedback);
+        threshold = Math.clamp(threshold, MIN_THRESHOLD, MAX_THRESHOLD);
+        model.setThreshold(index, threshold);
     }
 
     // ----- convenience -----
