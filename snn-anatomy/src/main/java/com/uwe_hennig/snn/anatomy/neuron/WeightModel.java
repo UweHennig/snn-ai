@@ -43,7 +43,6 @@ public final class WeightModel {
     ).withByteAlignment(8);
 
     static final VarHandle VH_LOCK               = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("lock"));
-    static final VarHandle VH_PENDING            = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("pending"));
 
     static final VarHandle VH_WEIGHT             = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("weight"));
     static final VarHandle VH_PRE_SYNAPTIC_TIME  = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("preSynapticTime"));
@@ -77,21 +76,34 @@ public final class WeightModel {
 
     // ----- lock/unlock -----
 
+    private static final int WRITER_WAITING = 0x40000000; // Bit 30
+    private static final int WRITER_ACTIVE  = 0xFFFFFFFF; // -1
+
     void writeLock(int index) {
         int spins = 0;
         while (true) {
             int current = (int) VH_LOCK.getVolatile(segment, 0L, index);
-            if (current == 0) {
-                if (VH_LOCK.compareAndSet(segment, 0L, index, 0, -1)) {
+            if ((current & WRITER_WAITING) == 0) {
+                if (VH_LOCK.compareAndSet(segment, 0L, index, current, current | WRITER_WAITING)) {
+                    break;
+                }
+            } else {
+                break;
+            }
+            backoff(spins++);
+        }
+
+        spins = 0;
+        while (true) {
+            int current = (int) VH_LOCK.getVolatile(segment, 0L, index);
+
+            if (current == WRITER_WAITING || current == 0) {
+                if (VH_LOCK.compareAndSet(segment, 0L, index, current, WRITER_ACTIVE)) {
                     return;
                 }
             }
-            if (spins < 64) {
-                Thread.onSpinWait();
-                spins++;
-            } else {
-                LockSupport.parkNanos(1);
-            }
+
+            backoff(spins++);
         }
     }
 
@@ -99,19 +111,13 @@ public final class WeightModel {
         VH_LOCK.setRelease(segment, 0L, index, 0);
     }
 
-
     boolean readLock(int index) {
         int spins = 0;
         while (true) {
             int current = (int) VH_LOCK.getVolatile(segment, 0L, index);
 
-            if (current < 0) {
-                if (spins < 64) {
-                    Thread.onSpinWait();
-                    spins++;
-                } else {
-                    LockSupport.parkNanos(1);
-                }
+            if (current < 0 || (current & WRITER_WAITING) != 0) {
+                backoff(spins++);
                 continue;
             }
 
@@ -123,6 +129,14 @@ public final class WeightModel {
 
     void readUnlock(int index) {
         VH_LOCK.getAndAdd(segment, 0L, index, -1);
+    }
+
+    private void backoff(int spins) {
+        if (spins < 64) {
+            Thread.onSpinWait();
+        } else {
+            LockSupport.parkNanos(1);
+        }
     }
 
     // ----- getter/setter -----
