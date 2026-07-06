@@ -35,20 +35,25 @@ public final class Dendrit extends ViewIdentity implements NeuronElement {
      */
     @Override
     public void stimulate(int stimulusIdentifier) {
-        float currentTime = 1000; // TODO Model time
+        try {
+            view.writeLock();
+            float currentTime = 1000; // TODO Model time
 
-        float stimulusValue = StimulusService.getValue(stimulusIdentifier);
+            float stimulusValue = StimulusService.getValue(stimulusIdentifier);
+            if (StimulusService.isStimulus(stimulusIdentifier)) {
+                stimulusValue = weightView.applyStimulus(stimulusValue, currentTime);
+                stimulusIdentifier = StimulusService.update(stimulusIdentifier, StimulusType.STIMULUS.code(), view.getViewId(), view.getSomaId(), -1,
+                    NeuronElementType.SOMA.code(), stimulusValue);
+            }
+            if (StimulusService.isTimeFeedback(stimulusIdentifier)) {
+                weightView.applyFeedback(stimulusValue);
+            }
 
-        if (StimulusService.isStimulus(stimulusIdentifier)) {
-            stimulusValue = weightView.applyStimulus(stimulusValue, currentTime);
-            stimulusIdentifier = StimulusService.update(stimulusIdentifier, StimulusType.STIMULUS.code(), view.getViewId(), view.getSomaId(), -1, NeuronElementType.SOMA.code(), stimulusValue);
+            SnnTransferservice.transfer(stimulusIdentifier, NeuronElementType.SOMA.code());
+
+        } finally {
+            view.writeUnlock();
         }
-
-        if (StimulusService.isTimeFeedback(stimulusIdentifier)) {
-            weightView.applyFeedback(stimulusValue);
-        }
-
-        SnnTransferservice.transfer(stimulusIdentifier, NeuronElementType.SOMA.code());
     }
 
     @Override

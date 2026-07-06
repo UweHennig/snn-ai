@@ -26,6 +26,26 @@ public final class AxonView {
         this.modulatorView = modulatorView;
     }
 
+    // ----- lock/unlock -----
+
+    public void readLock() {
+        model.readLock(index);
+    }
+
+    public void readUnlock() {
+        model.readUnlock(index);
+    }
+
+    public void writeLock() {
+        model.writeLock(index);
+    }
+
+    public void writeUnlock() {
+        model.writeUnlock(index);
+    }
+
+    // ----- Getter/Setter -----
+
     public AxonModel getModel() {
         return model;
     }

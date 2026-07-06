@@ -33,21 +33,26 @@ public final class Axon  extends ViewIdentity implements NeuronElement {
 
     @Override
     public void stimulate(int stimulusIdentifier) {
-        // TODO complete implementation
-        float currentTime = 1000; // TODO
+        try {
+            view.writeLock();
+            // TODO complete implementation
+            float currentTime = 1000; // TODO
 
-        float stimulusValue = StimulusService.getValue(stimulusIdentifier);
-        int stimulusType = StimulusService.getTrgType(stimulusIdentifier);
+            float stimulusValue = StimulusService.getValue(stimulusIdentifier);
+            int stimulusType = StimulusService.getTrgType(stimulusIdentifier);
 
-        if (StimulusService.isStimulus(stimulusIdentifier) && isExternalStimulus(stimulusIdentifier)) {
-            stimulusValue = modulatorView.applyStimulus(stimulusValue, currentTime);
-        } else if (StimulusService.isStimulus(stimulusIdentifier)) {
-            stimulusValue = modulatorView.applyStimulus(stimulusType, currentTime);
+            if (StimulusService.isStimulus(stimulusIdentifier) && isExternalStimulus(stimulusIdentifier)) {
+                stimulusValue = modulatorView.applyStimulus(stimulusValue, currentTime);
+            } else if (StimulusService.isStimulus(stimulusIdentifier)) {
+                stimulusValue = modulatorView.applyStimulus(stimulusType, currentTime);
+            }
+
+            // TODO for each synapse or bulk
+            StimulusService.update(stimulusIdentifier, stimulusType, view.getViewId(), -1, view.getSynapseRef(), SYNAPSE.code(), stimulusValue);
+            SnnTransferservice.transfer(stimulusIdentifier, SYNAPSE.code());
+        } finally {
+            view.writeUnlock();
         }
-
-        // TODO for each synapse or bulk
-        StimulusService.update(stimulusIdentifier, stimulusType, view.getViewId(), -1, view.getSynapseRef(), SYNAPSE.code(), stimulusValue);
-        SnnTransferservice.transfer(stimulusIdentifier, SYNAPSE.code());
     }
 
     @Override

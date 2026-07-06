@@ -32,20 +32,26 @@ public final class Synapse extends ViewIdentity implements NeuronElement {
 
     @Override
     public void stimulate(int stimulusIdentifier) {
-        // TODO complete implementation
-        float currentTime = 1000; // TODO
+        try {
+            view.writeLock();
+            // TODO complete implementation
+            float currentTime = 1000; // TODO
 
-        float stimulusValue = StimulusService.getValue(stimulusIdentifier);
-        int stimulusType = StimulusService.getTrgType(stimulusIdentifier);
+            float stimulusValue = StimulusService.getValue(stimulusIdentifier);
+            int stimulusType = StimulusService.getTrgType(stimulusIdentifier);
 
-        if (StimulusService.isStimulus(stimulusIdentifier) && isExternalStimulus(stimulusIdentifier)) {
-            stimulusValue = modulatorView.applyStimulus(stimulusValue, currentTime);
-        } else if (StimulusService.isStimulus(stimulusIdentifier)) {
-            stimulusValue = modulatorView.applyStimulus(stimulusType, currentTime);
+            if (StimulusService.isStimulus(stimulusIdentifier) && isExternalStimulus(stimulusIdentifier)) {
+                stimulusValue = modulatorView.applyStimulus(stimulusValue, currentTime);
+            } else if (StimulusService.isStimulus(stimulusIdentifier)) {
+                stimulusValue = modulatorView.applyStimulus(stimulusType, currentTime);
+            }
+
+            StimulusService.update(stimulusIdentifier, stimulusType, view.getViewId(), view.getTargetId(), -1, view.getTargetType(), stimulusValue);
+            SnnTransferservice.transfer(stimulusIdentifier, view.getTargetType());
+
+        } finally {
+            view.writeUnlock();
         }
-
-        StimulusService.update(stimulusIdentifier, stimulusType, view.getViewId(), view.getTargetId(), -1, view.getTargetType(), stimulusValue);
-        SnnTransferservice.transfer(stimulusIdentifier, view.getTargetType());
     }
 
     @Override

@@ -67,13 +67,8 @@ public final class ModulatorView {
             modulationGain += (TARGET_EXCITATORY - modulationGain) * alpha;
         }
 
-        try {
-            model.writeLock(index);
-            model.setModulationGain(index, modulationGain);
-            model.setLastEventTime(index, currentTime);
-        } finally {
-            model.writeUnlock(index);
-        }
+        model.setModulationGain(index, modulationGain);
+        model.setLastEventTime(index, currentTime);
     }
 
     // ----- convenience -----

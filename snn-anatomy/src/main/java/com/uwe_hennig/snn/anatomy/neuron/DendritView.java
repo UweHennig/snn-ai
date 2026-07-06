@@ -26,6 +26,24 @@ public final class DendritView {
         this.weightView = weightView;
     }
 
+    // ----- lock/unlock -----
+
+    public void readLock() {
+        model.readLock(index);
+    }
+
+    public void readUnlock() {
+        model.readUnlock(index);
+    }
+
+    public void writeLock() {
+        model.writeLock(index);
+    }
+
+    public void writeUnlock() {
+        model.writeUnlock(index);
+    }
+
     // ----- getter/setter -----
 
     public DendritModel getModel() {

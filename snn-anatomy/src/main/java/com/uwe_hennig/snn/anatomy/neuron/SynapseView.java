@@ -24,9 +24,28 @@ public class SynapseView {
         this.modulatorView = modulatorView;
     }
 
+    // ----- lock/unlock -----
+
+    public void readLock() {
+        model.readLock(index);
+    }
+
+    public void readUnlock() {
+        model.readUnlock(index);
+    }
+
+    public void writeLock() {
+        model.writeLock(index);
+    }
+
+    public void writeUnlock() {
+        model.writeUnlock(index);
+    }
     public SynapseModel getModel() {
         return model;
     }
+
+    // ----- getter/setter -----
 
     public int getViewId() {
         return index;
