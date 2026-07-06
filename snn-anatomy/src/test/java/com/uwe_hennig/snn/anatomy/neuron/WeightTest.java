@@ -38,7 +38,7 @@ import org.junit.jupiter.api.TestMethodOrder;
  */
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class WeightTest {
-    private static final int        NUM_THREADS = 10;
+    private static final int        NUM_THREADS = 209;
     private static final int        RW_CAPACITY = 1_000_000;
     private static final AtomicLong counter     = new AtomicLong();
 
@@ -93,6 +93,7 @@ public class WeightTest {
 
         try {
             ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+
             for (int i = 0; i < NUM_THREADS; i++) {
                 executor.submit(() -> {
                     try {
@@ -116,11 +117,13 @@ public class WeightTest {
                                 model.writeUnlock(v);
                             }
                         } else {
+                            model.readLock(v);
                             float r = model.getWeight(v);
                             Blackhole.consume(r);
+                            model.readUnlock(v);
                         }
                     } catch (Exception e) {
-                        fail("Exception in testLock: " + e.getLocalizedMessage());
+                        fail("Exception in testLock write: " + e.getLocalizedMessage());
                     }
                 });
             }

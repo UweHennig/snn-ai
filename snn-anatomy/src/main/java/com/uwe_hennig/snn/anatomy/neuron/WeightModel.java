@@ -22,6 +22,8 @@ import java.util.concurrent.locks.LockSupport;
  * @author Uwe Hennig
  */
 public final class WeightModel {
+    final static long TIMEOUT_NS = 200_000;
+
     final int   capacity;
     final Arena arena;
 
@@ -41,6 +43,7 @@ public final class WeightModel {
     ).withByteAlignment(8);
 
     static final VarHandle VH_LOCK               = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("lock"));
+    static final VarHandle VH_PENDING            = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("pending"));
 
     static final VarHandle VH_WEIGHT             = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("weight"));
     static final VarHandle VH_PRE_SYNAPTIC_TIME  = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("preSynapticTime"));
@@ -76,7 +79,13 @@ public final class WeightModel {
 
     void writeLock(int index) {
         int spins = 0;
-        while (!VH_LOCK.compareAndSet(segment, 0L, index, 0, -1)) {
+        while (true) {
+            int current = (int) VH_LOCK.getVolatile(segment, 0L, index);
+            if (current == 0) {
+                if (VH_LOCK.compareAndSet(segment, 0L, index, 0, -1)) {
+                    return;
+                }
+            }
             if (spins < 64) {
                 Thread.onSpinWait();
                 spins++;
@@ -88,6 +97,32 @@ public final class WeightModel {
 
     void writeUnlock(int index) {
         VH_LOCK.setRelease(segment, 0L, index, 0);
+    }
+
+
+    boolean readLock(int index) {
+        int spins = 0;
+        while (true) {
+            int current = (int) VH_LOCK.getVolatile(segment, 0L, index);
+
+            if (current < 0) {
+                if (spins < 64) {
+                    Thread.onSpinWait();
+                    spins++;
+                } else {
+                    LockSupport.parkNanos(1);
+                }
+                continue;
+            }
+
+            if (VH_LOCK.compareAndSet(segment, 0L, index, current, current + 1)) {
+                return true;
+            }
+        }
+    }
+
+    void readUnlock(int index) {
+        VH_LOCK.getAndAdd(segment, 0L, index, -1);
     }
 
     // ----- getter/setter -----
