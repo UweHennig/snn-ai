@@ -5,9 +5,11 @@
  */
 package com.uwe_hennig.snn.util;
 
+import com.uwe_hennig.snn.anatomy.neuron.EdgeView;
 import com.uwe_hennig.snn.contracts.core.NeuronElement;
 import com.uwe_hennig.snn.contracts.core.NeuronElementType;
 import com.uwe_hennig.snn.services.NeuronElementRegistry;
+import com.uwe_hennig.snn.services.StimulusService;
 
 /**
  * SnnDispatcher
@@ -16,7 +18,7 @@ import com.uwe_hennig.snn.services.NeuronElementRegistry;
  * @author Uwe Hennig
  */
 public class SnnDispatcher {
-    private static final long QUEUE_TIMEOUT_MS = 1000;
+    private static final long    QUEUE_TIMEOUT_MS = 1000;
     private static SnnDispatcher instance;
 
     private final IntQueue ingestQueue;
@@ -165,11 +167,16 @@ public class SnnDispatcher {
     }
 
     protected void doIt(int stimulusId) {
-        NeuronElementType trgType = NeuronElementType.of(0x03 & stimulusId);
-        stimulusId = stimulusId >>> 2;
+        int trgRef = StimulusService.getEdgeRef(stimulusId);
+        if (EdgeView.isMultiTarget(trgRef)) {
+            // TODO
+        } else {
+            int trgId = EdgeView.getSingleTrgRef(trgRef);
+            int trgType = EdgeView.getTrgType(trgRef);
 
-        NeuronElement neuronElement = NeuronElementRegistry.instance().getNeuronElement(stimulusId, trgType);
-        neuronElement.stimulate(stimulusId);
+            NeuronElement neuronElement = NeuronElementRegistry.instance().getNeuronElement(trgId, NeuronElementType.of(trgType));
+            neuronElement.stimulate(stimulusId);
+        }
     }
 
     private int nextPowerTwo(int value) {

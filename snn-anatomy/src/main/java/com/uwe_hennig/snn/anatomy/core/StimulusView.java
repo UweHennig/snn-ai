@@ -9,14 +9,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * StimulusView
+ *
  * @author Uwe Hennig
  */
 public class StimulusView {
     private final StimulusModel model;
 
-    private final int POOL_SIZE;
-    private final int MASK;
-    private final long TTL_NANO;
+    private final int           POOL_SIZE;
+    private final int           MASK;
+    private final long          TTL_NANO;
     private final AtomicInteger nextSearchStart = new AtomicInteger(0);
 
     public StimulusView(StimulusModel model, long ttl) {
@@ -33,8 +34,7 @@ public class StimulusView {
         return model;
     }
 
-    // TODO Multi Recipient
-    public int claimStimulus(int eventType, int src, int trg, int trgRef, int trgType, float value) {
+    public int claimStimulus(int eventType, float value, int edgeRef) {
         long now = System.nanoTime(); // TODO check
         int start = nextSearchStart.getAndAdd(32) & MASK;
 
@@ -47,12 +47,8 @@ public class StimulusView {
                         if (model.getExpiry(index) < now) {
 
                             model.setEventType(index, eventType);
-                            model.setSrc(index, src);
-                            model.setTrg(index, trg);
-                            model.setTrgRef(index, trgRef);
-                            model.setTrgType(index, trgType);
+                            model.setEdgeRef(index, edgeRef);
                             model.setValue(index, value);
-
                             model.setExpiry(index, now + TTL_NANO);
 
                             return index;
@@ -67,7 +63,7 @@ public class StimulusView {
         return -1;
     }
 
-    public boolean updateStimulus(int index, int eventType, int src, int trg, int trgRef, int trgType, float value) {
+    public boolean updateStimulus(int index, int eventType, float value, int edgeRef) {
         long now = System.nanoTime(); // TODO check
         if (model.getExpiry(index) >= now) {
             if (model.tryWriteLock(index)) {
@@ -77,15 +73,10 @@ public class StimulusView {
                             model.setExpiry(index, now - TTL_NANO);
                             return false;
                         }
-                        model.setSrc(index, src);
-                        model.setTrg(index, trg);
-                        model.setTrgRef(index, trgRef);
-                        model.setTrgType(index, trgType);
-                        model.setValue(index, value);
+
                         model.setEventType(index, eventType);
-
-                        model.setExpiry(index, now + TTL_NANO);
-
+                        model.setEdgeRef(index, edgeRef);
+                        model.setValue(index, value);
 
                         return true;
                     }
@@ -98,22 +89,6 @@ public class StimulusView {
         return false;
     }
 
-    public long getExpiry(int index) {
-        return model.getExpiry(index);
-    }
-
-    public int getSrc(int index) {
-        return model.getSrc(index);
-    }
-
-    public int getTrg(int index) {
-        return model.getTrg(index);
-    }
-
-    public int getTrgType(int index) {
-        return model.getTrgType(index);
-    }
-
     public float getValue(int index) {
         return model.getValue(index);
     }
@@ -122,9 +97,11 @@ public class StimulusView {
         return model.getEventType(index);
     }
 
-    public int [] getTrgList(int index) {
-        // TODO
-        return null;
+    public long getExpiry(int index) {
+        return model.getExpiry(index);
     }
 
+    public int getEdgeRef(int index) {
+        return model.getEdgeRef(index);
+    }
 }

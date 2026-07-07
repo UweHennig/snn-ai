@@ -5,7 +5,6 @@
  */
 package com.uwe_hennig.snn.peripheral.agent;
 
-import static com.uwe_hennig.snn.contracts.core.NeuronElementType.DENDRIT;
 import static com.uwe_hennig.snn.contracts.core.StimulusType.STIMULUS;
 
 import com.uwe_hennig.snn.contracts.core.StimulusType;
@@ -33,7 +32,11 @@ public class SnnReceptorImpl implements SnnReceptor {
 
     @Override
     public void perceive(float value) {
-        int stimulusId = StimulusService.claim(STIMULUS.code(), identifier, relatedDendritId, -1, DENDRIT.code(), value);
-        SnnTransferservice.transfer(stimulusId, DENDRIT.code());
+        int stimulusId = StimulusService.claim(STIMULUS.code(), value, relatedDendritId);
+        SnnTransferservice.transfer(stimulusId);
+    }
+
+    public int getIdentifier() {
+        return identifier;
     }
 }

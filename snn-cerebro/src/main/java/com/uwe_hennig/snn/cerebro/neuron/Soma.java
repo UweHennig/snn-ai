@@ -7,14 +7,15 @@ package com.uwe_hennig.snn.cerebro.neuron;
 
 import static com.uwe_hennig.snn.anatomy.neuron.PlasticityView.applyTimeFeedback;
 import static com.uwe_hennig.snn.anatomy.neuron.PlasticityView.applyValueFeedback;
+import static com.uwe_hennig.snn.anatomy.neuron.PlasticityView.getCurrentPotential;
 import static com.uwe_hennig.snn.anatomy.neuron.PlasticityView.updatePlasticityPotential;
 import static com.uwe_hennig.snn.anatomy.neuron.PotentialView.addPotentitial;
 import static com.uwe_hennig.snn.anatomy.neuron.PotentialView.decay;
 import static com.uwe_hennig.snn.anatomy.neuron.PotentialView.fire;
+import static com.uwe_hennig.snn.anatomy.neuron.ThresholdView.getThreshold;
 import static com.uwe_hennig.snn.contracts.core.NeuronElementType.AXON;
 import static com.uwe_hennig.snn.contracts.core.NeuronElementType.SOMA;
 
-import com.uwe_hennig.snn.anatomy.neuron.PlasticityView;
 import com.uwe_hennig.snn.anatomy.neuron.SomaView;
 import com.uwe_hennig.snn.anatomy.neuron.ThresholdView;
 import com.uwe_hennig.snn.contracts.core.NeuronElement;
@@ -54,7 +55,7 @@ public final class Soma extends ViewIdentity implements NeuronElement {
 
             float stimulusValue = StimulusService.getValue(stimulusIdentifier);
             if (StimulusService.isStimulus(stimulusIdentifier) && isExternalStimulus(stimulusIdentifier)) {
-                SnnTransferservice.transfer(stimulusIdentifier, AXON.code());
+                SnnTransferservice.transfer(stimulusIdentifier);
             }
 
             updatePlasticityPotential(stpViewId, currentTime);
@@ -74,14 +75,13 @@ public final class Soma extends ViewIdentity implements NeuronElement {
 
             if (StimulusService.isStimulus(stimulusIdentifier)) {
                 addPotentitial(potentialViewId, stimulusValue, currentTime);
-                if (fire(potentialViewId, ThresholdView.getThreshold(thresholdViewId))) {
-                    float actionPotential = PlasticityView.getCurrentPotential(ltpViewId) + PlasticityView.getCurrentPotential(stpViewId);
-                    stimulusIdentifier = StimulusService.update(stimulusIdentifier, StimulusType.STIMULUS.code(), view.getViewId(), view.getAxonId(), -1,
-                        AXON.code(), actionPotential);
+                if (fire(potentialViewId, getThreshold(thresholdViewId))) {
+                    float actionPotential = getCurrentPotential(ltpViewId) + getCurrentPotential(stpViewId);
+                    stimulusIdentifier = StimulusService.update(stimulusIdentifier, StimulusType.STIMULUS.code(), actionPotential, view.getAxonId());
                 }
             }
 
-            SnnTransferservice.transfer(stimulusIdentifier, AXON.code());
+            SnnTransferservice.transfer(stimulusIdentifier);
 
         } finally {
             view.writeUnlock();

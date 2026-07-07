@@ -19,8 +19,7 @@ import java.util.concurrent.locks.LockSupport;
 
 /**
  * StimulusModel
- * TODO trgIndex is an index in MulitList
- *
+ * TODO expiry float or long
  * @author Uwe Hennig
  */
 public class StimulusModel {
@@ -32,23 +31,17 @@ public class StimulusModel {
 
     // @formatter:off
     public static final GroupLayout LAYOUT = MemoryLayout.structLayout(
-        JAVA_INT.withName("lock"),      // 0: free, 1: occupied
+        JAVA_INT.withName("lock"),
         JAVA_INT.withName("eventType"),
-        JAVA_INT.withName("srcIndex"),
-        JAVA_INT.withName("trgIndex"),
-        JAVA_LONG.withName("trgRef"),
-        JAVA_LONG.withName("expiry"),
-        JAVA_INT.withName("trgType"),
-        JAVA_FLOAT.withName("value")
+        JAVA_INT.withName("edgeRef"),
+        JAVA_FLOAT.withName("value"),
+        JAVA_LONG.withName("expiry")
     ).withByteAlignment(8);
 
     static final VarHandle VH_LOCK       = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("lock"));
     static final VarHandle VH_EVENT_TYPE = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("eventType"));
+    static final VarHandle VH_EDGE_REF   = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("edgeRef"));
     static final VarHandle VH_EXPIRY     = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("expiry"));
-    static final VarHandle VH_SRC_INDEX  = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("srcIndex"));
-    static final VarHandle VH_TRG_INDEX  = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("trgIndex"));
-    static final VarHandle VH_TRG_REF    = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("trgRef"));
-    static final VarHandle VH_TRG_TYPE   = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("trgType"));
     static final VarHandle VH_VALUE      = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("value"));
     // @formatter:on
 
@@ -97,14 +90,6 @@ public class StimulusModel {
 
     // ----- getter/setter -----
 
-    long getExpiry(int index) {
-        return (long) VH_EXPIRY.get(segment, 0L, index);
-    }
-
-    void setExpiry(int index, long value) {
-        VH_EXPIRY.set(segment, 0L, index, value);
-    }
-
     int getEventType(int index) {
         return (int) VH_EVENT_TYPE.get(segment, 0L, index);
     }
@@ -113,36 +98,12 @@ public class StimulusModel {
         VH_EVENT_TYPE.set(segment, 0L, index, value);
     }
 
-    int getSrc(int index) {
-        return (int) VH_SRC_INDEX.get(segment, 0L, index);
+    int getEdgeRef(int index) {
+        return (int) VH_EDGE_REF.get(segment, 0L, index);
     }
 
-    void setSrc(int index, int value) {
-        VH_SRC_INDEX.set(segment, 0L, index, value);
-    }
-
-    int getTrg(int index) {
-        return (int) VH_TRG_INDEX.get(segment, 0L, index);
-    }
-
-    void setTrg(int index, int value) {
-        VH_TRG_INDEX.set(segment, 0L, index, value);
-    }
-
-    long getTrgRef(int index) {
-        return (long) VH_TRG_REF.get(segment, 0L, index);
-    }
-
-    void setTrgRef(int index, int value) {
-        VH_TRG_REF.set(segment, 0L, index, value);
-    }
-
-    int getTrgType(int index) {
-        return (int) VH_TRG_TYPE.get(segment, 0L, index);
-    }
-
-    void setTrgType(int index, int value) {
-        VH_TRG_TYPE.set(segment, 0L, index, value);
+    void setEdgeRef(int index, int value) {
+        VH_EDGE_REF.set(segment, 0L, index, value);
     }
 
     float getValue(int index) {
@@ -153,4 +114,11 @@ public class StimulusModel {
         VH_VALUE.set(segment, 0L, index, value);
     }
 
+    long getExpiry(int index) {
+        return (long) VH_EXPIRY.get(segment, 0L, index);
+    }
+
+    void setExpiry(int index, long value) {
+        VH_EXPIRY.set(segment, 0L, index, value);
+    }
 }

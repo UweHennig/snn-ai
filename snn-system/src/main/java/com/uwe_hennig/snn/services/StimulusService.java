@@ -31,36 +31,33 @@ public class StimulusService {
         return INSTANCE;
     }
 
-    public static int claim(int eventType, int src, int trg, int trgRef, int trgType, float value) {
-        return INSTANCE.view.claimStimulus(eventType, src, trg, trgRef, trgType, value);
+    public static int claim(int eventType, float value, int edgeRef) {
+        return INSTANCE.view.claimStimulus(eventType, value, edgeRef);
+    }
+
+    public static int update(int index, int eventType, float value, int edgeRef) {
+        if (!INSTANCE.view.updateStimulus(index, eventType, value, edgeRef)) {
+            return claim(eventType, value, edgeRef);
+        }
+        return index;
     }
 
     public static float getValue(int index) {
         return INSTANCE.view.getValue(index);
     }
 
-    public static int update(int index, int eventType, int src, int trg, int trgRef, int trgType, float value) {
-        if (!INSTANCE.view.updateStimulus(index, eventType, src, trg, trgRef, trgType, value)) {
-            return claim(eventType, src, trg, trgRef, trgType, value);
-        }
-        return index;
-    }
-
-    public static int getSrc(int index) {
-        return INSTANCE.view.getSrc(index);
-    }
-
-    public static int getTrg(int index) {
-        return INSTANCE.view.getTrg(index);
-    }
-
-    public static int getTrgType(int index) {
-        return INSTANCE.view.getTrgType(index);
+    public static int getEventType(int index) {
+        return INSTANCE.view.getEventType(index);
     }
 
     public static long getExpiry(int index) {
         return INSTANCE.view.getExpiry(index);
     }
+
+    public static int getEdgeRef(int index) {
+        return INSTANCE.view.getEdgeRef(index);
+    }
+
 
     public static boolean isTimeFeedback(int index) {
         return StimulusType.TIME_FEEDBACK.code() == INSTANCE.view.getEventType(index);

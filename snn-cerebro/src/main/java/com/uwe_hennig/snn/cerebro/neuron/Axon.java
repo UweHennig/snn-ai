@@ -25,10 +25,13 @@ import com.uwe_hennig.snn.util.SnnTransferservice;
 public final class Axon  extends ViewIdentity implements NeuronElement {
     private final AxonView      view;
     private final ModulatorView modulatorView;
+    private final int synapseRef;
+
     // TODO remove ModulatorView modulatorView - see AxonView view
-    public Axon(AxonView view, ModulatorView modulatorView) {
+    public Axon(AxonView view, ModulatorView modulatorView, int synapseRef) {
         this.view = view;
         this.modulatorView = modulatorView;
+        this.synapseRef = synapseRef;
     }
 
     @Override
@@ -39,7 +42,7 @@ public final class Axon  extends ViewIdentity implements NeuronElement {
             float currentTime = 1000; // TODO
 
             float stimulusValue = StimulusService.getValue(stimulusIdentifier);
-            int stimulusType = StimulusService.getTrgType(stimulusIdentifier);
+            int stimulusType = StimulusService.getEventType(stimulusIdentifier);
 
             if (StimulusService.isStimulus(stimulusIdentifier) && isExternalStimulus(stimulusIdentifier)) {
                 stimulusValue = modulatorView.applyStimulus(stimulusValue, currentTime);
@@ -48,8 +51,8 @@ public final class Axon  extends ViewIdentity implements NeuronElement {
             }
 
             // TODO for each synapse or bulk
-            StimulusService.update(stimulusIdentifier, stimulusType, view.getViewId(), -1, view.getSynapseRef(), SYNAPSE.code(), stimulusValue);
-            SnnTransferservice.transfer(stimulusIdentifier, SYNAPSE.code());
+            stimulusIdentifier = StimulusService.update(stimulusIdentifier, stimulusType, stimulusValue, synapseRef);
+            SnnTransferservice.transfer(stimulusIdentifier);
         } finally {
             view.writeUnlock();
         }

@@ -42,14 +42,13 @@ public final class Dendrit extends ViewIdentity implements NeuronElement {
             float stimulusValue = StimulusService.getValue(stimulusIdentifier);
             if (StimulusService.isStimulus(stimulusIdentifier)) {
                 stimulusValue = WeightView.applyStimulus(weightIdentifier, stimulusValue, currentTime);
-                stimulusIdentifier = StimulusService.update(stimulusIdentifier, StimulusType.STIMULUS.code(), view.getViewId(), view.getSomaId(), -1,
-                    NeuronElementType.SOMA.code(), stimulusValue);
+                stimulusIdentifier = StimulusService.update(stimulusIdentifier, StimulusType.STIMULUS.code(), stimulusValue, view.getSomaId());
             }
             if (StimulusService.isTimeFeedback(stimulusIdentifier)) {
                 WeightView.applyFeedback(weightIdentifier, stimulusValue);
             }
 
-            SnnTransferservice.transfer(stimulusIdentifier, NeuronElementType.SOMA.code());
+            SnnTransferservice.transfer(stimulusIdentifier);
 
         } finally {
             view.writeUnlock();

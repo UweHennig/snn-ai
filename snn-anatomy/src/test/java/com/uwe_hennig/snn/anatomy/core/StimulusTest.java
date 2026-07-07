@@ -33,14 +33,14 @@ public class StimulusTest {
         model.setExpiry(0, time);
         assertEquals(time, model.getExpiry(0));
 
-        model.setSrc(0, 1);
-        assertEquals(1, model.getSrc(0));
+        model.setEdgeRef(0, 1);
+        assertEquals(1, model.getEdgeRef(0));
 
-        model.setTrg(0, 2);
-        assertEquals(2, model.getTrg(0));
+        model.setEventType(0, 2);
+        assertEquals(2, model.getEventType(0));
 
-        model.setTrgType(0, 3);
-        assertEquals(3, model.getTrgType(0));
+        model.setExpiry(0, 3L);
+        assertEquals(3L, model.getExpiry(0));
 
         model.setValue(0, 4f);
         assertEquals(4f, model.getValue(0));
@@ -62,35 +62,28 @@ public class StimulusTest {
 
         // ---- Claim a free Slot ----
         // int eventType, int src, int trg, int trgRef, int trgType, float value
-        int idx = view.claimStimulus(1, 2, 3, 4, 5, 6.7f);
+        int idx = view.claimStimulus(1, 2f, 3);
         assertTrue(idx >= 0, "Claim must return a valid index");
 
         long expiry = model.getExpiry(idx);
         assertTrue(expiry > now, "Expiry must be set to now + TTL");
 
         assertEquals(1, model.getEventType(idx));
-        assertEquals(2, model.getSrc(idx));
-        assertEquals(3, model.getTrg(idx));
-        assertEquals(4, model.getTrgRef(idx));
-        assertEquals(5, model.getTrgType(idx));
-        assertEquals(6.7f, model.getValue(idx));
+        assertEquals(2f, model.getValue(idx));
+        assertEquals(3, model.getEdgeRef(idx));
 
         // ---- Update within TTL ----
-        boolean ok = view.updateStimulus(idx, 0, 10, 20, -1, 30, 40.5f);
+        boolean ok = view.updateStimulus(idx, 4, 5f, 6);
         assertTrue(ok, "Update must succeed while TTL is valid");
 
-        assertEquals(10, model.getSrc(idx));
-        assertEquals(20, model.getTrg(idx));
-        assertEquals(30, model.getTrgType(idx));
-        assertEquals(40.5f, model.getValue(idx));
-
-        long newExpiry = model.getExpiry(idx);
-        assertTrue(newExpiry > expiry, "Update must extend TTL");
+        assertEquals(4, model.getEventType(idx));
+        assertEquals(5f, model.getValue(idx));
+        assertEquals(6, model.getEdgeRef(idx));
 
         // ---- TTL to drain artificially ----
         model.setExpiry(idx, System.nanoTime() - 1);
 
-        boolean fail = view.updateStimulus(idx, 0, 99, 99, -1, 99, 99f);
+        boolean fail = view.updateStimulus(idx, 7, 8f, 9);
         assertFalse(fail, "Update must fail after TTL expired");
 
         model.close();
@@ -114,8 +107,7 @@ public class StimulusTest {
             model.tryWriteLock(i);
         }
 
-        //int eventType, int src, int trg, int trgRef, int trgType, float value
-        int idx = view.claimStimulus(1, 1, 1, 1, 1, 1f);
+        int idx = view.claimStimulus(1, 2f, 3);
 
         assertTrue(idx > 4, "Claim must skip locked slot");
 

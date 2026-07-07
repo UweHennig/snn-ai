@@ -24,6 +24,7 @@ import com.uwe_hennig.snn.util.SnnTransferservice;
 public final class Synapse extends ViewIdentity implements NeuronElement {
     private final SynapseView   view;
     private final ModulatorView modulatorView;
+    private int targetRef;
 
     public Synapse(SynapseView view, ModulatorView modulatorView) {
         this.view = view;
@@ -38,7 +39,7 @@ public final class Synapse extends ViewIdentity implements NeuronElement {
             float currentTime = 1000; // TODO
 
             float stimulusValue = StimulusService.getValue(stimulusIdentifier);
-            int stimulusType = StimulusService.getTrgType(stimulusIdentifier);
+            int stimulusType = StimulusService.getEventType(stimulusIdentifier);
 
             if (StimulusService.isStimulus(stimulusIdentifier) && isExternalStimulus(stimulusIdentifier)) {
                 stimulusValue = modulatorView.applyStimulus(stimulusValue, currentTime);
@@ -46,12 +47,16 @@ public final class Synapse extends ViewIdentity implements NeuronElement {
                 stimulusValue = modulatorView.applyStimulus(stimulusType, currentTime);
             }
 
-            StimulusService.update(stimulusIdentifier, stimulusType, view.getViewId(), view.getTargetId(), -1, view.getTargetType(), stimulusValue);
-            SnnTransferservice.transfer(stimulusIdentifier, view.getTargetType());
+            stimulusIdentifier = StimulusService.update(stimulusIdentifier, stimulusType, stimulusValue, targetRef);
+            SnnTransferservice.transfer(stimulusIdentifier);
 
         } finally {
             view.writeUnlock();
         }
+    }
+
+    public void setTargetRef(int targetRef) {
+        this.targetRef = targetRef;
     }
 
     @Override
