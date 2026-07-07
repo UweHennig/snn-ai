@@ -5,6 +5,8 @@
  */
 package com.uwe_hennig.snn.anatomy.neuron;
 
+import com.uwe_hennig.snn.anatomy.allocator.ThresholdModelManager;
+
 /**
  * ThresholdView
  *
@@ -14,44 +16,37 @@ public final class ThresholdView {
     private static final float MIN_THRESHOLD = -55f;
     private static final float MAX_THRESHOLD = -50f;
 
-    private final ThresholdModel model;
-    private final int            index;
-
-    public ThresholdView(int index, ThresholdModel model) {
-        assert model != null : "Model must not bei null!";
-        assert index < model.capacity && index >= 0 : " " + index + " >= " + model.capacity;
-
-        this.index = index;
-        this.model = model;
-
-    }
-
-    // ----- Getter/Setter -----
-
-    public ThresholdModel getModel() {
-        return model;
-    }
-
-    public int getViewId() {
-        return index;
-    }
-
-    public float getThreshold() {
-        return model.getThreshold(index);
-    }
-
     // ----- Domain Logic -----
 
-    public void applyTimeFeedback(float deltaTimeFeedback) {
-        float threshold = model.getThreshold(index);
-        threshold += deltaThreshold(deltaTimeFeedback);
-        threshold = Math.clamp(threshold, MIN_THRESHOLD, MAX_THRESHOLD);
-        model.setThreshold(index, threshold);
+    public static void applyTimeFeedback(int index, float deltaTimeFeedback) {
+        ThresholdModel model = ThresholdModelManager.instance().getModel();
+
+        try {
+            model.writeLock(index);
+            float threshold = model.getThreshold(index);
+            threshold += deltaThreshold(index, deltaTimeFeedback);
+            threshold = Math.clamp(threshold, MIN_THRESHOLD, MAX_THRESHOLD);
+            model.setThreshold(index, threshold);
+        } finally {
+            model.writeUnlock(index);
+        }
+    }
+
+    public static float getThreshold(int index) {
+        ThresholdModel model = ThresholdModelManager.instance().getModel();
+        try {
+            model.readLock(index);
+            return model.getThreshold(index);
+        } finally {
+            model.readUnlock(index);
+        }
     }
 
     // ----- convenience -----
 
-    float deltaThreshold(float deltaTimeFeedback) {
+    static float deltaThreshold(int index, float deltaTimeFeedback) {
+        ThresholdModel model = ThresholdModelManager.instance().getModel();
+
         float feedbackTimeLimit = model.getTimeLimit(index);
         float phase = Math.clamp(Math.abs(deltaTimeFeedback / feedbackTimeLimit), 0f, 1f);
         float effect = phase * phase * phase;

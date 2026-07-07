@@ -31,17 +31,17 @@ import com.uwe_hennig.snn.util.SnnTransferservice;
  * @author Uwe Hennig
  */
 public final class Soma extends ViewIdentity implements NeuronElement {
-    private final SomaView      view;
-    private final ThresholdView thresholdView;
-    private final int           potentialViewId;
-    private final int           stpViewId;
-    private final int           ltpViewId;
+    private final SomaView view;
+    private final int      thresholdViewId;
+    private final int      potentialViewId;
+    private final int      stpViewId;
+    private final int      ltpViewId;
 
-    public Soma(SomaView view, ThresholdView thresholdView, int potentialViewId, int stpViewId, int ltpViewId) {
+    public Soma(SomaView view, int thresholdViewId, int potentialViewId, int stpViewId, int ltpViewId) {
         this.view = view;
         this.stpViewId = stpViewId;
         this.ltpViewId = ltpViewId;
-        this.thresholdView = thresholdView;
+        this.thresholdViewId = thresholdViewId;
         this.potentialViewId = potentialViewId;
     }
 
@@ -62,7 +62,7 @@ public final class Soma extends ViewIdentity implements NeuronElement {
             decay(potentialViewId, currentTime);
 
             if (StimulusService.isTimeFeedback(stimulusIdentifier)) {
-                thresholdView.applyTimeFeedback(stimulusValue);
+                ThresholdView.applyTimeFeedback(thresholdViewId, stimulusValue);
                 applyTimeFeedback(stpViewId, stimulusValue, currentTime);
                 applyTimeFeedback(ltpViewId, stimulusValue, currentTime);
             }
@@ -74,7 +74,7 @@ public final class Soma extends ViewIdentity implements NeuronElement {
 
             if (StimulusService.isStimulus(stimulusIdentifier)) {
                 addPotentitial(potentialViewId, stimulusValue, currentTime);
-                if (fire(potentialViewId, thresholdView.getThreshold())) {
+                if (fire(potentialViewId, ThresholdView.getThreshold(thresholdViewId))) {
                     float actionPotential = PlasticityView.getCurrentPotential(ltpViewId) + PlasticityView.getCurrentPotential(stpViewId);
                     stimulusIdentifier = StimulusService.update(stimulusIdentifier, StimulusType.STIMULUS.code(), view.getViewId(), view.getAxonId(), -1,
                         AXON.code(), actionPotential);
