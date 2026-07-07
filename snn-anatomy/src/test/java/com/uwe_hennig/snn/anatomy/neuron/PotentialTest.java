@@ -15,6 +15,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
+import com.uwe_hennig.snn.anatomy.allocator.PotentialModelManager;
+
 /**
  * PotentialTest
  *
@@ -25,7 +27,7 @@ public class PotentialTest {
     @Test
     @DisplayName("Simple PotentialModel Test")
     public void testPotentialModel() {
-        PotentialModel model = new PotentialModel(1);
+        PotentialModel model = PotentialModelManager.init(1).getModel();
         checkModel(model, 1);
 
         try {
@@ -53,43 +55,35 @@ public class PotentialTest {
     @DisplayName("Simple PotentialView Test")
     public void testPotentialView() {
         final int n = 10;
-        PotentialModel model = null;
+        PotentialModel model = PotentialModelManager.init(n).getModel();
         try {
-            model = new PotentialModel(n);
             checkModel(model, n);
             float currentTime = 3.1415f;
 
-            PotentialView[] views = new PotentialView[n];
             for (int i = 0; i < n; i++) {
-                views[i] = new PotentialView(i, model);
                 model.writeLock(i);
                 model.setPotential(i, 0f);
-                model.setRestingPotential(i, 0f);
                 model.writeUnlock(i);
             }
 
             for (int i = 0; i < n; i++) {
-                PotentialView view = views[i];
-                assertEquals(0f, view.getPotentital());
-                assertEquals(0f, view.getRestingPotential());
+                assertEquals(0f, PotentialView.getPotential(i));
             }
 
             float c = 0f;
             for (int i = 0; i < n; i++) {
-                PotentialView view = views[i];
                 c += 1f;
-                view.addPotentitial(c, currentTime);
+                PotentialView.addPotentitial(i, c, currentTime);
             }
 
             c = 0f;
             for (int i = 0; i < n; i++) {
-                PotentialView view = views[i];
                 c += 1f;
-                float currentPotenial = view.getPotentital();
+                float currentPotenial = PotentialView.getPotential(i);
 
                 assertEquals(c, currentPotenial);
-                view.addPotentitial(1000f, currentTime);
-                assertTrue(view.getPotentital() >= model.getRestingPotential(i));
+                PotentialView.addPotentitial(i, 1000f, currentTime);
+                assertTrue(PotentialView.getPotential(i) >= model.getRestingPotential(i));
             }
         } catch (Exception e) {
             e.printStackTrace();

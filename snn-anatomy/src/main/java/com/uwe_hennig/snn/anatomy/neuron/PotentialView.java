@@ -5,72 +5,17 @@
  */
 package com.uwe_hennig.snn.anatomy.neuron;
 
+import com.uwe_hennig.snn.anatomy.allocator.PotentialModelManager;
+
 /**
  * PotentialView
  *
  * @author Uwe Hennig
  */
 public final class PotentialView {
-    private final int            index;
-    private final PotentialModel model;
+    public static float decay(int index, float currentTime) {
+        PotentialModel model = PotentialModelManager.instance().getModel();
 
-    public PotentialView(int index, PotentialModel model) {
-        assert model != null : "Model must not bei null!";
-        assert index < model.capacity && index >= 0 : " " + index + " >= " + model.capacity;
-
-        this.index = index;
-        this.model = model;
-
-        initData();
-    }
-
-    // ----- lock/unlock -----
-
-    public void readLock() {
-        model.readLock(index);
-    }
-
-    public void readUnlock() {
-        model.readUnlock(index);
-    }
-
-    public void writeLock() {
-        model.writeLock(index);
-    }
-
-    public void writeUnlock() {
-        model.writeUnlock(index);
-    }
-
-    // ----- Getter/Setter -----
-
-    public PotentialModel getModel() {
-        return model;
-    }
-
-    public int getViewId() {
-        return index;
-    }
-
-    public float getPotentital() {
-        return model.getPotential(index);
-    }
-
-    public float getRestingPotential() {
-        return model.getRestingPotential(index);
-    }
-
-    public float getLastUpdateTime() {
-        return model.getLastUpdateTime(index);
-    }
-
-    public float getRopolarizationTime() {
-        return model.getRepolarizationTime(index);
-    }
-
-    // ----- Domain Logic -----
-
-    public float decay(float currentTime) {
         float currentPotential = model.getPotential(index);
         float lastUpdate = model.getLastUpdateTime(index);
         float elapsed = Math.max(currentTime - lastUpdate, 0f);
@@ -84,18 +29,43 @@ public final class PotentialView {
         return potential;
     }
 
-    public float addPotentitial(float potential, float currentTime) {
-        return withPotential(potential + model.getPotential(index), currentTime);
+    public static float getPotential(int index) {
+        PotentialModel model = PotentialModelManager.instance().getModel();
+        try {
+            model.readLock(index);
+            return model.getPotential(index);
+        } finally {
+            model.readUnlock(index);
+        }
     }
 
-    private float withPotential(float potential, float currentTime) {
+    public static float addPotentitial(int index, float potential, float currentTime) {
+        PotentialModel model = PotentialModelManager.instance().getModel();
+
+        return withPotential(index, potential + model.getPotential(index), currentTime);
+    }
+
+    public static boolean fire(int index, float threshold) {
+        PotentialModel model = PotentialModelManager.instance().getModel();
+        try {
+            model.readLock(index);
+            return model.getPotential(index) > threshold;
+        } finally {
+            model.readUnlock(index);
+        }
+    }
+
+    private static float withPotential(int index, float potential, float currentTime) {
+        PotentialModel model = PotentialModelManager.instance().getModel();
+
         model.setPotential(index, potential);
         model.setLastUpdateTime(index, currentTime);
         return model.getPotential(index);
     }
 
     // TODO remove
-    private void initData() {
+    public static void initData(int index) {
+        PotentialModel model = PotentialModelManager.instance().getModel();
         try {
             model.writeLock(index);
             // TODO fetch values from parameter service
