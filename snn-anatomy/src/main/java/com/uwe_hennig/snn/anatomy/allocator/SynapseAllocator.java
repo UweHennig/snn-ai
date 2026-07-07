@@ -5,8 +5,6 @@
  */
 package com.uwe_hennig.snn.anatomy.allocator;
 
-import com.uwe_hennig.snn.anatomy.neuron.ModulatorModel;
-import com.uwe_hennig.snn.anatomy.neuron.ModulatorView;
 import com.uwe_hennig.snn.anatomy.neuron.SynapseModel;
 import com.uwe_hennig.snn.anatomy.neuron.SynapseView;
 
@@ -19,13 +17,11 @@ public class SynapseAllocator {
     private static SynapseAllocator INSTANCE;
 
     private final SynapseModel model;
-    private final ModulatorModel modulatorModel;
 
     private int nextOffset = 0;
 
     private SynapseAllocator(int capacity) {
         model = new SynapseModel(capacity);
-        modulatorModel = new ModulatorModel(capacity);
     }
 
     public static SynapseAllocator initInstance(int capacity) {
@@ -44,8 +40,7 @@ public class SynapseAllocator {
 
         int offset = nextOffset++;
 
-        ModulatorView modulatorView = new ModulatorView(offset, modulatorModel);
-        SynapseView view = new SynapseView(offset, model, modulatorView);
+        SynapseView view = new SynapseView(offset, model);
 
         view.setStructure(fieldId, neuronId, -1);
         return view;
@@ -56,14 +51,11 @@ public class SynapseAllocator {
             return null;
         }
 
-        ModulatorView modulatorView = new ModulatorView(viewId, modulatorModel);
-        SynapseView view = new SynapseView(viewId, model, modulatorView);
-
+        SynapseView view = new SynapseView(viewId, model);
         return view;
     }
 
     public void close() {
         model.close();
-        modulatorModel.close();
     }
 }

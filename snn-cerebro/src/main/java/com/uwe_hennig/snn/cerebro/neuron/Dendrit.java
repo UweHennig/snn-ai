@@ -20,12 +20,12 @@ import com.uwe_hennig.snn.util.SnnTransferservice;
  * @author Uwe Hennig
  */
 public final class Dendrit extends ViewIdentity implements NeuronElement {
-    private final DendritView   view;
-    private final WeightView    weightView;
+    private final DendritView view;
+    private final int         weightIdentifier;
 
-    public Dendrit(DendritView view, WeightView weightView) {
+    public Dendrit(DendritView view, int weightIdentifier) {
         this.view = view;
-        this.weightView = weightView;
+        this.weightIdentifier = weightIdentifier;
     }
 
     /**
@@ -41,12 +41,12 @@ public final class Dendrit extends ViewIdentity implements NeuronElement {
 
             float stimulusValue = StimulusService.getValue(stimulusIdentifier);
             if (StimulusService.isStimulus(stimulusIdentifier)) {
-                stimulusValue = weightView.applyStimulus(stimulusValue, currentTime);
+                stimulusValue = WeightView.applyStimulus(weightIdentifier, stimulusValue, currentTime);
                 stimulusIdentifier = StimulusService.update(stimulusIdentifier, StimulusType.STIMULUS.code(), view.getViewId(), view.getSomaId(), -1,
                     NeuronElementType.SOMA.code(), stimulusValue);
             }
             if (StimulusService.isTimeFeedback(stimulusIdentifier)) {
-                weightView.applyFeedback(stimulusValue);
+                WeightView.applyFeedback(weightIdentifier, stimulusValue);
             }
 
             SnnTransferservice.transfer(stimulusIdentifier, NeuronElementType.SOMA.code());

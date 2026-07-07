@@ -15,15 +15,12 @@ public final class DendritView {
     private final int          index;
     private final DendritModel model;
 
-    private WeightView weightView;
-
-    public DendritView(int index, DendritModel model, WeightView weightView) {
+    public DendritView(int index, DendritModel model) {
         assert model != null : "Model must not be null!";
         assert index < model.capacity && index >= 0 : " " + index + " >= " + model.capacity;
 
         this.index = index;
         this.model = model;
-        this.weightView = weightView;
     }
 
     // ----- lock/unlock -----
@@ -54,10 +51,6 @@ public final class DendritView {
         return index;
     }
 
-    public WeightView getWeightView() {
-        return weightView;
-    }
-
     public int getFieldId() {
         return model.getFiedlId(index);
     }
@@ -76,7 +69,6 @@ public final class DendritView {
             model.setFieldId(index, fieldId);
             model.setNeuronId(index, neuronId);
             model.setSomaId(index, somaId);
-            model.setWeightId(index, weightView.getViewId());
         } finally {
             model.writeUnlock(index);
         }

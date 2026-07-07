@@ -13,15 +13,13 @@ package com.uwe_hennig.snn.anatomy.neuron;
 public class SynapseView {
     private final int           index;
     private final SynapseModel  model;
-    private final ModulatorView modulatorView;
 
-    public SynapseView(int index, SynapseModel model, ModulatorView modulatorView) {
+    public SynapseView(int index, SynapseModel model) {
         assert model != null : "Model must not be null!";
         assert index < model.capacity && index >= 0 : " " + index + " >= " + model.capacity;
 
         this.index = index;
         this.model = model;
-        this.modulatorView = modulatorView;
     }
 
     // ----- lock/unlock -----
@@ -77,7 +75,6 @@ public class SynapseView {
             model.setFieldId(index, fieldId);
             model.setNeuronId(index, neuronId);
             model.setTargetId(index, targetId);
-            model.setModulatorId(index, modulatorView.getViewId());
         } finally {
             model.writeUnlock(index);
         }

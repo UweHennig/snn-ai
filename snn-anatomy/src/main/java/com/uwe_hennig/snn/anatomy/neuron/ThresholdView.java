@@ -11,8 +11,8 @@ package com.uwe_hennig.snn.anatomy.neuron;
  * @author Uwe Hennig
  */
 public final class ThresholdView {
-    private final float MIN_THRESHOLD = -55f;
-    private final float MAX_THRESHOLD = -50f;
+    private static final float MIN_THRESHOLD = -55f;
+    private static final float MAX_THRESHOLD = -50f;
 
     private final ThresholdModel model;
     private final int            index;

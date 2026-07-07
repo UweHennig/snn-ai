@@ -7,8 +7,6 @@ package com.uwe_hennig.snn.anatomy.allocator;
 
 import com.uwe_hennig.snn.anatomy.neuron.DendritModel;
 import com.uwe_hennig.snn.anatomy.neuron.DendritView;
-import com.uwe_hennig.snn.anatomy.neuron.WeightModel;
-import com.uwe_hennig.snn.anatomy.neuron.WeightView;
 
 /**
  * DendritAllocator
@@ -19,13 +17,11 @@ public class DendritAllocator {
     private static DendritAllocator INSTANCE;
 
     private final DendritModel model;
-    private final WeightModel  weightModel;
 
     private int nextOffset = 0;
 
     private DendritAllocator(int capacity) {
         model = new DendritModel(capacity);
-        weightModel = new WeightModel(capacity);
     }
 
     public static DendritAllocator initInstance(int capacity) {
@@ -44,8 +40,7 @@ public class DendritAllocator {
 
         int offset = nextOffset++;
 
-        WeightView weightView = new WeightView(offset, weightModel);
-        DendritView view = new DendritView(offset, model, weightView);
+        DendritView view = new DendritView(offset, model);
         view.setStructure(fieldId, neuronId, somaId);
 
         return view;
@@ -55,12 +50,11 @@ public class DendritAllocator {
         if (viewId >= nextOffset) {
             return null;
         }
-        WeightView weightView = new WeightView(viewId, weightModel);
-        return new DendritView(viewId, model, weightView);
+
+        return new DendritView(viewId, model);
     }
 
     public void close() {
         model.close();
-        weightModel.close();
     }
 }
