@@ -14,7 +14,7 @@ import com.uwe_hennig.snn.anatomy.neuron.WeightModel;
  */
 public class WeightModelManager {
     private static WeightModelManager INSTANCE;
-    private final WeightModel         model;
+    private WeightModel               model;
     private int                       nextOffset = 0;
 
     private WeightModelManager(int capacity) {
@@ -39,7 +39,10 @@ public class WeightModelManager {
     }
 
     public void close() {
+        nextOffset = 0;
         model.close();
+        model = null;
+        INSTANCE = null;
     }
 
     public void save(String folder) {

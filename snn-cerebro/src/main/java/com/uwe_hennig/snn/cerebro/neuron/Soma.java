@@ -5,6 +5,9 @@
  */
 package com.uwe_hennig.snn.cerebro.neuron;
 
+import static com.uwe_hennig.snn.anatomy.neuron.PlasticityView.applyTimeFeedback;
+import static com.uwe_hennig.snn.anatomy.neuron.PlasticityView.applyValueFeedback;
+import static com.uwe_hennig.snn.anatomy.neuron.PlasticityView.updatePlasticityPotential;
 import static com.uwe_hennig.snn.anatomy.neuron.PotentialView.addPotentitial;
 import static com.uwe_hennig.snn.anatomy.neuron.PotentialView.decay;
 import static com.uwe_hennig.snn.anatomy.neuron.PotentialView.fire;
@@ -28,16 +31,16 @@ import com.uwe_hennig.snn.util.SnnTransferservice;
  * @author Uwe Hennig
  */
 public final class Soma extends ViewIdentity implements NeuronElement {
-    private final SomaView       view;
-    private final PlasticityView stpView;
-    private final PlasticityView ltpView;
-    private final ThresholdView  thresholdView;
-    private final int            potentialViewId;
+    private final SomaView      view;
+    private final ThresholdView thresholdView;
+    private final int           potentialViewId;
+    private final int           stpViewId;
+    private final int           ltpViewId;
 
-    public Soma(SomaView view, ThresholdView thresholdView, int potentialViewId, PlasticityView stpView, PlasticityView ltpView) {
+    public Soma(SomaView view, ThresholdView thresholdView, int potentialViewId, int stpViewId, int ltpViewId) {
         this.view = view;
-        this.stpView = stpView;
-        this.ltpView = ltpView;
+        this.stpViewId = stpViewId;
+        this.ltpViewId = ltpViewId;
         this.thresholdView = thresholdView;
         this.potentialViewId = potentialViewId;
     }
@@ -54,25 +57,25 @@ public final class Soma extends ViewIdentity implements NeuronElement {
                 SnnTransferservice.transfer(stimulusIdentifier, AXON.code());
             }
 
-            stpView.updatePlasticityPotential(currentTime);
-            ltpView.updatePlasticityPotential(currentTime);
+            updatePlasticityPotential(stpViewId, currentTime);
+            updatePlasticityPotential(ltpViewId, currentTime);
             decay(potentialViewId, currentTime);
 
             if (StimulusService.isTimeFeedback(stimulusIdentifier)) {
                 thresholdView.applyTimeFeedback(stimulusValue);
-                stpView.applyTimeFeedback(stimulusValue, currentTime);
-                ltpView.applyTimeFeedback(stimulusValue, currentTime);
+                applyTimeFeedback(stpViewId, stimulusValue, currentTime);
+                applyTimeFeedback(ltpViewId, stimulusValue, currentTime);
             }
 
             if (StimulusService.isValueFeedback(stimulusIdentifier)) {
-                stpView.applyValueFeedback(stimulusValue, currentTime);
-                ltpView.applyValueFeedback(stimulusValue, currentTime);
+                applyValueFeedback(stpViewId, stimulusValue, currentTime);
+                applyValueFeedback(ltpViewId, stimulusValue, currentTime);
             }
 
             if (StimulusService.isStimulus(stimulusIdentifier)) {
                 addPotentitial(potentialViewId, stimulusValue, currentTime);
                 if (fire(potentialViewId, thresholdView.getThreshold())) {
-                    float actionPotential = ltpView.getCurrentPotential() + stpView.getCurrentPotential();
+                    float actionPotential = PlasticityView.getCurrentPotential(ltpViewId) + PlasticityView.getCurrentPotential(stpViewId);
                     stimulusIdentifier = StimulusService.update(stimulusIdentifier, StimulusType.STIMULUS.code(), view.getViewId(), view.getAxonId(), -1,
                         AXON.code(), actionPotential);
                 }

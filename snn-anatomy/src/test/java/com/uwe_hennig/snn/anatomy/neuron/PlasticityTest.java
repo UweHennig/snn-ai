@@ -14,6 +14,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
+import com.uwe_hennig.snn.anatomy.allocator.PlasticityModelManager;
+
 /**
  * PlasticityTest
  *
@@ -23,9 +25,8 @@ public class PlasticityTest {
     @Test
     @DisplayName("Simple PlasticityModel Test")
     public void testPlasticityModel() {
-        PlasticityModel model = null;
+        PlasticityModel model = PlasticityModelManager.init(1).getModel();
         try {
-            model = new PlasticityModel(1);
             model.writeLock(0);
             model.setCurrentPotential(0, 1f);
             model.setLastUpdateTime(0, 2f);
@@ -57,10 +58,9 @@ public class PlasticityTest {
     @Test
     @DisplayName("Simple PlasticityModel Test")
     public void testPlasticityView() {
-        PlasticityModel model = null;
+        PlasticityModel model = PlasticityModelManager.init(1).getModel();
         PlasticityView view = null;
         try {
-            model = new PlasticityModel(1);
             // initial values
             model.writeLock(0);
             float startTime = 200f;
@@ -92,11 +92,10 @@ public class PlasticityTest {
             checkNaN(model);
 
             float currentTime = 400f;
-            view = new PlasticityView(0, model);
 
-            view.updatePlasticityPotential(currentTime + 100);
-            view.applyValueFeedback(100, currentTime + 200);
-            view.applyTimeFeedback(100, currentTime + 300);
+            PlasticityView.updatePlasticityPotential(0, currentTime + 100);
+            PlasticityView.applyValueFeedback(0, 100, currentTime + 200);
+            PlasticityView.applyTimeFeedback(0, 100, currentTime + 300);
 
             System.out.println("\n### Changed values");
             System.out.println("elapsed = " + (currentTime - model.getLastUpdateTime(0)));
