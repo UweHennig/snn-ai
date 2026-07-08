@@ -79,7 +79,7 @@ public final class WeightView {
         return proximity * hebbScale * Math.signum(deltaTimeFeedback);
     }
 
-    static void initDefaultValues(int index) {
+    public static void initDefaultValues(int index) {
         WeightModel model = WeightModelManager.instance().getModel();
         if (model.getWeightScale(index) == 0.0f) {
             model.setWeightScale(index, 0.01f);

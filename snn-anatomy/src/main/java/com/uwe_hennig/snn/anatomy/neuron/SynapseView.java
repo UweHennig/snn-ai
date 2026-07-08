@@ -64,13 +64,13 @@ public class SynapseView {
         return model.getTargetType(index);
     }
 
-    public static void setStructure(int index, int fieldId, int neuronId, int targetId) {
+    public static void setStructure(int index, int fieldId, int neuronId, int modulatorId) {
         SynapseModel model = SynapseModelManager.instance().getModel();
         model.writeLock(index);
         try {
             model.setFieldId(index, fieldId);
             model.setNeuronId(index, neuronId);
-            model.setTargetId(index, targetId);
+            model.setModulatorId(index, modulatorId);
         } finally {
             model.writeUnlock(index);
         }
