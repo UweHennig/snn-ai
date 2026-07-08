@@ -14,7 +14,7 @@ import com.uwe_hennig.snn.anatomy.neuron.AxonModel;
  */
 public class AxonModelManager {
     private static AxonModelManager INSTANCE;
-    private final AxonModel         model;
+    private AxonModel               model;
     private int                     nextOffset = 0;
 
     private AxonModelManager(int capacity) {
@@ -39,6 +39,9 @@ public class AxonModelManager {
     }
 
     public void close() {
+        nextOffset = 0;
         model.close();
+        model = null;
+        INSTANCE = null;
     }
 }

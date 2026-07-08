@@ -6,7 +6,6 @@
 package com.uwe_hennig.snn.cerebro.neuron;
 
 import static com.uwe_hennig.snn.contracts.core.NeuronElementType.AXON;
-import static com.uwe_hennig.snn.contracts.core.NeuronElementType.SYNAPSE;
 
 import com.uwe_hennig.snn.anatomy.neuron.AxonView;
 import com.uwe_hennig.snn.anatomy.neuron.ModulatorView;
@@ -22,22 +21,21 @@ import com.uwe_hennig.snn.util.SnnTransferservice;
  *
  * @author Uwe Hennig
  */
-public final class Axon  extends ViewIdentity implements NeuronElement {
-    private final AxonView      view;
-    private final ModulatorView modulatorView;
+public final class Axon extends ViewIdentity implements NeuronElement {
+    private final int viewId;
+    private final int modulatorViewId;
     private final int synapseRef;
 
-    // TODO remove ModulatorView modulatorView - see AxonView view
-    public Axon(AxonView view, ModulatorView modulatorView, int synapseRef) {
-        this.view = view;
-        this.modulatorView = modulatorView;
+    public Axon(int viewId, int modulatorViewId, int synapseRef) {
+        this.viewId = viewId;
+        this.modulatorViewId = modulatorViewId;
         this.synapseRef = synapseRef;
     }
 
     @Override
     public void stimulate(int stimulusIdentifier) {
         try {
-            view.writeLock();
+            AxonView.writeLock(viewId);
             // TODO complete implementation
             float currentTime = 1000; // TODO
 
@@ -45,16 +43,16 @@ public final class Axon  extends ViewIdentity implements NeuronElement {
             int stimulusType = StimulusService.getEventType(stimulusIdentifier);
 
             if (StimulusService.isStimulus(stimulusIdentifier) && isExternalStimulus(stimulusIdentifier)) {
-                stimulusValue = modulatorView.applyStimulus(stimulusValue, currentTime);
+                stimulusValue = ModulatorView.applyStimulus(modulatorViewId, stimulusValue, currentTime);
             } else if (StimulusService.isStimulus(stimulusIdentifier)) {
-                stimulusValue = modulatorView.applyStimulus(stimulusType, currentTime);
+                stimulusValue = ModulatorView.applyStimulus(modulatorViewId, stimulusType, currentTime);
             }
 
             // TODO for each synapse or bulk
             stimulusIdentifier = StimulusService.update(stimulusIdentifier, stimulusType, stimulusValue, synapseRef);
             SnnTransferservice.transfer(stimulusIdentifier);
         } finally {
-            view.writeUnlock();
+            AxonView.writeUnlock(viewId);
         }
     }
 
@@ -70,11 +68,11 @@ public final class Axon  extends ViewIdentity implements NeuronElement {
 
     @Override
     public int getNeuronId() {
-        return view.getNeuronId();
+        return AxonView.getNeuronId(viewId);
     }
 
     @Override
     public int getViewId() {
-        return view.getViewId();
+        return viewId;
     }
 }

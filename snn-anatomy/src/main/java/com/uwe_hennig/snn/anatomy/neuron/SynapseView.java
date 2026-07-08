@@ -5,71 +5,67 @@
  */
 package com.uwe_hennig.snn.anatomy.neuron;
 
+import com.uwe_hennig.snn.anatomy.allocator.SynapseModelManager;
+
 /**
  * SynapseView
  *
  * @author Uwe Hennig
  */
 public class SynapseView {
-    private final int           index;
-    private final SynapseModel  model;
-
-    public SynapseView(int index, SynapseModel model) {
-        assert model != null : "Model must not be null!";
-        assert index < model.capacity && index >= 0 : " " + index + " >= " + model.capacity;
-
-        this.index = index;
-        this.model = model;
-    }
-
     // ----- lock/unlock -----
 
-    public void readLock() {
+    public static void readLock(int index) {
+        SynapseModel model = SynapseModelManager.instance().getModel();
         model.readLock(index);
     }
 
-    public void readUnlock() {
+    public static void readUnlock(int index) {
+        SynapseModel model = SynapseModelManager.instance().getModel();
         model.readUnlock(index);
     }
 
-    public void writeLock() {
+    public static void writeLock(int index) {
+        SynapseModel model = SynapseModelManager.instance().getModel();
         model.writeLock(index);
     }
 
-    public void writeUnlock() {
+    public static void writeUnlock(int index) {
+        SynapseModel model = SynapseModelManager.instance().getModel();
         model.writeUnlock(index);
     }
-    public SynapseModel getModel() {
-        return model;
-    }
-
     // ----- getter/setter -----
 
-    public int getViewId() {
-        return index;
+    public static void setTargetRef(int index, int targetId) {
+        SynapseModel model = SynapseModelManager.instance().getModel();
+        model.writeLock(index);
+        model.setTargetId(index, targetId);
+        model.writeUnlock(index);
     }
 
-    public int getFieldId() {
+
+    public static int getFieldId(int index) {
+        SynapseModel model = SynapseModelManager.instance().getModel();
         return model.getFiedlId(index);
     }
 
-    public int getNeuronId() {
+    public static int getNeuronId(int index) {
+        SynapseModel model = SynapseModelManager.instance().getModel();
         return model.getNeuronId(index);
     }
 
-    public int getTargetId() {
+    public static int getTargetId(int index) {
+        SynapseModel model = SynapseModelManager.instance().getModel();
         return model.getTargetId(index);
     }
 
-    public int getTargetType() {
+    public static int getTargetType(int index) {
+        SynapseModel model = SynapseModelManager.instance().getModel();
         return model.getTargetType(index);
     }
 
-    public int getModulatorId() {
-        return model.getModulatorId(index);
-    }
-
-    public void setStructure(int fieldId, int neuronId, int targetId) {
+    public static void setStructure(int index, int fieldId, int neuronId, int targetId) {
+        SynapseModel model = SynapseModelManager.instance().getModel();
         model.writeLock(index);
         try {
             model.setFieldId(index, fieldId);

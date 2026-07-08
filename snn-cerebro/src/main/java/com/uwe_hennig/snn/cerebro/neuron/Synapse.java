@@ -22,19 +22,19 @@ import com.uwe_hennig.snn.util.SnnTransferservice;
  * @author Uwe Hennig
  */
 public final class Synapse extends ViewIdentity implements NeuronElement {
-    private final SynapseView   view;
-    private final ModulatorView modulatorView;
-    private int targetRef;
+    private final int viewId;
+    private final int modulatorViewId;
+    private int       targetRef;
 
-    public Synapse(SynapseView view, ModulatorView modulatorView) {
-        this.view = view;
-        this.modulatorView = modulatorView;
+    public Synapse(int viewId, int modulatorViewId) {
+        this.viewId = viewId;
+        this.modulatorViewId = modulatorViewId;
     }
 
     @Override
     public void stimulate(int stimulusIdentifier) {
         try {
-            view.writeLock();
+            SynapseView.writeLock(viewId);
             // TODO complete implementation
             float currentTime = 1000; // TODO
 
@@ -42,21 +42,22 @@ public final class Synapse extends ViewIdentity implements NeuronElement {
             int stimulusType = StimulusService.getEventType(stimulusIdentifier);
 
             if (StimulusService.isStimulus(stimulusIdentifier) && isExternalStimulus(stimulusIdentifier)) {
-                stimulusValue = modulatorView.applyStimulus(stimulusValue, currentTime);
+                stimulusValue = ModulatorView.applyStimulus(modulatorViewId, stimulusValue, currentTime);
             } else if (StimulusService.isStimulus(stimulusIdentifier)) {
-                stimulusValue = modulatorView.applyStimulus(stimulusType, currentTime);
+                stimulusValue = ModulatorView.applyStimulus(modulatorViewId, stimulusType, currentTime);
             }
 
             stimulusIdentifier = StimulusService.update(stimulusIdentifier, stimulusType, stimulusValue, targetRef);
             SnnTransferservice.transfer(stimulusIdentifier);
 
         } finally {
-            view.writeUnlock();
+            SynapseView.writeUnlock(viewId);
         }
     }
 
     public void setTargetRef(int targetRef) {
         this.targetRef = targetRef;
+        SynapseView.setTargetRef(viewId, targetRef);
     }
 
     @Override
@@ -66,7 +67,7 @@ public final class Synapse extends ViewIdentity implements NeuronElement {
 
     @Override
     public int getNeuronId() {
-        return view.getNeuronId();
+        return SynapseView.getNeuronId(viewId);
     }
 
     private boolean isExternalStimulus(int stimulusIdentifier) {
@@ -76,6 +77,6 @@ public final class Synapse extends ViewIdentity implements NeuronElement {
 
     @Override
     public int getViewId() {
-        return view.getViewId();
+        return viewId;
     }
 }

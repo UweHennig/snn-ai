@@ -5,42 +5,26 @@
  */
 package com.uwe_hennig.snn.anatomy.neuron;
 
+import com.uwe_hennig.snn.anatomy.allocator.ModulatorModelManager;
+
 /**
  * ModulatorView
  *
  * @author Uwe Hennig
  */
 public final class ModulatorView {
-    private final ModulatorModel model;
-    private final int            index;
-
     static final float TARGET_INHIBITORY = 0.9f;
     static final float TARGET_EXCITATORY = 1.1f;
 
     static final float POTENTIAL_RANGE = 70f;
     static final float ALPHA_FACTOR    = 0.01f;
 
-    public ModulatorView(int index, ModulatorModel model) {
-        assert model != null : "Model must not bei null!";
-        assert index < model.capacity && index >= 0 : " " + index + " >= " + model.capacity;
-
-        this.index = index;
-        this.model = model;
-    }
-
-    public ModulatorModel getModel() {
-        return model;
-    }
-
-    public int getViewId() {
-        return index;
-    }
-
     // ----- Domain Logic -----
 
     // The method is called on normal stimuli
-    public float applyStimulus(float stimulus, float currentTime) {
-        if (!relevantGain(currentTime)) {
+    public static float applyStimulus(int index, float stimulus, float currentTime) {
+        ModulatorModel model = ModulatorModelManager.instance().getModel();
+        if (!relevantGain(index, currentTime)) {
             // No influence
             return stimulus;
         }
@@ -54,9 +38,10 @@ public final class ModulatorView {
     }
 
     // The method is called ony on inhibitory/excitatory events
-    public void applyModulation(float potential, float currentTime, boolean inhibitory) {
-        // Recalculate the influence factor
+    public static void applyModulation(int index, float potential, float currentTime, boolean inhibitory) {
+        ModulatorModel model = ModulatorModelManager.instance().getModel();
 
+        // Recalculate the influence factor
         float deltaNormalized = Math.clamp(potential / POTENTIAL_RANGE, 0f, 1f);
         float alpha = ALPHA_FACTOR * deltaNormalized;
 
@@ -73,7 +58,8 @@ public final class ModulatorView {
 
     // ----- convenience -----
 
-    private boolean relevantGain(float currentTime) {
+    private static boolean relevantGain(int index, float currentTime) {
+        ModulatorModel model = ModulatorModelManager.instance().getModel();
         float lastEventTime = model.getLastEventTime(index);
         float deltaTime = currentTime - lastEventTime;
         float duration = model.getGainDuration(index);

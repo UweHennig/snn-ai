@@ -5,7 +5,7 @@
  */
 package com.uwe_hennig.snn.anatomy.neuron;
 
-import com.uwe_hennig.snn.anatomy.core.MultiList;
+import com.uwe_hennig.snn.anatomy.allocator.AxonModelManager;
 
 /**
  * AxonView
@@ -13,66 +13,53 @@ import com.uwe_hennig.snn.anatomy.core.MultiList;
  * @author Uwe Hennig
  */
 public final class AxonView {
-    private final int           index;
-    private final AxonModel     model;
-    private final ModulatorView modulatorView;
-
-    public AxonView(int index, AxonModel model, ModulatorView modulatorView, MultiList multiList) {
-        assert model != null : "Model must not be null!";
-        assert index < model.capacity && index >= 0 : " " + index + " >= " + model.capacity;
-
-        this.index = index;
-        this.model = model;
-        this.modulatorView = modulatorView;
-    }
-
     // ----- lock/unlock -----
 
-    public void readLock() {
+    public static void readLock(int index) {
+        AxonModel model = AxonModelManager.instance().getModel();
         model.readLock(index);
     }
 
-    public void readUnlock() {
+    public static void readUnlock(int index) {
+        AxonModel model = AxonModelManager.instance().getModel();
         model.readUnlock(index);
     }
 
-    public void writeLock() {
+    public static void writeLock(int index) {
+        AxonModel model = AxonModelManager.instance().getModel();
         model.writeLock(index);
     }
 
-    public void writeUnlock() {
+    public static void writeUnlock(int index) {
+        AxonModel model = AxonModelManager.instance().getModel();
         model.writeUnlock(index);
     }
 
     // ----- Getter/Setter -----
 
-    public AxonModel getModel() {
-        return model;
-    }
-
-    public int getViewId() {
-        return index;
-    }
-
-    public int getSynapseRef() {
+    public static int getSynapseRef(int index) {
+        AxonModel model = AxonModelManager.instance().getModel();
         return model.getSynapseRef(index);
     }
 
-    public int getNeuronId() {
+    public static int getNeuronId(int index) {
+        AxonModel model = AxonModelManager.instance().getModel();
         return model.getNeuronId(index);
     }
 
-    public int getModulatorId() {
+    public static int getModulatorId(int index) {
+        AxonModel model = AxonModelManager.instance().getModel();
         return model.getModulatorId(index);
     }
 
-    public void setStructure(int fieldId, int neuronId, int synapseRef) {
+    public static void setStructure(int index, int fieldId, int neuronId, int synapseRef, int modulatorViewId) {
+        AxonModel model = AxonModelManager.instance().getModel();
         model.writeLock(index);
         try {
             model.setFieldId(index, fieldId);
             model.setNeuronId(index, neuronId);
             model.setSynapseRef(index, synapseRef);
-            model.setModulatorId(index, modulatorView.getViewId());
+            model.setModulatorId(index, modulatorViewId);
         } finally {
             model.writeUnlock(index);
         }
