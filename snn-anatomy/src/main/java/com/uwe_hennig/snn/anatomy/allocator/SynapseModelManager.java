@@ -14,15 +14,22 @@ import com.uwe_hennig.snn.anatomy.neuron.SynapseModel;
  */
 public class SynapseModelManager {
     private static SynapseModelManager INSTANCE;
-    private SynapseModel               model;
-    private int                        nextOffset = 0;
+
+    private SynapseModel model;
+    private int          nextOffset = 0;
 
     private SynapseModelManager(int capacity) {
         model = new SynapseModel(capacity);
     }
 
     public static SynapseModelManager init(int capacity) {
-        INSTANCE = new SynapseModelManager(capacity);
+        if (INSTANCE == null) {
+            synchronized (PlasticityModelManager.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = new SynapseModelManager(capacity);
+                }
+            }
+        }
         return INSTANCE;
     }
 
@@ -31,6 +38,9 @@ public class SynapseModelManager {
     }
 
     public int nextId() {
+        if (model.getCapacity() >= nextOffset) {
+            throw new IllegalStateException("Out of Offheap memory");
+        }
         return nextOffset++;
     }
 
@@ -38,10 +48,20 @@ public class SynapseModelManager {
         return model;
     }
 
-    public void close() {
-        nextOffset = 0;
-        model.close();
-        model = null;
-        INSTANCE = null;
+    public static void close() {
+        if (INSTANCE != null) {
+            INSTANCE.model.close();
+            INSTANCE.model = null;
+            INSTANCE.nextOffset = 0;
+            INSTANCE = null;
+        }
+    }
+
+    public void save(String folder) {
+        /* TODO: Save model */
+    }
+
+    public void load(String folder) {
+        /* TODO Load model */
     }
 }

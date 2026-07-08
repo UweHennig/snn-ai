@@ -14,15 +14,22 @@ import com.uwe_hennig.snn.anatomy.neuron.AxonModel;
  */
 public class AxonModelManager {
     private static AxonModelManager INSTANCE;
-    private AxonModel               model;
-    private int                     nextOffset = 0;
+
+    private AxonModel model;
+    private int       nextOffset = 0;
 
     private AxonModelManager(int capacity) {
         this.model = new AxonModel(capacity);
     }
 
     public static AxonModelManager init(int capacity) {
-        INSTANCE = new AxonModelManager(capacity);
+        if (INSTANCE == null) {
+            synchronized (AxonModelManager.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = new AxonModelManager(capacity);
+                }
+            }
+        }
         return INSTANCE;
     }
 
@@ -31,6 +38,9 @@ public class AxonModelManager {
     }
 
     public int nextId() {
+        if (model.getCapacity() >= nextOffset) {
+            throw new IllegalStateException("Out of Offheap memory");
+        }
         return nextOffset++;
     }
 
@@ -38,10 +48,20 @@ public class AxonModelManager {
         return model;
     }
 
-    public void close() {
-        nextOffset = 0;
-        model.close();
-        model = null;
-        INSTANCE = null;
+    public static void close() {
+        if (INSTANCE != null) {
+            INSTANCE.model.close();
+            INSTANCE.model = null;
+            INSTANCE.nextOffset = 0;
+            INSTANCE = null;
+        }
+    }
+
+    public void save(String folder) {
+        /* TODO: Save model */
+    }
+
+    public void load(String folder) {
+        /* TODO Load model */
     }
 }

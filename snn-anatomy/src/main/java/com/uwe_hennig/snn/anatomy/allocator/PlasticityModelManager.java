@@ -14,15 +14,22 @@ import com.uwe_hennig.snn.anatomy.neuron.PlasticityModel;
  */
 public class PlasticityModelManager {
     private static PlasticityModelManager INSTANCE;
-    private PlasticityModel               model;
-    private int                           nextOffset = 0;
 
-    private PlasticityModelManager(int capoacity) {
-        this.model = new PlasticityModel(capoacity);
+    private PlasticityModel model;
+    private int             nextOffset = 0;
+
+    private PlasticityModelManager(int capacity) {
+        this.model = new PlasticityModel(capacity);
     }
 
     public static PlasticityModelManager init(int capacity) {
-        INSTANCE = new PlasticityModelManager(capacity);
+        if (INSTANCE == null) {
+            synchronized (PlasticityModelManager.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = new PlasticityModelManager(capacity);
+                }
+            }
+        }
         return INSTANCE;
     }
 
@@ -31,6 +38,9 @@ public class PlasticityModelManager {
     }
 
     public int nextId() {
+        if (model.getCapacity() >= nextOffset) {
+            throw new IllegalStateException("Out of Offheap memory");
+        }
         return nextOffset++;
     }
 
@@ -38,18 +48,20 @@ public class PlasticityModelManager {
         return model;
     }
 
-    public void close() {
-        nextOffset = 0;
-        model.close();
-        model = null;
-        INSTANCE = null;
+    public static void close() {
+        if (INSTANCE != null) {
+            INSTANCE.model.close();
+            INSTANCE.model = null;
+            INSTANCE.nextOffset = 0;
+            INSTANCE = null;
+        }
     }
 
     public void save(String folder) {
-        /* Speichere model in folder/weights.bin */
+        /* TODO: Save model */
     }
 
     public void load(String folder) {
-        /* Lade model aus folder/weights.bin */
+        /* TODO Load model */
     }
 }

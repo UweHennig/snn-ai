@@ -60,4 +60,12 @@ public class NeuronFieldAllocator {
         model.close();
         multiList.close();
     }
+
+    public void save(String folder) {
+        /* TODO: Save model */
+    }
+
+    public void load(String folder) {
+        /* TODO Load model */
+    }
 }

@@ -49,9 +49,7 @@ public class PlasticityTest {
             assertEquals(7f, model.getTargetRate(0));
             assertEquals(8f, model.getTargetTime(0));
         } finally {
-            if (model != null) {
-                model.close();
-            }
+            PlasticityModelManager.close();
         }
     }
 
@@ -123,9 +121,7 @@ public class PlasticityTest {
             assertTrue(model.getRestingRate(0) >= 2 && model.getRestingRate(0) <= 5, "invalid restingRate");
 
         } finally {
-            if (model != null) {
-                model.close();
-            }
+            PlasticityModelManager.close();
         }
 
     }

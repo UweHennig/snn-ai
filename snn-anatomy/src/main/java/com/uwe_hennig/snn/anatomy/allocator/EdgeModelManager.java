@@ -14,15 +14,22 @@ import com.uwe_hennig.snn.anatomy.neuron.EdgeModel;
  */
 public class EdgeModelManager {
     private static EdgeModelManager INSTANCE;
-    private EdgeModel               model;
-    private int                     nextOffset = 0;
+
+    private EdgeModel model;
+    private int       nextOffset = 0;
 
     private EdgeModelManager(int capacity) {
         this.model = new EdgeModel(capacity);
     }
 
     public static EdgeModelManager init(int capacity) {
-        INSTANCE = new EdgeModelManager(capacity);
+        if (INSTANCE == null) {
+            synchronized (PlasticityModelManager.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = new EdgeModelManager(capacity);
+                }
+            }
+        }
         return INSTANCE;
     }
 
@@ -31,6 +38,9 @@ public class EdgeModelManager {
     }
 
     public int nextId() {
+        if (model.getCapacity() >= nextOffset) {
+            throw new IllegalStateException("Out of Offheap memory");
+        }
         return nextOffset++;
     }
 
@@ -38,18 +48,21 @@ public class EdgeModelManager {
         return model;
     }
 
-    public void close() {
-        nextOffset = 0;
-        model.close();
-        model = null;
-        INSTANCE = null;
+    public static void close() {
+        if (INSTANCE != null) {
+            INSTANCE.model.close();
+            INSTANCE.model = null;
+            INSTANCE.nextOffset = 0;
+            INSTANCE = null;
+        }
     }
 
     public void save(String folder) {
-        /* Speichere model in folder/weights.bin */
+        /* TODO: Save model */
     }
 
     public void load(String folder) {
-        /* Lade model aus folder/weights.bin */
+        /* TODO Load model */
     }
+
 }

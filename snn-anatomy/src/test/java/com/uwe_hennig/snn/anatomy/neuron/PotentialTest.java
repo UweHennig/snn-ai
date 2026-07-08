@@ -48,7 +48,7 @@ public class PotentialTest {
         assertEquals(3f, model.getRestingPotential(0));
         assertEquals(4f, model.getRepolarizationTime(0));
 
-        model.close();
+        PotentialModelManager.close();
     }
 
     @Test
@@ -89,9 +89,7 @@ public class PotentialTest {
             e.printStackTrace();
             fail("Eception in testPotentialView " + e.getLocalizedMessage());
         } finally {
-            if (model != null) {
-                model.close();
-            }
+            PotentialModelManager.close();
         }
     }
 

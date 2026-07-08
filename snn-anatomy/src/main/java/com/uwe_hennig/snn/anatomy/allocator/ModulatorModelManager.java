@@ -14,15 +14,22 @@ import com.uwe_hennig.snn.anatomy.neuron.ModulatorModel;
  */
 public class ModulatorModelManager {
     private static ModulatorModelManager INSTANCE;
-    private ModulatorModel               model;
-    private int                          nextOffset = 0;
+
+    private ModulatorModel model;
+    private int            nextOffset = 0;
 
     private ModulatorModelManager(int capacity) {
         this.model = new ModulatorModel(capacity);
     }
 
     public static ModulatorModelManager init(int capacity) {
-        INSTANCE = new ModulatorModelManager(capacity);
+        if (INSTANCE == null) {
+            synchronized (PlasticityModelManager.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = new ModulatorModelManager(capacity);
+                }
+            }
+        }
         return INSTANCE;
     }
 
@@ -31,6 +38,9 @@ public class ModulatorModelManager {
     }
 
     public int nextId() {
+        if (model.getCapacity() >= nextOffset) {
+            throw new IllegalStateException("Out of Offheap memory");
+        }
         return nextOffset++;
     }
 
@@ -38,18 +48,20 @@ public class ModulatorModelManager {
         return model;
     }
 
-    public void close() {
-        nextOffset = 0;
-        model.close();
-        model = null;
-        INSTANCE = null;
+    public static void close() {
+        if (INSTANCE != null) {
+            INSTANCE.model.close();
+            INSTANCE.model = null;
+            INSTANCE.nextOffset = 0;
+            INSTANCE = null;
+        }
     }
 
     public void save(String folder) {
-        /* Speichere model in folder/weights.bin */
+        /* TODO: Save model */
     }
 
     public void load(String folder) {
-        /* Lade model aus folder/weights.bin */
+        /* TODO Load model */
     }
 }

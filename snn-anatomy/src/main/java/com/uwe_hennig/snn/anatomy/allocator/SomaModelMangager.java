@@ -14,15 +14,22 @@ import com.uwe_hennig.snn.anatomy.neuron.SomaModel;
  */
 public class SomaModelMangager {
     private static SomaModelMangager INSTANCE;
-    private SomaModel                model;
-    private int                      nextOffset = 0;
+
+    private SomaModel model;
+    private int       nextOffset = 0;
 
     private SomaModelMangager(int capacity) {
         this.model = new SomaModel(capacity);
     }
 
     public static SomaModelMangager init(int capacity) {
-        INSTANCE = new SomaModelMangager(capacity);
+        if (INSTANCE == null) {
+            synchronized (PlasticityModelManager.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = new SomaModelMangager(capacity);
+                }
+            }
+        }
         return INSTANCE;
     }
 
@@ -31,6 +38,9 @@ public class SomaModelMangager {
     }
 
     public int nextId() {
+        if (model.getCapacity() >= nextOffset) {
+            throw new IllegalStateException("Out of Offheap memory");
+        }
         return nextOffset++;
     }
 
@@ -38,10 +48,20 @@ public class SomaModelMangager {
         return model;
     }
 
-    public void close() {
-        nextOffset = 0;
-        model.close();
-        model = null;
-        INSTANCE = null;
+    public static void close() {
+        if (INSTANCE != null) {
+            INSTANCE.model.close();
+            INSTANCE.model = null;
+            INSTANCE.nextOffset = 0;
+            INSTANCE = null;
+        }
+    }
+
+    public void save(String folder) {
+        /* TODO: Save model */
+    }
+
+    public void load(String folder) {
+        /* TODO Load model */
     }
 }

@@ -14,15 +14,22 @@ import com.uwe_hennig.snn.anatomy.neuron.DendritModel;
  */
 public class DendritModelManager {
     private static DendritModelManager INSTANCE;
+
     private DendritModel model;
-    private int nextOffset = 0;
+    private int          nextOffset = 0;
 
     private DendritModelManager(int capacity) {
         model = new DendritModel(capacity);
     }
 
     public static DendritModelManager init(int capacity) {
-        INSTANCE = new DendritModelManager(capacity);
+        if (INSTANCE == null) {
+            synchronized (PlasticityModelManager.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = new DendritModelManager(capacity);
+                }
+            }
+        }
         return INSTANCE;
     }
 
@@ -31,6 +38,9 @@ public class DendritModelManager {
     }
 
     public int nextId() {
+        if (model.getCapacity() >= nextOffset) {
+            throw new IllegalStateException("Out of Offheap memory");
+        }
         return nextOffset++;
     }
 
@@ -38,10 +48,20 @@ public class DendritModelManager {
         return model;
     }
 
-    public void close() {
-        nextOffset = 0;
-        model.close();
-        model = null;
-        INSTANCE = null;
+    public static void close() {
+        if (INSTANCE != null) {
+            INSTANCE.model.close();
+            INSTANCE.model = null;
+            INSTANCE.nextOffset = 0;
+            INSTANCE = null;
+        }
+    }
+
+    public void save(String folder) {
+        /* TODO: Save model */
+    }
+
+    public void load(String folder) {
+        /* TODO Load model */
     }
 }
