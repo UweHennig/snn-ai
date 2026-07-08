@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.uwe_hennig.snn.anatomy.allocator.AxonAllocator;
-import com.uwe_hennig.snn.anatomy.allocator.DendritAllocator;
+import com.uwe_hennig.snn.anatomy.allocator.DendritModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.SomaAllocator;
 import com.uwe_hennig.snn.anatomy.allocator.SynapseAllocator;
 import com.uwe_hennig.snn.anatomy.neuron.AxonView;
@@ -33,18 +33,6 @@ public class NeuronBuilderImpl implements NeuronBuilder {
     private int synapses;
 
     public NeuronBuilderImpl(int fieldId, int neuronId) {
-        if (DendritAllocator.instance() == null) {
-            throw new IllegalStateException("DendritAllocator not created!");
-        }
-        if (SomaAllocator.instance() == null) {
-            throw new IllegalStateException("SomaAllocator not created!");
-        }
-        if (AxonAllocator.instance() == null) {
-            throw new IllegalStateException("AxonAllocator not created!");
-        }
-        if (SynapseAllocator.instance() == null) {
-            throw new IllegalStateException("SynapseAllocator not created!");
-        }
         this.fieldId = fieldId;
         this.neuronId = neuronId;
     }
@@ -76,9 +64,8 @@ public class NeuronBuilderImpl implements NeuronBuilder {
         SomaView somaView = SomaAllocator.instance().newSomaView(fieldId, neuronId, axonView.getViewId());
 
         for (int i = 0; i < dendrites; i++) {
-            DendritView dendritView = DendritAllocator.instance().newDendritView(fieldId, neuronId, somaView.getViewId());
             // TODO WeightView
-            Dendrit dendrit = new Dendrit(dendritView, 0/*TODO*/);
+            Dendrit dendrit = new Dendrit(0 /*TODO*/, 0/*TODO*/);
             dendritList.add(dendrit);
         }
 

@@ -5,6 +5,8 @@
  */
 package com.uwe_hennig.snn.anatomy.neuron;
 
+import com.uwe_hennig.snn.anatomy.allocator.DendritModelManager;
+
 /**
  * DendritView
  * Unlike conventional SNNs, the Dendrit network handles the weights
@@ -12,58 +14,47 @@ package com.uwe_hennig.snn.anatomy.neuron;
  * @author Uwe Hennig
  */
 public final class DendritView {
-    private final int          index;
-    private final DendritModel model;
-
-    public DendritView(int index, DendritModel model) {
-        assert model != null : "Model must not be null!";
-        assert index < model.capacity && index >= 0 : " " + index + " >= " + model.capacity;
-
-        this.index = index;
-        this.model = model;
-    }
-
     // ----- lock/unlock -----
 
-    public void readLock() {
+    public static void readLock(int index) {
+        DendritModel model = DendritModelManager.instance().getModel();
         model.readLock(index);
     }
 
-    public void readUnlock() {
+    public static void readUnlock(int index) {
+        DendritModel model = DendritModelManager.instance().getModel();
         model.readUnlock(index);
     }
 
-    public void writeLock() {
+    public static void writeLock(int index) {
+        DendritModel model = DendritModelManager.instance().getModel();
         model.writeLock(index);
     }
 
-    public void writeUnlock() {
+    public static void writeUnlock(int index) {
+        DendritModel model = DendritModelManager.instance().getModel();
         model.writeUnlock(index);
     }
 
     // ----- getter/setter -----
 
-    public DendritModel getModel() {
-        return model;
-    }
-
-    public int getViewId() {
-        return index;
-    }
-
-    public int getFieldId() {
+    public static int getFieldId(int index) {
+        DendritModel model = DendritModelManager.instance().getModel();
         return model.getFiedlId(index);
     }
 
-    public int getNeuronId() {
+    public static int getNeuronId(int index) {
+        DendritModel model = DendritModelManager.instance().getModel();
         return model.getNeuronId(index);
     }
 
-    public int getSomaId() {
+    public static int getSomaId(int index) {
+        DendritModel model = DendritModelManager.instance().getModel();
         return model.getSomaId(index);
     }
 
-    public void setStructure(int fieldId, int neuronId, int somaId) {
+    public static void setStructure(int index, int fieldId, int neuronId, int somaId) {
+        DendritModel model = DendritModelManager.instance().getModel();
         model.writeLock(index);
         try {
             model.setFieldId(index, fieldId);

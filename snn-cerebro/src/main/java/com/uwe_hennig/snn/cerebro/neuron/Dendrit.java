@@ -20,12 +20,12 @@ import com.uwe_hennig.snn.util.SnnTransferservice;
  * @author Uwe Hennig
  */
 public final class Dendrit extends ViewIdentity implements NeuronElement {
-    private final DendritView view;
-    private final int         weightIdentifier;
+    private final int viewId;
+    private final int weightId;
 
-    public Dendrit(DendritView view, int weightIdentifier) {
-        this.view = view;
-        this.weightIdentifier = weightIdentifier;
+    public Dendrit(int viewId, int weightId) {
+        this.viewId = viewId;
+        this.weightId = weightId;
     }
 
     /**
@@ -36,22 +36,22 @@ public final class Dendrit extends ViewIdentity implements NeuronElement {
     @Override
     public void stimulate(int stimulusIdentifier) {
         try {
-            view.writeLock();
+            DendritView.writeLock(viewId);
             float currentTime = 1000; // TODO Model time
 
             float stimulusValue = StimulusService.getValue(stimulusIdentifier);
             if (StimulusService.isStimulus(stimulusIdentifier)) {
-                stimulusValue = WeightView.applyStimulus(weightIdentifier, stimulusValue, currentTime);
-                stimulusIdentifier = StimulusService.update(stimulusIdentifier, StimulusType.STIMULUS.code(), stimulusValue, view.getSomaId());
+                stimulusValue = WeightView.applyStimulus(weightId, stimulusValue, currentTime);
+                stimulusIdentifier = StimulusService.update(stimulusIdentifier, StimulusType.STIMULUS.code(), stimulusValue, DendritView.getSomaId(viewId));
             }
             if (StimulusService.isTimeFeedback(stimulusIdentifier)) {
-                WeightView.applyFeedback(weightIdentifier, stimulusValue);
+                WeightView.applyFeedback(weightId, stimulusValue);
             }
 
             SnnTransferservice.transfer(stimulusIdentifier);
 
         } finally {
-            view.writeUnlock();
+            DendritView.writeUnlock(viewId);
         }
     }
 
@@ -62,12 +62,12 @@ public final class Dendrit extends ViewIdentity implements NeuronElement {
 
     @Override
     public int getNeuronId() {
-        return view.getNeuronId();
+        return DendritView.getNeuronId(viewId);
     }
 
     @Override
     public int getViewId() {
-        return view.getViewId();
+        return viewId;
     }
 
 }
