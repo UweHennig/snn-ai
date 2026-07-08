@@ -8,20 +8,11 @@ package com.uwe_hennig.snn.cerebro.neuron;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.uwe_hennig.snn.anatomy.allocator.AxonAllocator;
-import com.uwe_hennig.snn.anatomy.allocator.DendritModelManager;
-import com.uwe_hennig.snn.anatomy.allocator.SomaAllocator;
-import com.uwe_hennig.snn.anatomy.allocator.SynapseAllocator;
-import com.uwe_hennig.snn.anatomy.neuron.AxonView;
-import com.uwe_hennig.snn.anatomy.neuron.DendritView;
-import com.uwe_hennig.snn.anatomy.neuron.SomaView;
-import com.uwe_hennig.snn.anatomy.neuron.SynapseView;
 import com.uwe_hennig.snn.cerebro.contracts.NeuronBuilder;
 import com.uwe_hennig.snn.cerebro.contracts.NeuronGraph;
 
 /**
- * NeuronBuilderImpl
- * TODO NeuronAllocator, NeuronGraph, DomainObjects, WeightAllocator
+ * NeuronBuilderImpl TODO NeuronAllocator, NeuronGraph, DomainObjects, WeightAllocator
  *
  * @author Uwe Hennig
  */
@@ -59,22 +50,6 @@ public class NeuronBuilderImpl implements NeuronBuilder {
     public NeuronGraph build() {
         List<Dendrit> dendritList = new ArrayList<>(dendrites);
         List<Synapse> synapseList = new ArrayList<>(synapses);
-
-        AxonView axonView = AxonAllocator.instance().newAxonView(fieldId, neuronId);
-        SomaView somaView = SomaAllocator.instance().newSomaView(fieldId, neuronId, axonView.getViewId());
-
-        for (int i = 0; i < dendrites; i++) {
-            // TODO WeightView
-            Dendrit dendrit = new Dendrit(0 /*TODO*/, 0/*TODO*/);
-            dendritList.add(dendrit);
-        }
-
-        for (int i = 0; i < synapses; i++) {
-            // TODO ModulatorView
-            SynapseView synapaseView = SynapseAllocator.instance().newSynapseView(fieldId, neuronId);
-            Synapse synapse = new Synapse(synapaseView, null /*TODO*/);
-            synapseList.add(synapse);
-        }
 
         // TODO: NeuronGraph neuronGraph = new NeuronGraph(fieldId, neuronId, dendritList, synapseList);
 
