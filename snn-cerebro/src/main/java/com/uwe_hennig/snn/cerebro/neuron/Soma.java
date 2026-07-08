@@ -32,14 +32,14 @@ import com.uwe_hennig.snn.util.SnnTransferservice;
  * @author Uwe Hennig
  */
 public final class Soma extends ViewIdentity implements NeuronElement {
-    private final SomaView view;
-    private final int      thresholdViewId;
-    private final int      potentialViewId;
-    private final int      stpViewId;
-    private final int      ltpViewId;
+    private final int viewId;
+    private final int thresholdViewId;
+    private final int potentialViewId;
+    private final int stpViewId;
+    private final int ltpViewId;
 
-    public Soma(SomaView view, int thresholdViewId, int potentialViewId, int stpViewId, int ltpViewId) {
-        this.view = view;
+    public Soma(int viewId, int thresholdViewId, int potentialViewId, int stpViewId, int ltpViewId) {
+        this.viewId = viewId;
         this.stpViewId = stpViewId;
         this.ltpViewId = ltpViewId;
         this.thresholdViewId = thresholdViewId;
@@ -50,7 +50,7 @@ public final class Soma extends ViewIdentity implements NeuronElement {
     public void stimulate(int stimulusIdentifier) {
         try {
             // Master Lock
-            view.writeLock();
+            SomaView.writeLock(viewId);
             float currentTime = 1000; // TODO
 
             float stimulusValue = StimulusService.getValue(stimulusIdentifier);
@@ -77,14 +77,14 @@ public final class Soma extends ViewIdentity implements NeuronElement {
                 addPotentitial(potentialViewId, stimulusValue, currentTime);
                 if (fire(potentialViewId, getThreshold(thresholdViewId))) {
                     float actionPotential = getCurrentPotential(ltpViewId) + getCurrentPotential(stpViewId);
-                    stimulusIdentifier = StimulusService.update(stimulusIdentifier, StimulusType.STIMULUS.code(), actionPotential, view.getAxonId());
+                    stimulusIdentifier = StimulusService.update(stimulusIdentifier, StimulusType.STIMULUS.code(), actionPotential, SomaView.getAxonId(viewId));
                 }
             }
 
             SnnTransferservice.transfer(stimulusIdentifier);
 
         } finally {
-            view.writeUnlock();
+            SomaView.writeUnlock(viewId);
         }
     }
 
@@ -95,7 +95,7 @@ public final class Soma extends ViewIdentity implements NeuronElement {
 
     @Override
     public int getNeuronId() {
-        return view.getNeuronId();
+        return SomaView.getNeuronId(viewId);
     }
 
     private boolean isExternalStimulus(int stimulusIdentifier) {
@@ -105,6 +105,6 @@ public final class Soma extends ViewIdentity implements NeuronElement {
 
     @Override
     public int getViewId() {
-        return view.getViewId();
+        return viewId;
     }
 }

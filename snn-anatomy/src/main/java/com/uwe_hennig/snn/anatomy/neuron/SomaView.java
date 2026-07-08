@@ -5,64 +5,55 @@
  */
 package com.uwe_hennig.snn.anatomy.neuron;
 
+import com.uwe_hennig.snn.anatomy.allocator.SomaModelMangager;
+
 /**
  * SomaView
  *
  * @author Uwe Hennig
  */
 public final class SomaView {
-    private final int            index;
-    private final SomaModel      model;
-
-    public SomaView(int index, SomaModel model) {
-        assert model != null : "Model must not be null!";
-        assert index < model.capacity && index >= 0 : " " + index + " >= " + model.capacity;
-
-        this.index = index;
-        this.model = model;
-    }
-
     // ----- lock/unlock -----
 
-    public void readLock() {
+    public static void readLock(int index) {
+        SomaModel model = SomaModelMangager.instance().getModel();
         model.readLock(index);
     }
 
-    public void readUnlock() {
+    public static void readUnlock(int index) {
+        SomaModel model = SomaModelMangager.instance().getModel();
         model.readUnlock(index);
     }
 
-    public void writeLock() {
+    public static void writeLock(int index) {
+        SomaModel model = SomaModelMangager.instance().getModel();
         model.writeLock(index);
     }
 
-    public void writeUnlock() {
+    public static void writeUnlock(int index) {
+        SomaModel model = SomaModelMangager.instance().getModel();
         model.writeUnlock(index);
     }
 
     // ----- Getter/Setter -----
 
-    public SomaModel getModel() {
-        return model;
-    }
-
-    public int getViewId() {
-        return index;
-    }
-
-    public int getFieldId() {
+    public static int getFieldId(int index) {
+        SomaModel model = SomaModelMangager.instance().getModel();
         return model.getFieldId(index);
     }
 
-    public int getNeuronId() {
+    public static int getNeuronId(int index) {
+        SomaModel model = SomaModelMangager.instance().getModel();
         return model.getNeuronId(index);
     }
 
-    public int getAxonId() {
+    public static int getAxonId(int index) {
+        SomaModel model = SomaModelMangager.instance().getModel();
         return model.getAxonId(index);
     }
 
-    public void setStructure(int fieldId, int neuronId, int axonId) {
+    public static void setStructure(int index, int fieldId, int neuronId, int axonId) {
+        SomaModel model = SomaModelMangager.instance().getModel();
         model.writeLock(index);
         try {
             model.setFieldId(index, fieldId);
