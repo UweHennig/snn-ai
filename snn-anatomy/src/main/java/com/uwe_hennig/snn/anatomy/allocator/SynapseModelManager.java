@@ -24,7 +24,7 @@ public class SynapseModelManager {
 
     public static SynapseModelManager init(int capacity) {
         if (INSTANCE == null) {
-            synchronized (PlasticityModelManager.class) {
+            synchronized (SynapseModelManager.class) {
                 if (INSTANCE == null) {
                     INSTANCE = new SynapseModelManager(capacity);
                 }
@@ -38,8 +38,8 @@ public class SynapseModelManager {
     }
 
     public int nextId() {
-        if (model.getCapacity() >= nextOffset) {
-            throw new IllegalStateException("Out of Offheap memory");
+        if (model.getCapacity() <= nextOffset) {
+            throw new IllegalStateException("Out of off heap synapse memory");
         }
         return nextOffset++;
     }

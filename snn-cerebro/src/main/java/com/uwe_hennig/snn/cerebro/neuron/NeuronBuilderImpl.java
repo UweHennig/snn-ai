@@ -11,6 +11,7 @@ import java.util.List;
 import com.uwe_hennig.snn.anatomy.allocator.AxonModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.AxonSynapseModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.DendritModelManager;
+import com.uwe_hennig.snn.anatomy.allocator.EdgeModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.ModulatorModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.PlasticityModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.PotentialModelManager;
@@ -20,7 +21,6 @@ import com.uwe_hennig.snn.anatomy.allocator.ThresholdModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.WeightModelManager;
 import com.uwe_hennig.snn.anatomy.neuron.AxonView;
 import com.uwe_hennig.snn.anatomy.neuron.DendritView;
-import com.uwe_hennig.snn.anatomy.neuron.EdgeView;
 import com.uwe_hennig.snn.anatomy.neuron.PotentialView;
 import com.uwe_hennig.snn.anatomy.neuron.SomaView;
 import com.uwe_hennig.snn.anatomy.neuron.SynapseView;
@@ -110,6 +110,36 @@ public class NeuronBuilderImpl implements NeuronBuilder {
             result = false;
         }
 
+        SomaModelMangager somm = SomaModelMangager.instance();
+        if (somm == null) {
+            System.err.println("SomaModelMangager not instantiated!");
+            result = false;
+        }
+
+        PotentialModelManager pmm = PotentialModelManager.instance();
+        if (pmm == null) {
+            System.err.println("PotentialModelManager not instantiated!");
+            result = false;
+        }
+
+        ThresholdModelManager tmm = ThresholdModelManager.instance();
+        if (tmm == null) {
+            System.err.println("ThresholdModelManager not instantiated!");
+            result = false;
+        }
+
+        PlasticityModelManager plmm = PlasticityModelManager.instance();
+        if (plmm == null) {
+            System.err.println("PlasticityModelManager not instantiated!");
+            result = false;
+        }
+
+        AxonModelManager amm = AxonModelManager.instance();
+        if (amm == null) {
+            System.err.println("AxonModelManager not instantiated!");
+            result = false;
+        }
+
         SynapseModelManager symm = SynapseModelManager.instance();
         if (symm == null) {
             System.err.println("SynapseModelManager not instantiated!");
@@ -122,33 +152,15 @@ public class NeuronBuilderImpl implements NeuronBuilder {
             result = false;
         }
 
-        AxonModelManager amm = AxonModelManager.instance();
-        if (amm == null) {
-            System.err.println("AxonModelManager not instantiated!");
+        AxonSynapseModelManager asmm = AxonSynapseModelManager.instance();
+        if (asmm == null) {
+            System.err.println("AxonSynapseModelManager not instantiated!");
             result = false;
         }
 
-        SomaModelMangager somm = SomaModelMangager.instance();
-        if (somm == null) {
-            System.err.println("SomaModelMangager not instantiated!");
-            result = false;
-        }
-
-        ThresholdModelManager tmm = ThresholdModelManager.instance();
-        if (tmm == null) {
-            System.err.println("ThresholdModelManager not instantiated!");
-            result = false;
-        }
-
-        PotentialModelManager pmm = PotentialModelManager.instance();
-        if (pmm == null) {
-            System.err.println("PotentialModelManager not instantiated!");
-            result = false;
-        }
-
-        PlasticityModelManager plmm = PlasticityModelManager.instance();
-        if (plmm == null) {
-            System.err.println("PlasticityModelManager not instantiated!");
+        EdgeModelManager emm = EdgeModelManager.instance();
+        if (emm == null) {
+            System.err.println("EdgeModelManager not instantiated!");
             result = false;
         }
 

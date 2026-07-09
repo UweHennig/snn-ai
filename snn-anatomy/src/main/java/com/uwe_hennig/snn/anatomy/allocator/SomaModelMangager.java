@@ -38,8 +38,8 @@ public class SomaModelMangager {
     }
 
     public int nextId() {
-        if (model.getCapacity() >= nextOffset) {
-            throw new IllegalStateException("Out of Offheap memory");
+        if (model.getCapacity() <= nextOffset) {
+            throw new IllegalStateException("Out of off heap soma memory");
         }
         return nextOffset++;
     }

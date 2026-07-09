@@ -37,7 +37,7 @@ public class NeuronFieldAllocator {
 
     public NeuronFieldView newFieldView(int type) {
         if (nextOffset >= model.getCapacity()) {
-            throw new IllegalStateException("Out of Offheap memory");
+            throw new IllegalStateException("Out of off heap neuron field memory");
         }
         int offset = nextOffset++;
 
@@ -49,7 +49,7 @@ public class NeuronFieldAllocator {
     }
 
     public NeuronFieldView viewAt(int viewId) {
-        if (viewId >= nextOffset) {
+        if (viewId <= nextOffset) {
             return null;
         }
 

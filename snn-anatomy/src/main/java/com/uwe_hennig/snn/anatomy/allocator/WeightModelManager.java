@@ -38,8 +38,8 @@ public class WeightModelManager {
     }
 
     public int nextId() {
-        if (model.getCapacity() >= nextOffset) {
-            throw new IllegalStateException("Out of Offheap memory");
+        if (model.getCapacity() <= nextOffset) {
+            throw new IllegalStateException("Out of off heap weight memory");
         }
         return nextOffset++;
     }
