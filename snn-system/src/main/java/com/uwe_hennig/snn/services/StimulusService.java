@@ -12,6 +12,7 @@ import com.uwe_hennig.snn.contracts.core.StimulusType;
 /**
  * StimulusService
  * The StimulusService optimizes Java Arena access for frequently changing events, which in turn significantly reduces GC pressure.
+ *
  * @author Uwe Hennig
  */
 public class StimulusService {
@@ -40,6 +41,10 @@ public class StimulusService {
             return claim(eventType, value, edgeRef);
         }
         return index;
+    }
+
+    public static void invalidate(int index) {
+        INSTANCE.view.invalidate(index);
     }
 
     public static float getValue(int index) {

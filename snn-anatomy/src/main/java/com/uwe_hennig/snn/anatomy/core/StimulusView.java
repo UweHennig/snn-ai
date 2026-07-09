@@ -89,6 +89,16 @@ public class StimulusView {
         return false;
     }
 
+    public void invalidate(int index) {
+        try {
+            long now = System.nanoTime(); // TODO check
+            model.writeLock(index);
+            model.setExpiry(index, now - TTL_NANO);
+        } finally {
+            model.writeUnlock(index);
+        }
+    }
+
     public float getValue(int index) {
         return model.getValue(index);
     }

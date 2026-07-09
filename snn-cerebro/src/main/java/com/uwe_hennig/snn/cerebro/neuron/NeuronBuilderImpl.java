@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.uwe_hennig.snn.anatomy.allocator.AxonModelManager;
+import com.uwe_hennig.snn.anatomy.allocator.AxonSynapseModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.DendritModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.ModulatorModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.PlasticityModelManager;
@@ -19,6 +20,7 @@ import com.uwe_hennig.snn.anatomy.allocator.ThresholdModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.WeightModelManager;
 import com.uwe_hennig.snn.anatomy.neuron.AxonView;
 import com.uwe_hennig.snn.anatomy.neuron.DendritView;
+import com.uwe_hennig.snn.anatomy.neuron.EdgeView;
 import com.uwe_hennig.snn.anatomy.neuron.PotentialView;
 import com.uwe_hennig.snn.anatomy.neuron.SomaView;
 import com.uwe_hennig.snn.anatomy.neuron.SynapseView;
@@ -27,7 +29,8 @@ import com.uwe_hennig.snn.cerebro.contracts.NeuronBuilder;
 import com.uwe_hennig.snn.cerebro.contracts.NeuronGraph;
 
 /**
- * NeuronBuilderImpl TODO NeuronAllocator, NeuronGraph, DomainObjects, WeightAllocator
+ * NeuronBuilderImpl
+ * TODO NeuronAllocator, NeuronGraph, DomainObjects, WeightAllocator, EdgeModel
  *
  * @author Uwe Hennig
  */
@@ -72,11 +75,14 @@ public class NeuronBuilderImpl implements NeuronBuilder {
         List<Synapse> synapseList = new ArrayList<>(synapses);
 
         // TODO MultiListManger
-        int synapsesRef = 0; // TODO multiList.allocate();
+        int synapsesRef = AxonSynapseModelManager.instance().nextId();
+        int [] synapseIdArray = new int [synapses];
         for (int i = 0; i < synapses; i++) {
             Synapse synapse = createSynapse();
             synapseList.add(synapse);
+            synapseIdArray[i] = synapse.getViewId();
         }
+        AxonSynapseModelManager.instance().getModel().put(synapsesRef, synapseIdArray);
 
         Axon axon = createAxon(synapsesRef);
         Soma soma = createSoma(axon.getViewId());
@@ -149,6 +155,27 @@ public class NeuronBuilderImpl implements NeuronBuilder {
         return result;
     }
 
+    private Dendrit createDendrit(int somaId) {
+        try {
+            DendritModelManager dmm = DendritModelManager.instance();
+            int dendritId = dmm.nextId();
+            DendritView.setStructure(dendritId, fieldId, neuronId, somaId);
+
+            WeightModelManager wmm = WeightModelManager.instance();
+            int weightId = wmm.nextId();
+            WeightView.initDefaultValues(weightId);
+
+            // TODO EdgeView.setSingleEdge(modulatorId, modulatorId, modulatorId, synapseId, modulatorId);
+
+
+            return new Dendrit(dendritId, weightId);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("Exception in createDendrit " + e.getLocalizedMessage());
+            return null;
+        }
+    }
+
     private Soma createSoma(int axonId) {
         SomaModelMangager somm = SomaModelMangager.instance();
         int somaId = somm.nextId();
@@ -165,6 +192,8 @@ public class NeuronBuilderImpl implements NeuronBuilder {
         int stpId = plmm.nextId();
         int ltpId = plmm.nextId();
 
+        // TODO EdgeView.setSingleEdge(modulatorId, modulatorId, modulatorId, synapseId, modulatorId);
+
         return new Soma(somaId, thresholdId, potentialId, stpId, ltpId);
     }
 
@@ -176,6 +205,9 @@ public class NeuronBuilderImpl implements NeuronBuilder {
         int modulatorId = mmm.nextId();
 
         AxonView.setStructure(axonId, fieldId, neuronId, synapseRef, modulatorId);
+
+        // TODO EdgeView.setMultiEdge(modulatorId, modulatorId, modulatorId, synapseId, modulatorId);
+
         return new Axon(axonId, modulatorId, synapseRef);
     }
 
@@ -188,24 +220,8 @@ public class NeuronBuilderImpl implements NeuronBuilder {
 
         SynapseView.setStructure(synapseId, fieldId, neuronId, modulatorId);
 
+        // TODO EdgeView.setSingleEdge(modulatorId, modulatorId, modulatorId, synapseId, modulatorId);
+
         return new Synapse(synapseId, modulatorId);
     }
-
-    private Dendrit createDendrit(int somaId) {
-        try {
-            DendritModelManager dmm = DendritModelManager.instance();
-            int dendritId = dmm.nextId();
-            DendritView.setStructure(dendritId, fieldId, neuronId, somaId);
-
-            WeightModelManager wmm = WeightModelManager.instance();
-            int weightId = wmm.nextId();
-            WeightView.initDefaultValues(weightId);
-            return new Dendrit(dendritId, weightId);
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.err.println("Exception in createDendrit " + e.getLocalizedMessage());
-            return null;
-        }
-    }
-
 }
