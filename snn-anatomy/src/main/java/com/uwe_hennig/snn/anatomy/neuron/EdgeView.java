@@ -23,7 +23,6 @@ public class EdgeView {
             model.setSrcType(index, srcType);
             model.setSingleTrgRef(index, trgId);
             model.setTrgType(index, trgType);
-            model.setMultiTrgRef(index, -1);
         } finally {
             model.writeUnlock(index);
         }
@@ -35,17 +34,16 @@ public class EdgeView {
             model.writeLock(index);
             model.setSrcId(index, srcId);
             model.setSrcType(index, srcType);
-            model.setSingleTrgRef(index, -1);
+            model.setMultiTrgRef(index, -1);
             model.setTrgType(index, trgType);
-            model.setMultiTrgRef(index, trgRef);
         } finally {
             model.writeUnlock(index);
         }
     }
 
-    public static boolean isMultiTarget(int index) {
+    public static boolean isMultiTargetRef(int index) {
         EdgeModel model = EdgeModelManager.instance().getModel();
-        return model.getMultiTrgRef(index) != -1;
+        return model.isMuliTrgRef(index);
     }
 
     public static int getSrcId(int index) {
@@ -63,14 +61,8 @@ public class EdgeView {
         return model.getTrgType(index);
     }
 
-    public static int getMultiTrgRef(int index) {
+    public static int getTrgRef(int index) {
         EdgeModel model = EdgeModelManager.instance().getModel();
-        return model.getMultiTrgRef(index);
+        return model.getTrgRef(index);
     }
-
-    public static int getSingleTrgRef(int index) {
-        EdgeModel model = EdgeModelManager.instance().getModel();
-        return model.getSingleTrgRef(index);
-    }
-
 }

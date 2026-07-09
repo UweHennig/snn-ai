@@ -168,10 +168,10 @@ public class SnnDispatcher {
 
     protected void doIt(int stimulusId) {
         int trgRef = StimulusService.getEdgeRef(stimulusId);
-        if (EdgeView.isMultiTarget(trgRef)) {
+        if (EdgeView.isMultiTargetRef(trgRef)) {
             // TODO
         } else {
-            int trgId = EdgeView.getSingleTrgRef(trgRef);
+            int trgId = EdgeView.getTrgRef(trgRef);
             int trgType = EdgeView.getTrgType(trgRef);
 
             NeuronElement neuronElement = NeuronElementRegistry.instance().getNeuronElement(trgId, NeuronElementType.of(trgType));

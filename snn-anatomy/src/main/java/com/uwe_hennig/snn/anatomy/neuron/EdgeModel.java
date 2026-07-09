@@ -21,6 +21,10 @@ import java.util.concurrent.locks.LockSupport;
  * @author Uwe Hennig
  */
 public class EdgeModel {
+    private static final int MULTI_FLAG     = 0x40000000; // Bit 30
+    private static final int WRITER_WAITING = 0x40000000; // Bit 30
+    private static final int WRITER_ACTIVE  = 0xFFFFFFFF; // -1
+
     public final int   capacity;
     public final Arena arena;
 
@@ -33,8 +37,8 @@ public class EdgeModel {
         JAVA_INT.withName("srcId"),
         JAVA_INT.withName("srcType"),
         JAVA_INT.withName("trgType"),
-        JAVA_INT.withName("multiTrgRef"),
-        JAVA_INT.withName("singleTrgRef")
+        JAVA_INT.withName("trgRef"),
+        MemoryLayout.paddingLayout(4)
     ).withByteAlignment(8);
 
     static final VarHandle VH_LOCK =
@@ -46,10 +50,8 @@ public class EdgeModel {
         LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("srcType"));
     static final VarHandle VH_TRG_TYPE =
         LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("trgType"));
-    static final VarHandle VH_MULTI_TRG_REF=
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("multiTrgRef"));
-    static final VarHandle VH_SINGLE_TRG_REF=
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("singleTrgRef"));
+    static final VarHandle VH_TRG_REF=
+        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("trgRef"));
     // @formatter:off
 
 
@@ -97,26 +99,28 @@ public class EdgeModel {
         VH_TRG_TYPE.set(segment, 0L, index, value);
     }
 
-    int getMultiTrgRef(int index) {
-        return (int) VH_MULTI_TRG_REF.get(segment, 0L, index);
-    }
-
-    void setMultiTrgRef(int index, int value) {
-        VH_MULTI_TRG_REF.set(segment, 0L, index, value);
-    }
-
-    int getSingleTrgRef(int index) {
-        return (int) VH_SINGLE_TRG_REF.get(segment, 0L, index);
+    int getTrgRef(int index) {
+        int raw = (int) VH_TRG_REF.get(segment, 0L, index);
+        if ((raw & MULTI_FLAG) != 0) {
+            return raw & ~MULTI_FLAG;
+        }
+        return raw;
     }
 
     void setSingleTrgRef(int index, int value) {
-        VH_SINGLE_TRG_REF.set(segment, 0L, index, value);
+        VH_TRG_REF.set(segment, 0L, index, value);
+    }
+
+    void setMultiTrgRef(int index, int value) {
+        VH_TRG_REF.set(segment, 0L, index, value | MULTI_FLAG);
+    }
+
+    boolean isMuliTrgRef(int index) {
+        int ref = (int) VH_TRG_REF.get(segment, 0L, index);
+        return (ref & MULTI_FLAG) > 0;
     }
 
     // ----- lock/unlock -----
-
-    private static final int WRITER_WAITING = 0x40000000; // Bit 30
-    private static final int WRITER_ACTIVE  = 0xFFFFFFFF; // -1
 
     void writeLock(int index) {
         int spins = 0;
