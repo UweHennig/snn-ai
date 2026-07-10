@@ -93,8 +93,8 @@ public class NeuronField extends ViewIdentity {
 
 
     private static int[] getAllNeighbourIds(NeuronField current) {
-        int[] in = NeuronFieldListView.getInNeighbourIds(current.viewId);
-        int[] out = NeuronFieldListView.getOutNeighbourIds(current.viewId);
+        int[] in = NeuronFieldListView.getInNeighbourIds(current.inRef);
+        int[] out = NeuronFieldListView.getOutNeighbourIds(current.outRef);
 
         int[] all = new int[in.length + out.length];
 

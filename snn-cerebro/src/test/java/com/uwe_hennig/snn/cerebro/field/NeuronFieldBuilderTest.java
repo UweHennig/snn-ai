@@ -41,11 +41,11 @@ public class NeuronFieldBuilderTest {
         assertEquals(1, g.efferent().size(), "Invalid efferent size!");
         assertEquals(0, g.feedback().size(), "Invalid feedback size!");
 
-//        int[] counter = { 0 };
-//        NeuronField.visit(g.associative().get(0), _ -> {
-//            counter[0] += 1;
-//        });
-//        assertEquals(3, counter[0]);
+        int[] counter = { 0 };
+        NeuronField.visit(g.associative().get(0), _ -> {
+            counter[0] += 1;
+        });
+        assertEquals(3, counter[0]);
     }
 
     @Test
@@ -72,11 +72,11 @@ public class NeuronFieldBuilderTest {
         assertTrue(aff.getOutNeighbourIds().contains(ass1.getViewId()));
         assertTrue(aff.getOutNeighbourIds().contains(ass2.getViewId()));
 
-//        int[] counter = { 0 };
-//        NeuronField.visit(ass1, _ -> {
-//            counter[0] += 1;
-//        });
-//        assertEquals(3, counter[0]);
+        int[] counter = { 0 };
+        NeuronField.visit(ass1, _ -> {
+            counter[0] += 1;
+        });
+        assertEquals(3, counter[0]);
     }
 
     @Test
@@ -98,11 +98,11 @@ public class NeuronFieldBuilderTest {
         assertEquals(NeuronFieldType.FEEDBACK, fb.type());
         assertTrue(fb.getOutNeighbourIds().contains(as.getViewId()));
 
-//        int[] counter = { 0 };
-//        NeuronField.visit(as, _ -> {
-//            counter[0] += 1;
-//        });
-//        assertEquals(2, counter[0]);
+        int[] counter = { 0 };
+        NeuronField.visit(as, _ -> {
+            counter[0] += 1;
+        });
+        assertEquals(2, counter[0]);
     }
 
     @Test
@@ -128,11 +128,11 @@ public class NeuronFieldBuilderTest {
         assertTrue(ass.getInNeighbourIds().contains(aff.getViewId()));
         assertTrue(deep.getInNeighbourIds().contains(ass.getViewId()));
 
-//        int[] counter = { 0 };
-//        NeuronField.visit(deep, _ -> {
-//            counter[0] += 1;
-//        });
-//        assertEquals(3, counter[0]);
+        int[] counter = { 0 };
+        NeuronField.visit(deep, _ -> {
+            counter[0] += 1;
+        });
+        assertEquals(3, counter[0]);
     }
 
     @BeforeEach
