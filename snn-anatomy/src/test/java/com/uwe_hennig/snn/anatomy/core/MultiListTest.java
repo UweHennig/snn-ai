@@ -99,9 +99,9 @@ public class MultiListTest {
     public void testPut() {
         // TODO Check whether the memory overflow is being utilized or whether a new allocation is being made
         MultiList multiList = new MultiList(MAX_BLOCKS, MAX_ROW_BYTE_LENGTH);
+        long startRowData = multiList.allocate();
 
         long[] listA = { 1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L, 10L, 11L, 12L, 13L, 14L, 15L, 16L, 17L, 18L };
-        long startRowData = multiList.allocate();
         multiList.put(startRowData, listA);
         assertArrayEquals(listA, multiList.getLongs(startRowData));
 

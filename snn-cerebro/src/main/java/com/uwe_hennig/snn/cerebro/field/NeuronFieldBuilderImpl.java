@@ -11,7 +11,8 @@ import java.util.Deque;
 import java.util.List;
 import java.util.function.Consumer;
 
-import com.uwe_hennig.snn.anatomy.allocator.NeuronFieldAllocator;
+import com.uwe_hennig.snn.anatomy.allocator.NeuronFieldListManager;
+import com.uwe_hennig.snn.anatomy.allocator.NeuronFieldModelManager;
 import com.uwe_hennig.snn.anatomy.neuron.NeuronFieldView;
 import com.uwe_hennig.snn.cerebro.contracts.FieldGraph;
 import com.uwe_hennig.snn.cerebro.contracts.NeuronFieldBuilder;
@@ -31,7 +32,7 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder {
     private List<NeuronField> feedback = new ArrayList<>();
 
     public NeuronFieldBuilderImpl() {
-        if (NeuronFieldAllocator.instance() == null) {
+        if (NeuronFieldModelManager.instance() == null) {
             throw new IllegalStateException("Initialize NeuronFieldAllocator before starting NeuronFieldBuilder");
         }
     }
@@ -65,12 +66,21 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder {
         NeuronField parent = stack.peek();
 
         for (int i = 0; i < count; i++) {
-            NeuronFieldView view = NeuronFieldAllocator.instance().newFieldView(type.code());
-            NeuronField field = new NeuronField(view);
+            int newFieldId = NeuronFieldModelManager.instance().nextId();
+
+            int outRef = NeuronFieldListManager.instance().nextId();
+            int inRef = NeuronFieldListManager.instance().nextId();
+            int neuronRef = NeuronFieldListManager.instance().nextId();
+
+            NeuronFieldView.setRef(newFieldId, neuronRef, outRef, inRef);
+            NeuronFieldView.setType(newFieldId, type.code());
+
+            NeuronField field = new NeuronField(newFieldId, neuronRef, outRef, inRef);
             addToFieldLists(type, field);
 
             if (parent != null) {
-                parent.addOutNeighbour(view);
+                parent.addOutNeighbour(field);
+                field.addInNeighbour(parent);
             }
 
             if (logic != null) {

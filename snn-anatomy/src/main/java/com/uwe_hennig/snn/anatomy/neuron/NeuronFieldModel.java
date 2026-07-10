@@ -33,10 +33,9 @@ public final class NeuronFieldModel {
         JAVA_INT.withName("lock"),
         JAVA_INT.withName("type"),
         JAVA_INT.withName("fieldId"),
-        MemoryLayout.paddingLayout(4),
-        JAVA_LONG.withName("neuronRef"),
-        JAVA_LONG.withName("outNeighboursRef"),
-        JAVA_LONG.withName("inNeighboursRef")
+        JAVA_INT.withName("neuronRef"),
+        JAVA_INT.withName("outNeighboursRef"),
+        JAVA_INT.withName("inNeighboursRef")
     ).withByteAlignment(8);
 
     static final VarHandle VH_LOCK =
@@ -157,27 +156,27 @@ public final class NeuronFieldModel {
         VH_TYPE.set(segment, 0L, index, value);
     }
 
-    long getNeuronRef(int index) {
-        return (long)VH_NEURON_REF.get(segment, 0L, index);
+    int getNeuronRef(int index) {
+        return (int)VH_NEURON_REF.get(segment, 0L, index);
     }
 
-    void setNeuronRef(int index, long value) {
+    void setNeuronRef(int index, int value) {
         VH_NEURON_REF.set(segment, 0L, index, value);
     }
 
-    long getOutNeighboursRef(int index) {
-        return (long)VH_OUT_NEIGHBOURS_REF.get(segment, 0L, index);
+    int getOutNeighboursRef(int index) {
+        return (int)VH_OUT_NEIGHBOURS_REF.get(segment, 0L, index);
     }
 
-    void setOutNeighboursRef(int index, long value) {
+    void setOutNeighboursRef(int index, int value) {
         VH_OUT_NEIGHBOURS_REF.set(segment, 0L, index, value);
     }
 
-    long getInNeighbourRef(int index) {
-        return (long)VH_IN_NEIGHBOURS_REF.get(segment, 0L, index);
+    int getInNeighbourRef(int index) {
+        return (int)VH_IN_NEIGHBOURS_REF.get(segment, 0L, index);
     }
 
-    void setInNeighboursRef(int index, long value) {
+    void setInNeighboursRef(int index, int value) {
         VH_IN_NEIGHBOURS_REF.set(segment, 0L, index, value);
     }
 
@@ -185,7 +184,7 @@ public final class NeuronFieldModel {
         return (int)VH_FIELD_ID.get(segment, 0L, index);
     }
 
-    void setFieldId(int index, long value) {
+    void setFieldId(int index, int value) {
         VH_FIELD_ID.set(segment, 0L, index, value);
     }
 }

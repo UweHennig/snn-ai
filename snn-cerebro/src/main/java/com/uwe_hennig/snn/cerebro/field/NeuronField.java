@@ -5,18 +5,19 @@
  */
 package com.uwe_hennig.snn.cerebro.field;
 
-import static com.uwe_hennig.snn.anatomy.allocator.NeuronFieldAllocator.instance;
 import static com.uwe_hennig.snn.contracts.core.NeuronFieldType.fieldType;
 
+import java.util.AbstractList;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import com.uwe_hennig.snn.anatomy.neuron.NeuronFieldListView;
 import com.uwe_hennig.snn.anatomy.neuron.NeuronFieldView;
+import com.uwe_hennig.snn.anatomy.neuron.NeuronFieldView.NeuronFieldData;
 import com.uwe_hennig.snn.contracts.core.NeuronFieldType;
 import com.uwe_hennig.snn.contracts.core.ViewIdentity;
 
@@ -26,73 +27,74 @@ import com.uwe_hennig.snn.contracts.core.ViewIdentity;
  * @author Uwe Hennig
  */
 public class NeuronField extends ViewIdentity {
-    private final NeuronFieldView view;
+    private final int viewId;
+    private final int neuronRef;
+    private final int outRef;
+    private final int inRef;
 
-    public NeuronField(NeuronFieldView view) {
-        this.view = view;
+    public NeuronField(int viewId, int neuronRef, int outRef, int inRef) {
+        assert neuronRef >= 0 && outRef >= 0 && inRef >= 0 && viewId >= 0;
+
+        this.viewId = viewId;
+        this.neuronRef = neuronRef;
+        this.outRef = outRef;
+        this.inRef = inRef;
     }
 
-    public int getFieldId() {
-        return view.getViewId();
+    private NeuronField(NeuronFieldView.NeuronFieldData data) {
+        this.viewId = data.fieldId();
+        this.neuronRef = data.neuronRef();
+        this.outRef = data.outRef();
+        this.inRef = data.inRef();
     }
 
     @Override
     public int getViewId() {
-        return view.getViewId();
+        return viewId;
     }
 
     public NeuronFieldType type() {
-        return fieldType(view.type());
+        return fieldType(NeuronFieldView.type(viewId));
     }
 
+    // --- Neurons ---
+
     public List<Integer> getNeuronIds() {
-        int[] nIds = view.getNeuronIds();
-        List<Integer> result = new ArrayList<>();
-        for (int i = 0; i < nIds.length; i++) {
-            result.add(nIds[i]);
-        }
-        return result;
+        int[] neurons = NeuronFieldListView.getNeuronIds(neuronRef);
+        return asReadonlyList(neurons);
     }
 
     public void addNeurons(int... neuronIds) {
-        view.addNeuronId(neuronIds);
+        NeuronFieldListView.addNeuronIds(neuronRef, neuronIds);
     }
 
-    public void addOutNeighbour(NeuronFieldView fieldView) {
-        view.addOutNeighbours(fieldView.getViewId());
-        fieldView.addInNeighbours(view.getViewId());
+    // --- Out Neighbours ---
+
+    public void addOutNeighbour(NeuronField field) {
+        NeuronFieldListView.addOutNeighbourIds(outRef, field.getViewId());
     }
 
-    public List<NeuronField> getOutNeighbours() {
-        int[] out = view.getOutNeighbours();
-        List<NeuronField> result = new ArrayList<>();
-
-        for (int i = 0; i < out.length; i++) {
-            result.add(createWrapper(out[i]));
-        }
-
-        return result;
+    public List<Integer> getOutNeighbourIds() {
+        int[] out = NeuronFieldListView.getOutNeighbourIds(outRef);
+        return asReadonlyList(out);
     }
+
+    // --- In Neighbours ---
 
     public void addInNeighbour(NeuronField field) {
-        view.addInNeighbours(field.getFieldId());
-        field.view.addOutNeighbours(this.getFieldId());
+        NeuronFieldListView.addInNeighbourIds(inRef, field.getViewId());
     }
 
-    public List<NeuronField> getInNeighbours() {
-        int[] in = view.getInNeighbours();
-        List<NeuronField> result = new ArrayList<>();
-
-        for (int i = 0; i < in.length; i++) {
-            result.add(createWrapper(in[i]));
-        }
-
-        return result;
+    public List<Integer> getInNeighbourIds() {
+        int[] in = NeuronFieldListView.getInNeighbourIds(inRef);
+        return asReadonlyList(in);
     }
 
-    public static int [] getAllNeighbours(NeuronField current) {
-        int[] in = current.view.getInNeighbours();
-        int[] out = current.view.getOutNeighbours();
+
+
+    private static int[] getAllNeighbourIds(NeuronField current) {
+        int[] in = NeuronFieldListView.getInNeighbourIds(current.viewId);
+        int[] out = NeuronFieldListView.getOutNeighbourIds(current.viewId);
 
         int[] all = new int[in.length + out.length];
 
@@ -106,7 +108,7 @@ public class NeuronField extends ViewIdentity {
         Deque<Integer> queue = new ArrayDeque<>();
         Set<Integer> visited = new HashSet<>();
 
-        queue.add(start.view.getViewId());
+        queue.add(start.getViewId());
 
         while (!queue.isEmpty()) {
             int currentIdx = queue.poll();
@@ -115,7 +117,7 @@ public class NeuronField extends ViewIdentity {
                 NeuronField current = createWrapper(currentIdx);
                 visitor.accept(current);
 
-                int [] all = getAllNeighbours(current);
+                int[] all = getAllNeighbourIds(current);
 
                 for (int next : all) {
                     queue.add(next);
@@ -125,7 +127,27 @@ public class NeuronField extends ViewIdentity {
     }
 
     private static NeuronField createWrapper(int index) {
-        NeuronFieldView view = instance().viewAt(index);
-        return new NeuronField(view);
+        NeuronFieldData data = NeuronFieldView.getData(index);
+        return new NeuronField(data);
     }
+
+    private static List<Integer> asReadonlyList(final int[] array) {
+        return new AbstractList<Integer>() {
+            @Override
+            public Integer get(int index) {
+                return array[index];
+            }
+
+            @Override
+            public int size() {
+                return array.length;
+            }
+
+            @Override
+            public boolean add(Integer e) {
+                throw new UnsupportedOperationException();
+            }
+        };
+    }
+
 }

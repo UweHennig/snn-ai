@@ -1,5 +1,5 @@
 /**
- * @(#)AxonSynapseModelManager.java
+ * @(#)NeuronFieldListManager.java
  * Copyright (c) 2026 Uwe Hennig
  * All rights reserved.
  */
@@ -8,30 +8,30 @@ package com.uwe_hennig.snn.anatomy.allocator;
 import com.uwe_hennig.snn.anatomy.core.MultiList;
 
 /**
- * AxonSynapseModelManager
+ * NeuronFieldListManager
  *
  * @author Uwe Hennig
  */
-public class AxonSynapseModelManager {
-    private static AxonSynapseModelManager INSTANCE;
+public class NeuronFieldListManager {
+    private static NeuronFieldListManager INSTANCE;
     private MultiList multiList;
 
-    private AxonSynapseModelManager(long maxBlocks, int minDataCapacityBytes) {
+    private NeuronFieldListManager(long maxBlocks, int minDataCapacityBytes) {
         multiList = new MultiList(maxBlocks, minDataCapacityBytes);
     }
 
-    public static AxonSynapseModelManager instance() {
-        return INSTANCE;
-    }
-
-    public static AxonSynapseModelManager init(long maxBlocks, int minDataCapacityBytes) {
+    public static NeuronFieldListManager init(long maxBlocks, int minDataCapacityBytes) {
         if (INSTANCE == null) {
             synchronized (AxonSynapseModelManager.class) {
                 if (INSTANCE == null) {
-                    INSTANCE = new AxonSynapseModelManager(maxBlocks, minDataCapacityBytes);
+                    INSTANCE = new NeuronFieldListManager(maxBlocks, minDataCapacityBytes);
                 }
             }
         }
+        return INSTANCE;
+    }
+
+    public static NeuronFieldListManager instance() {
         return INSTANCE;
     }
 
