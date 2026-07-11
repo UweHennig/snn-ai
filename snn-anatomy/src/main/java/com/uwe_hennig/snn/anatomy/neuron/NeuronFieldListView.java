@@ -21,13 +21,12 @@ public class NeuronFieldListView {
     // --- Out Neighbours ---
 
     public static int[] getOutNeighbourIds(int outNeighboursRef) {
-        MultiList listModel = NeuronFieldListManager.instance().getModel();
-
         if (outNeighboursRef != -1) {
+            MultiList listModel = NeuronFieldListManager.instance().getModel();
             return listModel.getInts(outNeighboursRef);
-        } else {
-            return EMPTY_ARRAY;
         }
+
+        return EMPTY_ARRAY;
     }
 
     public static void addOutNeighbourIds(int outNeighboursRef, int ... outFieldIds) {

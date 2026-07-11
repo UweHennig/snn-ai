@@ -1,5 +1,5 @@
 /**
- * @(#)NeuronListManager.java
+ * @(#)DendritListManager.java
  * Copyright (c) 2026 Uwe Hennig
  * All rights reserved.
  */
@@ -8,35 +8,35 @@ package com.uwe_hennig.snn.anatomy.allocator;
 import com.uwe_hennig.snn.anatomy.core.MultiList;
 
 /**
- * NeuronListManager
+ * DendritListManager
  *
  * @author Uwe Hennig
  */
-public class NeuronListManager {
-    private static NeuronListManager INSTANCE;
-    private MultiList                multiList;
+public class DendritListManager {
+    private static DendritListManager INSTANCE;
+    private MultiList multiList;
 
-    private NeuronListManager(long maxBlocks, int minDataCapacityBytes) {
+    private DendritListManager(long maxBlocks, int minDataCapacityBytes) {
         multiList = new MultiList(maxBlocks, minDataCapacityBytes);
     }
 
-    public static NeuronListManager init(long maxBlocks, int minDataCapacityBytes) {
+    public static DendritListManager init(long maxBlocks, int minDataCapacityBytes) {
         if (INSTANCE == null) {
             synchronized (AxonSynapseModelManager.class) {
                 if (INSTANCE == null) {
-                    INSTANCE = new NeuronListManager(maxBlocks, minDataCapacityBytes);
+                    INSTANCE = new DendritListManager(maxBlocks, minDataCapacityBytes);
                 }
             }
         }
         return INSTANCE;
     }
 
-    public static NeuronListManager instance() {
+    public static DendritListManager  instance() {
         return INSTANCE;
     }
 
     public int nextId() {
-        return (int) multiList.allocate();
+        return (int)multiList.allocate();
     }
 
     public MultiList getModel() {

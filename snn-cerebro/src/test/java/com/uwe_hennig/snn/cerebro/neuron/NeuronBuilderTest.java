@@ -16,9 +16,12 @@ import org.junit.jupiter.api.TestInfo;
 
 import com.uwe_hennig.snn.anatomy.allocator.AxonModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.AxonSynapseModelManager;
+import com.uwe_hennig.snn.anatomy.allocator.DendritListManager;
 import com.uwe_hennig.snn.anatomy.allocator.DendritModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.EdgeModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.ModulatorModelManager;
+import com.uwe_hennig.snn.anatomy.allocator.NeuronListManager;
+import com.uwe_hennig.snn.anatomy.allocator.NeuronModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.PlasticityModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.PotentialModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.SomaModelMangager;
@@ -58,10 +61,6 @@ public class NeuronBuilderTest {
         // TODO
     }
 
-    public void checkTransfers(NeuronGraph graph) {
-        // TODO
-    }
-
     @BeforeEach
     public void beforeEach(TestInfo info) {
         headline(info);
@@ -96,6 +95,12 @@ public class NeuronBuilderTest {
         AxonSynapseModelManager.init(10, 60);
 
         EdgeModelManager.init(60);
+
+        NeuronModelManager.init(10);
+
+        NeuronListManager.init(10, 40);
+
+        DendritListManager.init(10, 40);
 
         // TODO StimulusModel
     }

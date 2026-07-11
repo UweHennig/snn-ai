@@ -30,9 +30,11 @@ public final class NeuronModel {
     // @formatter:off
     static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         JAVA_INT.withName("lock"),
-        MemoryLayout.paddingLayout(4),
         JAVA_INT.withName("fiedlId"),
-        JAVA_INT.withName("neuronElementRef")
+        JAVA_INT.withName("dendritRef"),
+        JAVA_INT.withName("somaId"),
+        JAVA_INT.withName("axonId"),
+        JAVA_INT.withName("synapseRef")
     ).withByteAlignment(8);
 
     static final VarHandle VH_LOCK =
@@ -40,8 +42,15 @@ public final class NeuronModel {
 
     static final VarHandle VH_FIELD_ID =
         LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("fiedlId"));
-    static final VarHandle VH_NEURON_ELEMENT_REF =
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("neuronElementRef"));
+
+    static final VarHandle VH_DENDRIT_REF =
+        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("dendritRef"));
+    static final VarHandle VH_SOMA_ID =
+        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("somaId"));
+    static final VarHandle VH_AXON_ID =
+        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("axonId"));
+    static final VarHandle VH_SYNAPSE_REF =
+        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("synapseRef"));
     // @formatter:on
 
     // ----- public -----
@@ -144,12 +153,26 @@ public final class NeuronModel {
         VH_FIELD_ID.set(segment, 0L, index, value);
     }
 
-    int getNeuronElementRef(int index) {
-        return (int) VH_NEURON_ELEMENT_REF.get(segment, 0L, index);
+    void setRef(int index, int dendritRef, int somaId, int axonId, int synapseRef) {
+        VH_DENDRIT_REF.set(segment, 0L, index, dendritRef);
+        VH_SOMA_ID.set(segment, 0L, index, somaId);
+        VH_AXON_ID.set(segment, 0L, index, axonId);
+        VH_SYNAPSE_REF.set(segment, 0L, index, synapseRef);
     }
 
-    void setNeuronElementRef(int index, int value) {
-        VH_NEURON_ELEMENT_REF.set(segment, 0L, index, value);
+    int getDendritRef(int index) {
+        return (int) VH_DENDRIT_REF.get(segment, 0L, index);
     }
 
+    int getSomaId(int index) {
+        return (int) VH_SOMA_ID.get(segment, 0L, index);
+    }
+
+    int getAxonId(int index) {
+        return (int) VH_AXON_ID.get(segment, 0L, index);
+    }
+
+    int getSynapseRef(int index) {
+        return (int) VH_SYNAPSE_REF.get(segment, 0L, index);
+    }
 }

@@ -10,9 +10,11 @@ import java.util.List;
 
 import com.uwe_hennig.snn.anatomy.allocator.AxonModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.AxonSynapseModelManager;
+import com.uwe_hennig.snn.anatomy.allocator.DendritListManager;
 import com.uwe_hennig.snn.anatomy.allocator.DendritModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.EdgeModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.ModulatorModelManager;
+import com.uwe_hennig.snn.anatomy.allocator.NeuronModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.PlasticityModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.PotentialModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.SomaModelMangager;
@@ -21,6 +23,7 @@ import com.uwe_hennig.snn.anatomy.allocator.ThresholdModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.WeightModelManager;
 import com.uwe_hennig.snn.anatomy.neuron.AxonView;
 import com.uwe_hennig.snn.anatomy.neuron.DendritView;
+import com.uwe_hennig.snn.anatomy.neuron.NeuronView;
 import com.uwe_hennig.snn.anatomy.neuron.PotentialView;
 import com.uwe_hennig.snn.anatomy.neuron.SomaView;
 import com.uwe_hennig.snn.anatomy.neuron.SynapseView;
@@ -69,6 +72,8 @@ public class NeuronBuilderImpl implements NeuronBuilder {
             throw new IllegalStateException("System not ready!");
         }
 
+        this.neuronId = NeuronModelManager.instance().nextId();
+
         // TODO: createNeuron();
 
         List<Dendrit> dendritList = new ArrayList<>(dendrites);
@@ -85,12 +90,22 @@ public class NeuronBuilderImpl implements NeuronBuilder {
         AxonSynapseModelManager.instance().getModel().put(synapsesRef, synapseIdArray);
 
         Axon axon = createAxon(synapsesRef);
+        int axonId = axon.getViewId();
+
         Soma soma = createSoma(axon.getViewId());
+        int somaId = soma.getViewId();
+
+        int dendritRef = DendritListManager.instance().nextId();
+        int [] dendritArray = new int [dendrites];
 
         for (int i = 0; i < dendrites; i++) {
             Dendrit dendrit = createDendrit(soma.getViewId());
             dendritList.add(dendrit);
+            dendritArray[i] = dendrit.getViewId();
         }
+        DendritListManager.instance().getModel().put(dendritRef, dendritArray);
+
+        NeuronView.setRefs(neuronId, fieldId, dendritRef, somaId, axonId, synapsesRef);
 
         return new NeuronGraph(fieldId, neuronId, soma, axon, dendritList, synapseList);
     }

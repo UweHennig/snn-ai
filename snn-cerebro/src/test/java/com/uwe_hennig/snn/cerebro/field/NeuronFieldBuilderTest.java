@@ -22,7 +22,7 @@ import com.uwe_hennig.snn.contracts.core.NeuronFieldType;
 
 /**
  * NeuronFieldBuilderTest
- * TODO in/out Ref not working!
+ *
  * @author Uwe Hennig
  */
 public class NeuronFieldBuilderTest {
