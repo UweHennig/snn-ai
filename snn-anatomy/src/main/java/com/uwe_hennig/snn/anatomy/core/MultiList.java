@@ -98,6 +98,11 @@ public class MultiList {
         return newBlockAddress;
     }
 
+    public long getUsedBlockCount() {
+        long tailValue = tail.get();
+        return (tailValue - FIRST_BLOCK_OFFSET) / blockSize;
+    }
+
     // --- Write operations ---
 
     public void put(long startAddress, int[] data) {

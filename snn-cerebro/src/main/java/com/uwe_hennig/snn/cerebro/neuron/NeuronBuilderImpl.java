@@ -129,7 +129,7 @@ public class NeuronBuilderImpl implements NeuronBuilder {
         for (int i = 0; i < synapses; i++) {
             edgeId = EdgeModelManager.instance().nextId();
             Synapse synapse = synapseList.get(i);
-            EdgeView.setSingleEdge(edgeId, synapse.getViewId(), NeuronElementType.SYNAPSE.code(), -1, -1);
+            EdgeView.setSingleEdge(edgeId, synapse.getViewId(), NeuronElementType.SYNAPSE.code(), 0, -1);
         }
 
         return new NeuronGraph(fieldId, neuronId, soma, axon, dendritList, synapseList);

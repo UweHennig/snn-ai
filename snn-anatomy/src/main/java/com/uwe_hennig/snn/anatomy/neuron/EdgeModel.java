@@ -21,7 +21,6 @@ import java.util.concurrent.locks.LockSupport;
  * @author Uwe Hennig
  */
 public class EdgeModel {
-    private static final int MULTI_FLAG     = 0x40000000; // Bit 30
     private static final int WRITER_WAITING = 0x40000000; // Bit 30
     private static final int WRITER_ACTIVE  = 0xFFFFFFFF; // -1
 
@@ -38,7 +37,7 @@ public class EdgeModel {
         JAVA_INT.withName("srcType"),
         JAVA_INT.withName("trgType"),
         JAVA_INT.withName("trgRef"),
-        MemoryLayout.paddingLayout(4)
+        JAVA_INT.withName("trgId")
     ).withByteAlignment(8);
 
     static final VarHandle VH_LOCK =
@@ -52,6 +51,8 @@ public class EdgeModel {
         LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("trgType"));
     static final VarHandle VH_TRG_REF=
         LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("trgRef"));
+    static final VarHandle VH_TRG_ID=
+        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("trgId"));
     // @formatter:off
 
 
@@ -101,23 +102,25 @@ public class EdgeModel {
 
     int getTrgRef(int index) {
         int raw = (int) VH_TRG_REF.get(segment, 0L, index);
-        if ((raw & MULTI_FLAG) != 0) {
-            return raw & ~MULTI_FLAG;
+        if (raw < 0) {
+            return (int) VH_TRG_ID.get(segment, 0L, index);
         }
-        return raw;
+        return (int) VH_TRG_REF.get(segment, 0L, index);
     }
 
     void setSingleTrgRef(int index, int value) {
-        VH_TRG_REF.set(segment, 0L, index, value);
+        VH_TRG_ID.set(segment, 0L, index, value);
+        VH_TRG_REF.set(segment, 0L, index, -1);
     }
 
     void setMultiTrgRef(int index, int value) {
-        VH_TRG_REF.set(segment, 0L, index, value | MULTI_FLAG);
+        VH_TRG_REF.set(segment, 0L, index, value);
+        VH_TRG_ID.set(segment, 0L, index, -1);
     }
 
-    boolean isMuliTrgRef(int index) {
-        int ref = (int) VH_TRG_REF.get(segment, 0L, index);
-        return (ref & MULTI_FLAG) > 0;
+    boolean isMultiTrgRef(int index) {
+        int raw = (int) VH_TRG_REF.get(segment, 0L, index);
+        return raw >= 0;
     }
 
     // ----- lock/unlock -----

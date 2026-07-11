@@ -29,7 +29,9 @@ import com.uwe_hennig.snn.anatomy.allocator.SomaModelMangager;
 import com.uwe_hennig.snn.anatomy.allocator.SynapseModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.ThresholdModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.WeightModelManager;
+import com.uwe_hennig.snn.anatomy.neuron.EdgeView;
 import com.uwe_hennig.snn.cerebro.contracts.NeuronGraph;
+import com.uwe_hennig.snn.contracts.core.NeuronElementType;
 
 /**
  * NeuronBuilderTest
@@ -56,6 +58,21 @@ public class NeuronBuilderTest {
         assertEquals(2, graph.synapses().size());
 
         checkStructure(graph);
+
+        int edges = EdgeModelManager.instance().capacity();
+        assertEquals(6, edges);
+        for (int i = 0; i < 6; i++) {
+            int srcType = EdgeView.getSrcType(i);
+            int trgType = EdgeView.getTrgType(i);
+            int srcId   = EdgeView.getSrcId(i);
+            int trgId   = EdgeView.getTrgRef(i);
+            boolean r = EdgeView.isMultiTargetRef(i);
+
+            System.out.println("Edge: "
+                + NeuronElementType.of(srcType)  + "(" + srcId + ")"
+                + " -> "
+                + NeuronElementType.of(trgType)  + "(" + (r? "Ref:" : "") + trgId + ")");
+        }
     }
 
     public void checkStructure(NeuronGraph graph) {

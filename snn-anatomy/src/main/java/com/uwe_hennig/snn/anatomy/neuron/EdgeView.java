@@ -34,7 +34,7 @@ public class EdgeView {
             model.writeLock(index);
             model.setSrcId(index, srcId);
             model.setSrcType(index, srcType);
-            model.setMultiTrgRef(index, -1);
+            model.setMultiTrgRef(index, trgRef);
             model.setTrgType(index, trgType);
         } finally {
             model.writeUnlock(index);
@@ -43,7 +43,7 @@ public class EdgeView {
 
     public static boolean isMultiTargetRef(int index) {
         EdgeModel model = EdgeModelManager.instance().getModel();
-        return model.isMuliTrgRef(index);
+        return model.isMultiTrgRef(index);
     }
 
     public static int getSrcId(int index) {
