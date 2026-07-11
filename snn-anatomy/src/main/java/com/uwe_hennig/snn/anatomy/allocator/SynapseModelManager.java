@@ -44,6 +44,10 @@ public class SynapseModelManager {
         return nextOffset++;
     }
 
+    public int capacity() {
+        return nextOffset;
+    }
+
     public SynapseModel getModel() {
         return model;
     }

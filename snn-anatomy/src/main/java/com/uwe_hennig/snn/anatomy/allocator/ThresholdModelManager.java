@@ -44,6 +44,10 @@ public class ThresholdModelManager {
         return nextOffset++;
     }
 
+    public int capacity() {
+        return nextOffset;
+    }
+
     public ThresholdModel getModel() {
         return model;
     }

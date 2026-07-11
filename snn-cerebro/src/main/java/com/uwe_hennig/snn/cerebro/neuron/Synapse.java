@@ -57,9 +57,10 @@ public final class Synapse extends ViewIdentity implements NeuronElement {
 
     public void setTarget(int targetId, int type) {
         this.targetId = targetId;
+    }
 
-        // SynapseView.setTargetRef(viewId, targetRef);
-        // TODO EdgeView.setSingleEdge();
+    public int getTargetId() {
+        return this.targetId;
     }
 
     @Override

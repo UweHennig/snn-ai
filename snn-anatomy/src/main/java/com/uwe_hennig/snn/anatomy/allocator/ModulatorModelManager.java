@@ -44,6 +44,10 @@ public class ModulatorModelManager {
         return nextOffset++;
     }
 
+    public int capacity() {
+        return nextOffset;
+    }
+
     public ModulatorModel getModel() {
         return model;
     }

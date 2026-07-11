@@ -44,6 +44,10 @@ public class AxonModelManager {
         return nextOffset++;
     }
 
+    public int capacity() {
+        return nextOffset;
+    }
+
     public AxonModel getModel() {
         return model;
     }

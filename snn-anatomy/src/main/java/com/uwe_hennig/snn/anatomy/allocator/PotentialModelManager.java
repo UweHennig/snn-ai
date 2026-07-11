@@ -44,6 +44,10 @@ public class PotentialModelManager {
         return nextOffset++;
     }
 
+    public int capacity() {
+        return nextOffset;
+    }
+
     public PotentialModel getModel() {
         return model;
     }

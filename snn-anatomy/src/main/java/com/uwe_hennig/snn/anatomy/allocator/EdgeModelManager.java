@@ -44,6 +44,10 @@ public class EdgeModelManager {
         return nextOffset++;
     }
 
+    public int capacity() {
+        return nextOffset;
+    }
+
     public EdgeModel getModel() {
         return model;
     }

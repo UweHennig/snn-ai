@@ -44,6 +44,10 @@ public class NeuronModelManager {
         return nextOffset++;
     }
 
+    public int capacity() {
+        return nextOffset;
+    }
+
     public NeuronModel getModel() {
         return model;
     }

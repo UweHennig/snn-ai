@@ -7,6 +7,7 @@ package com.uwe_hennig.snn.cerebro.neuron;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -54,11 +55,38 @@ public class NeuronBuilderTest {
         assertEquals(2, graph.dendrites().size());
         assertEquals(2, graph.synapses().size());
 
-        checkInternalStructure();
+        checkStructure(graph);
     }
 
-    public void checkInternalStructure() {
-        // TODO
+    public void checkStructure(NeuronGraph graph) {
+        int fieldId = graph.fieldId();
+        assertTrue(fieldId >= 0);
+
+        int neuronId = graph.neuronId();
+        assertTrue(neuronId >= 0);
+
+        Soma soma = graph.soma();
+        assertEquals(neuronId, soma.getNeuronId());
+
+        Axon axon = graph.axon();
+        assertEquals(neuronId, axon.getNeuronId());
+
+        assertEquals(soma.getTargetId(), axon.getViewId());
+
+        for (Dendrit dendrit : graph.dendrites()) {
+            int viewId = dendrit.getViewId();
+            assertTrue(viewId >= 0);
+
+            assertEquals(neuronId, dendrit.getNeuronId());
+            assertEquals(soma.getViewId(), dendrit.getTargetId());
+        }
+
+        for (Synapse synapse : graph.synapses()) {
+            int viewId = synapse.getViewId();
+            assertTrue(viewId >= 0);
+            assertTrue(synapse.getTargetId() >= 0);
+            assertEquals(neuronId, synapse.getNeuronId());
+        }
     }
 
     @BeforeEach
@@ -122,6 +150,12 @@ public class NeuronBuilderTest {
         SynapseListManager.close();
 
         EdgeModelManager.close();
+
+        NeuronModelManager.close();
+
+        NeuronListManager.close();
+
+        DendritListManager.close();
 
         // TODO StimulusModel
 

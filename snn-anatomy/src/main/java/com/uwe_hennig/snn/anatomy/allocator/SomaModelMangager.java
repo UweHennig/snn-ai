@@ -44,6 +44,10 @@ public class SomaModelMangager {
         return nextOffset++;
     }
 
+    public int capacity() {
+        return nextOffset;
+    }
+
     public SomaModel getModel() {
         return model;
     }

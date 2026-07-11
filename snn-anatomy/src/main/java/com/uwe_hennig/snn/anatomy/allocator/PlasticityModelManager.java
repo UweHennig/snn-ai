@@ -44,6 +44,10 @@ public class PlasticityModelManager {
         return nextOffset++;
     }
 
+    public int capacity() {
+        return nextOffset;
+    }
+
     public PlasticityModel getModel() {
         return model;
     }

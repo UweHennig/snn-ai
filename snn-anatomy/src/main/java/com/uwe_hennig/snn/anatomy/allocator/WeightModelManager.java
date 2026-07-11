@@ -44,6 +44,10 @@ public class WeightModelManager {
         return nextOffset++;
     }
 
+    public int capacity() {
+        return nextOffset;
+    }
+
     public WeightModel getModel() {
         return model;
     }
