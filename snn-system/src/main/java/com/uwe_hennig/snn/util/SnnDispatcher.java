@@ -5,7 +5,7 @@
  */
 package com.uwe_hennig.snn.util;
 
-import com.uwe_hennig.snn.anatomy.allocator.AxonSynapseModelManager;
+import com.uwe_hennig.snn.anatomy.allocator.SynapseListManager;
 import com.uwe_hennig.snn.anatomy.neuron.EdgeView;
 import com.uwe_hennig.snn.contracts.core.NeuronElement;
 import com.uwe_hennig.snn.contracts.core.NeuronElementType;
@@ -172,7 +172,7 @@ public class SnnDispatcher {
 
         if (EdgeView.isMultiTargetRef(trgRef)) {
             StimulusService.invalidate(trgType);
-            int[] synapseIds = AxonSynapseModelManager.instance().getModel().getInts(trgRef);
+            int[] synapseIds = SynapseListManager.instance().getModel().getInts(trgRef);
             for (int i = 0; i < synapseIds.length; i++) {
                 NeuronElement neuronElement = NeuronElementRegistry.instance().getNeuronElement(trgRef, NeuronElementType.of(trgType));
                 neuronElement.stimulate(stimulusId);

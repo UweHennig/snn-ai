@@ -22,7 +22,7 @@ public class DendritListManager {
 
     public static DendritListManager init(long maxBlocks, int minDataCapacityBytes) {
         if (INSTANCE == null) {
-            synchronized (AxonSynapseModelManager.class) {
+            synchronized (SynapseListManager.class) {
                 if (INSTANCE == null) {
                     INSTANCE = new DendritListManager(maxBlocks, minDataCapacityBytes);
                 }

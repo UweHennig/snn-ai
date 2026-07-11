@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
 import com.uwe_hennig.snn.anatomy.allocator.AxonModelManager;
-import com.uwe_hennig.snn.anatomy.allocator.AxonSynapseModelManager;
+import com.uwe_hennig.snn.anatomy.allocator.SynapseListManager;
 import com.uwe_hennig.snn.anatomy.allocator.DendritListManager;
 import com.uwe_hennig.snn.anatomy.allocator.DendritModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.EdgeModelManager;
@@ -92,7 +92,7 @@ public class NeuronBuilderTest {
 
         ModulatorModelManager.init(30);
 
-        AxonSynapseModelManager.init(10, 60);
+        SynapseListManager.init(10, 60);
 
         EdgeModelManager.init(60);
 
@@ -119,7 +119,7 @@ public class NeuronBuilderTest {
 
         ModulatorModelManager.close();
 
-        AxonSynapseModelManager.close();
+        SynapseListManager.close();
 
         EdgeModelManager.close();
 

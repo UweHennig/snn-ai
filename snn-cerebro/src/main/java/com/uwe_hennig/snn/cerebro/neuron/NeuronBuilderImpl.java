@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.uwe_hennig.snn.anatomy.allocator.AxonModelManager;
-import com.uwe_hennig.snn.anatomy.allocator.AxonSynapseModelManager;
+import com.uwe_hennig.snn.anatomy.allocator.SynapseListManager;
 import com.uwe_hennig.snn.anatomy.allocator.DendritListManager;
 import com.uwe_hennig.snn.anatomy.allocator.DendritModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.EdgeModelManager;
@@ -74,20 +74,18 @@ public class NeuronBuilderImpl implements NeuronBuilder {
 
         this.neuronId = NeuronModelManager.instance().nextId();
 
-        // TODO: createNeuron();
-
         List<Dendrit> dendritList = new ArrayList<>(dendrites);
         List<Synapse> synapseList = new ArrayList<>(synapses);
 
         // TODO MultiListManger
-        int synapsesRef = AxonSynapseModelManager.instance().nextId();
+        int synapsesRef = SynapseListManager.instance().nextId();
         int [] synapseIdArray = new int [synapses];
         for (int i = 0; i < synapses; i++) {
             Synapse synapse = createSynapse();
             synapseList.add(synapse);
             synapseIdArray[i] = synapse.getViewId();
         }
-        AxonSynapseModelManager.instance().getModel().put(synapsesRef, synapseIdArray);
+        SynapseListManager.instance().getModel().put(synapsesRef, synapseIdArray);
 
         Axon axon = createAxon(synapsesRef);
         int axonId = axon.getViewId();
@@ -167,7 +165,7 @@ public class NeuronBuilderImpl implements NeuronBuilder {
             result = false;
         }
 
-        AxonSynapseModelManager asmm = AxonSynapseModelManager.instance();
+        SynapseListManager asmm = SynapseListManager.instance();
         if (asmm == null) {
             System.err.println("AxonSynapseModelManager not instantiated!");
             result = false;

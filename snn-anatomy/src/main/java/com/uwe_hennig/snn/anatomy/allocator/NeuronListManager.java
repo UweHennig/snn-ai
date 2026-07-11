@@ -22,7 +22,7 @@ public class NeuronListManager {
 
     public static NeuronListManager init(long maxBlocks, int minDataCapacityBytes) {
         if (INSTANCE == null) {
-            synchronized (AxonSynapseModelManager.class) {
+            synchronized (SynapseListManager.class) {
                 if (INSTANCE == null) {
                     INSTANCE = new NeuronListManager(maxBlocks, minDataCapacityBytes);
                 }
