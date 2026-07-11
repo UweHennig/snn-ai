@@ -65,6 +65,10 @@ public final class Dendrit extends ViewIdentity implements NeuronElement {
         return DendritView.getNeuronId(viewId);
     }
 
+    public int getTargetId() {
+        return DendritView.getSomaId(viewId);
+    }
+
     @Override
     public int getViewId() {
         return viewId;

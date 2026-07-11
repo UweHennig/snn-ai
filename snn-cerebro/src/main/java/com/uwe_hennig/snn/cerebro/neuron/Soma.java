@@ -16,6 +16,7 @@ import static com.uwe_hennig.snn.anatomy.neuron.ThresholdView.getThreshold;
 import static com.uwe_hennig.snn.contracts.core.NeuronElementType.AXON;
 import static com.uwe_hennig.snn.contracts.core.NeuronElementType.SOMA;
 
+import com.uwe_hennig.snn.anatomy.neuron.DendritView;
 import com.uwe_hennig.snn.anatomy.neuron.SomaView;
 import com.uwe_hennig.snn.anatomy.neuron.ThresholdView;
 import com.uwe_hennig.snn.contracts.core.NeuronElement;
@@ -101,6 +102,10 @@ public final class Soma extends ViewIdentity implements NeuronElement {
     private boolean isExternalStimulus(int stimulusIdentifier) {
         NeuronElement neuronElement = NeuronElementRegistry.instance().getNeuronElement(stimulusIdentifier, AXON);
         return neuronElement != null && neuronElement.getNeuronId() != this.getNeuronId();
+    }
+
+    public int getTargetId() {
+        return SomaView.getAxonId(viewId);
     }
 
     @Override

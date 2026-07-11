@@ -24,7 +24,7 @@ import com.uwe_hennig.snn.util.SnnTransferservice;
 public final class Synapse extends ViewIdentity implements NeuronElement {
     private final int viewId;
     private final int modulatorViewId;
-    private int       targetRef;
+    private int       targetId;
 
     public Synapse(int viewId, int modulatorViewId) {
         this.viewId = viewId;
@@ -47,7 +47,7 @@ public final class Synapse extends ViewIdentity implements NeuronElement {
                 stimulusValue = ModulatorView.applyStimulus(modulatorViewId, stimulusType, currentTime);
             }
 
-            stimulusIdentifier = StimulusService.update(stimulusIdentifier, stimulusType, stimulusValue, targetRef);
+            stimulusIdentifier = StimulusService.update(stimulusIdentifier, stimulusType, stimulusValue, targetId);
             SnnTransferservice.transfer(stimulusIdentifier);
 
         } finally {
@@ -55,10 +55,11 @@ public final class Synapse extends ViewIdentity implements NeuronElement {
         }
     }
 
-    public void setTargetRef(int targetRef) {
-        this.targetRef = targetRef;
-        SynapseView.setTargetRef(viewId, targetRef);
-        // TODO EdgeView.setSingleEdge(modulatorId, modulatorId, modulatorId, synapseId, modulatorId);
+    public void setTarget(int targetId, int type) {
+        this.targetId = targetId;
+
+        // SynapseView.setTargetRef(viewId, targetRef);
+        // TODO EdgeView.setSingleEdge();
     }
 
     @Override
