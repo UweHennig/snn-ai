@@ -75,12 +75,13 @@
     </dependencyManagement>
     
 	<modules>
-	        <module>snn-contracts</module>
-		<module>snn-anatomy</module>
-		<module>snn-cerebro</module>
-	        <module>snn-system</module>
-	        <module>snn-peripheral</module>
-	        <module>snn-learning</module>
+        <module>snn-contracts</module>
+        <module>snn-anatomy</module>
+        <module>snn-cerebro</module>
+        <module>snn-system</module>
+        <module>snn-peripheral</module>
+        <module>snn-learning</module>
+        <module>snn-graph</module>
 	</modules>
 	
     <build>

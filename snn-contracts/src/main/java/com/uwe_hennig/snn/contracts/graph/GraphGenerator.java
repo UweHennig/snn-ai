@@ -12,5 +12,5 @@ package com.uwe_hennig.snn.contracts.graph;
  */
 @FunctionalInterface
 public interface GraphGenerator {
-    void generate(IdProvider ids, GraphListener listener);
+    void generate(IdProvider ids, GraphListener listener, Graph initialGraph);
 }

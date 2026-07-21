@@ -11,4 +11,29 @@ package com.uwe_hennig.snn.contracts.graph;
  * @author Uwe Hennig
  */
 public record Edge(int edgeId, int nodeFromId, int nodeToId) {
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+
+        if (!(other instanceof Edge otherEdge)) {
+            return false;
+        }
+
+        return this.edgeId == otherEdge.edgeId;
+    }
+
+    public int hasCode() {
+        return Integer.hashCode(edgeId);
+    }
+
+    @Override
+    public final String toString() {
+        return String.format("%3d : %3d -> %3d", edgeId, nodeFromId, nodeToId());
+    }
+
+    public final String shortString() {
+        return String.format("%3d -> %3d", nodeFromId, nodeToId());
+    }
 }
