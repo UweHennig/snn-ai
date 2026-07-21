@@ -5,6 +5,8 @@
  */
 package com.uwe_hennig.snn.contracts.graph;
 
+import java.util.List;
+
 /**
  * GraphGenerator
  *
@@ -12,5 +14,8 @@ package com.uwe_hennig.snn.contracts.graph;
  */
 @FunctionalInterface
 public interface GraphGenerator {
-    void generate(IdProvider ids, GraphListener listener, Graph initialGraph);
+    /*
+     * The 'generate' method extends the initial graph with further edges and returns these as a graph.
+     */
+    List<Graph> generate(IdProvider ids, GraphListener listener, Graph initialGraph);
 }

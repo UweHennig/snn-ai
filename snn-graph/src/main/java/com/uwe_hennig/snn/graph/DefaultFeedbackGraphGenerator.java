@@ -1,5 +1,5 @@
 /**
- * @(#)DefaultAssociativeGraphGenerator.java
+ * @(#)DefaultFeedbackGraphGenerator.java
  * Copyright (c) 2026 Uwe Hennig
  * All rights reserved.
  */
@@ -13,16 +13,11 @@ import com.uwe_hennig.snn.contracts.graph.GraphListener;
 import com.uwe_hennig.snn.contracts.graph.IdProvider;
 
 /**
- * DefaultAssociativeGraphGenerator
+ * DefaultFeedbackGraphGenerator
  *
  * @author Uwe Hennig
  */
-public class DefaultAssociativeGraphGenerator implements GraphGenerator {
-    private final int depth;
-
-    public DefaultAssociativeGraphGenerator(int depth) {
-        this.depth = depth;
-    }
+public class DefaultFeedbackGraphGenerator implements GraphGenerator {
 
     @Override
     public List<Graph> generate(IdProvider ids, GraphListener listener, Graph initialGraph) {
