@@ -14,7 +14,6 @@ import java.util.function.Consumer;
 import com.uwe_hennig.snn.anatomy.allocator.NeuronFieldListManager;
 import com.uwe_hennig.snn.anatomy.allocator.NeuronFieldModelManager;
 import com.uwe_hennig.snn.anatomy.neuron.NeuronFieldView;
-import com.uwe_hennig.snn.cerebro.contracts.FieldGraph;
 import com.uwe_hennig.snn.cerebro.contracts.NeuronFieldBuilder;
 import com.uwe_hennig.snn.contracts.core.NeuronFieldType;
 import com.uwe_hennig.snn.contracts.graph.GenerationContext;
@@ -22,7 +21,7 @@ import com.uwe_hennig.snn.contracts.graph.GraphGenerator;
 
 /**
  * NeuronFieldBuilderImpl
- * TODO PIPELINE!!
+ *
  * @author Uwe Hennig
  */
 public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, GenerationContext {
@@ -39,12 +38,62 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, GenerationCon
         }
     }
 
+    public Start start() {
+        return new StartStage();
+    }
+
+    // --- private Stage-Implementations ---
+
+    private final class StartStage implements Start {
+        @Override
+        public AfferentStage start() {
+            return new AfferentStageImpl();
+        }
+    }
+
+    private final class AfferentStageImpl implements AfferentStage {
+        @Override
+        public AssociativeStage withAfferent(GraphGenerator generator) {
+            return new AssociativeStageImpl();
+        }
+    }
+
+    private final class AssociativeStageImpl implements AssociativeStage {
+        @Override
+        public EfferentStage withAssociative(GraphGenerator generator) {
+            return new EfferentStageImpl();
+        }
+    }
+
+    private final class EfferentStageImpl implements EfferentStage {
+        @Override
+        public FeedbackStage withEfferent(GraphGenerator generator) {
+            return new FeedbackStageImpl();
+        }
+    }
+
+    private final class FeedbackStageImpl implements FeedbackStage {
+        @Override
+        public BuildStage withFeedback(GraphGenerator generator) {
+            return new BuildStageImpl();
+        }
+    }
+
+    // --- GenerationContext methods ---
+
     @Override
     public int nextNodeId() {
         // TODO Auto-generated method stub class GenerationContext
         return 0;
     }
 
+    private final class BuildStageImpl implements BuildStage {
+        @Override
+        public NeuronField build() {
+            // TODO
+            return null;
+        }
+    }
 
     @Override
     public long connect(int src, int trg) {
@@ -63,43 +112,10 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, GenerationCon
     @Override
     public void setUsed(int src, int trg) {
         // TODO Auto-generated method stub class GenerationContext
-
     }
 
+    // --- internal helper methods ---
 
-    @Override
-    public NeuronFieldBuilder withAfferent(GraphGenerator afferentGenerator) {
-        // TODO Auto-generated method stub class NeuronFieldBuilder
-        return null;
-    }
-
-
-    @Override
-    public NeuronFieldBuilder withAssociative(int count, Consumer<NeuronFieldBuilder> each) {
-        // TODO Auto-generated method stub class NeuronFieldBuilder
-        return null;
-    }
-
-
-    @Override
-    public NeuronFieldBuilder withEfferent(int count, Consumer<NeuronFieldBuilder> each) {
-        // TODO Auto-generated method stub class NeuronFieldBuilder
-        return null;
-    }
-
-
-    @Override
-    public NeuronFieldBuilder withFeedback(int count, Consumer<NeuronFieldBuilder> each) {
-        // TODO Auto-generated method stub class NeuronFieldBuilder
-        return null;
-    }
-
-
-    @Override
-    public FieldGraph build() {
-        // TODO Auto-generated method stub class NeuronFieldBuilder
-        return null;
-    }
 
     private NeuronFieldBuilder internal(NeuronFieldType type, int count, Consumer<NeuronFieldBuilder> logic) {
         NeuronField parent = stack.peek();
@@ -141,5 +157,4 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, GenerationCon
             default : associative.add(field);break;
         }
     }
-
 }

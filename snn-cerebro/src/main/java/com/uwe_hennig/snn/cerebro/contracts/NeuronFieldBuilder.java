@@ -5,8 +5,7 @@
  */
 package com.uwe_hennig.snn.cerebro.contracts;
 
-import java.util.function.Consumer;
-
+import com.uwe_hennig.snn.cerebro.field.NeuronField;
 import com.uwe_hennig.snn.contracts.graph.GraphGenerator;
 
 /**
@@ -15,10 +14,27 @@ import com.uwe_hennig.snn.contracts.graph.GraphGenerator;
  * @author Uwe Hennig
  */
 public interface NeuronFieldBuilder {
-    NeuronFieldBuilder withAfferent   (GraphGenerator afferentGenerator);
-    NeuronFieldBuilder withAssociative(int count, Consumer<NeuronFieldBuilder> each);
-    NeuronFieldBuilder withEfferent   (int count, Consumer<NeuronFieldBuilder> each);
-    NeuronFieldBuilder withFeedback   (int count, Consumer<NeuronFieldBuilder> each);
+    interface Start {
+        AfferentStage start();
+    }
 
-    FieldGraph build();
+    interface AfferentStage {
+        AssociativeStage withAfferent(GraphGenerator generator);
+    }
+
+    interface AssociativeStage {
+        EfferentStage withAssociative(GraphGenerator generator);
+    }
+
+    interface EfferentStage {
+        FeedbackStage withEfferent(GraphGenerator generator);
+    }
+
+    interface FeedbackStage {
+        BuildStage withFeedback(GraphGenerator generator);
+    }
+
+    interface BuildStage {
+        NeuronField build();
+    }
 }
