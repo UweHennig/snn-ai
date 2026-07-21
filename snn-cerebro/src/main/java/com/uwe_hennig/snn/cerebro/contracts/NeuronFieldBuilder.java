@@ -5,7 +5,6 @@
  */
 package com.uwe_hennig.snn.cerebro.contracts;
 
-import com.uwe_hennig.snn.cerebro.field.NeuronField;
 import com.uwe_hennig.snn.contracts.graph.GraphGenerator;
 
 /**
@@ -35,6 +34,6 @@ public interface NeuronFieldBuilder {
     }
 
     interface BuildStage {
-        NeuronField build();
+        FieldGraph build();
     }
 }

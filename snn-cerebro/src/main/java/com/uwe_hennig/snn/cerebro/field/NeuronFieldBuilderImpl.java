@@ -14,9 +14,11 @@ import java.util.function.Consumer;
 import com.uwe_hennig.snn.anatomy.allocator.NeuronFieldListManager;
 import com.uwe_hennig.snn.anatomy.allocator.NeuronFieldModelManager;
 import com.uwe_hennig.snn.anatomy.neuron.NeuronFieldView;
+import com.uwe_hennig.snn.cerebro.contracts.FieldGraph;
 import com.uwe_hennig.snn.cerebro.contracts.NeuronFieldBuilder;
 import com.uwe_hennig.snn.contracts.core.NeuronFieldType;
 import com.uwe_hennig.snn.contracts.graph.GenerationContext;
+import com.uwe_hennig.snn.contracts.graph.Graph;
 import com.uwe_hennig.snn.contracts.graph.GraphGenerator;
 
 /**
@@ -54,6 +56,8 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, GenerationCon
     private final class AfferentStageImpl implements AfferentStage {
         @Override
         public AssociativeStage withAfferent(GraphGenerator generator) {
+            // TODO
+            List<Graph> genGraphList  = generator.generate(null, null);
             return new AssociativeStageImpl();
         }
     }
@@ -61,6 +65,7 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, GenerationCon
     private final class AssociativeStageImpl implements AssociativeStage {
         @Override
         public EfferentStage withAssociative(GraphGenerator generator) {
+            // TODO
             return new EfferentStageImpl();
         }
     }
@@ -68,6 +73,7 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, GenerationCon
     private final class EfferentStageImpl implements EfferentStage {
         @Override
         public FeedbackStage withEfferent(GraphGenerator generator) {
+            // TODO
             return new FeedbackStageImpl();
         }
     }
@@ -75,9 +81,19 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, GenerationCon
     private final class FeedbackStageImpl implements FeedbackStage {
         @Override
         public BuildStage withFeedback(GraphGenerator generator) {
+            // TODO
             return new BuildStageImpl();
         }
     }
+
+    private final class BuildStageImpl implements BuildStage {
+        @Override
+        public FieldGraph build() {
+            // TODO
+            return null;
+        }
+    }
+
 
     // --- GenerationContext methods ---
 
@@ -85,14 +101,6 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, GenerationCon
     public int nextNodeId() {
         // TODO Auto-generated method stub class GenerationContext
         return 0;
-    }
-
-    private final class BuildStageImpl implements BuildStage {
-        @Override
-        public NeuronField build() {
-            // TODO
-            return null;
-        }
     }
 
     @Override
