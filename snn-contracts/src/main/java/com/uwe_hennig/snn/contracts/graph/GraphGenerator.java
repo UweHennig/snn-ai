@@ -12,10 +12,9 @@ import java.util.List;
  *
  * @author Uwe Hennig
  */
-@FunctionalInterface
 public interface GraphGenerator {
     /*
      * The 'generate' method extends the initial graph with further edges and returns these as a graph.
      */
-    List<Graph> generate(IdProvider ids, GraphListener listener, Graph initialGraph);
+    List<Graph> generate(GenerationContext context, Graph initialGraph);
 }

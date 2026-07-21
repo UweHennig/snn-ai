@@ -10,7 +10,7 @@ package com.uwe_hennig.snn.contracts.graph;
  *
  * @author Uwe Hennig
  */
-public record Edge(int edgeId, int nodeFromId, int nodeToId) {
+public record Edge(long edgeId, int nodeFromId, int nodeToId) {
     @Override
     public boolean equals(Object other) {
         if (this == other) {
@@ -25,7 +25,7 @@ public record Edge(int edgeId, int nodeFromId, int nodeToId) {
     }
 
     public int hasCode() {
-        return Integer.hashCode(edgeId);
+        return Long.hashCode(edgeId);
     }
 
     @Override

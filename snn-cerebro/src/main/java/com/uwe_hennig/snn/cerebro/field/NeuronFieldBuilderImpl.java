@@ -17,13 +17,15 @@ import com.uwe_hennig.snn.anatomy.neuron.NeuronFieldView;
 import com.uwe_hennig.snn.cerebro.contracts.FieldGraph;
 import com.uwe_hennig.snn.cerebro.contracts.NeuronFieldBuilder;
 import com.uwe_hennig.snn.contracts.core.NeuronFieldType;
+import com.uwe_hennig.snn.contracts.graph.GenerationContext;
+import com.uwe_hennig.snn.contracts.graph.GraphGenerator;
 
 /**
  * NeuronFieldBuilderImpl
- *
+ * TODO PIPELINE!!
  * @author Uwe Hennig
  */
-public class NeuronFieldBuilderImpl implements NeuronFieldBuilder {
+public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, GenerationContext {
     private final Deque<NeuronField> stack = new ArrayDeque<>();
 
     private List<NeuronField> afferent = new ArrayList<>();
@@ -38,28 +40,65 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder {
     }
 
     @Override
-    public NeuronFieldBuilder withAfferent(int count, Consumer<NeuronFieldBuilder> each) {
-        return internal(NeuronFieldType.AFFERENT, count, each);
+    public int nextNodeId() {
+        // TODO Auto-generated method stub class GenerationContext
+        return 0;
     }
+
+
+    @Override
+    public long connect(int src, int trg) {
+        // TODO Auto-generated method stub class GenerationContext
+        return 0;
+    }
+
+
+    @Override
+    public boolean isUsed(int src, int trg) {
+        // TODO Auto-generated method stub class GenerationContext
+        return false;
+    }
+
+
+    @Override
+    public void setUsed(int src, int trg) {
+        // TODO Auto-generated method stub class GenerationContext
+
+    }
+
+
+    @Override
+    public NeuronFieldBuilder withAfferent(GraphGenerator afferentGenerator) {
+        // TODO Auto-generated method stub class NeuronFieldBuilder
+        return null;
+    }
+
 
     @Override
     public NeuronFieldBuilder withAssociative(int count, Consumer<NeuronFieldBuilder> each) {
-        return internal(NeuronFieldType.ASSOCIATIVE, count, each);
+        // TODO Auto-generated method stub class NeuronFieldBuilder
+        return null;
     }
+
 
     @Override
     public NeuronFieldBuilder withEfferent(int count, Consumer<NeuronFieldBuilder> each) {
-        return internal(NeuronFieldType.EFFERENT, count, each);
+        // TODO Auto-generated method stub class NeuronFieldBuilder
+        return null;
     }
+
 
     @Override
     public NeuronFieldBuilder withFeedback(int count, Consumer<NeuronFieldBuilder> each) {
-        return internal(NeuronFieldType.FEEDBACK, count, each);
+        // TODO Auto-generated method stub class NeuronFieldBuilder
+        return null;
     }
+
 
     @Override
     public FieldGraph build() {
-        return new FieldGraph(afferent, associative, efferent, feedback);
+        // TODO Auto-generated method stub class NeuronFieldBuilder
+        return null;
     }
 
     private NeuronFieldBuilder internal(NeuronFieldType type, int count, Consumer<NeuronFieldBuilder> logic) {
@@ -68,6 +107,7 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder {
         for (int i = 0; i < count; i++) {
             int newFieldId = NeuronFieldModelManager.instance().nextId();
 
+            // TODO das hier ist falsch!
             int outRef = NeuronFieldListManager.instance().nextId();
             int inRef = NeuronFieldListManager.instance().nextId();
             int neuronRef = NeuronFieldListManager.instance().nextId();
@@ -101,4 +141,5 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder {
             default : associative.add(field);break;
         }
     }
+
 }

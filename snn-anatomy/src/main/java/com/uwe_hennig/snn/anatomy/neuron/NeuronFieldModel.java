@@ -6,7 +6,6 @@
 package com.uwe_hennig.snn.anatomy.neuron;
 
 import static java.lang.foreign.ValueLayout.JAVA_INT;
-import static java.lang.foreign.ValueLayout.JAVA_LONG;
 
 import java.lang.foreign.Arena;
 import java.lang.foreign.GroupLayout;

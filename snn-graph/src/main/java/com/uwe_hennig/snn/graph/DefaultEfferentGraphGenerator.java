@@ -7,10 +7,9 @@ package com.uwe_hennig.snn.graph;
 
 import java.util.List;
 
+import com.uwe_hennig.snn.contracts.graph.GenerationContext;
 import com.uwe_hennig.snn.contracts.graph.Graph;
 import com.uwe_hennig.snn.contracts.graph.GraphGenerator;
-import com.uwe_hennig.snn.contracts.graph.GraphListener;
-import com.uwe_hennig.snn.contracts.graph.IdProvider;
 
 /**
  * DefaultEfferentGraphGenerator
@@ -20,8 +19,9 @@ import com.uwe_hennig.snn.contracts.graph.IdProvider;
 public class DefaultEfferentGraphGenerator implements GraphGenerator {
 
     @Override
-    public List<Graph> generate(IdProvider ids, GraphListener listener, Graph initialGraph) {
-        // TODO
-        return List.of();
+    public List<Graph> generate(GenerationContext context, Graph initialGraph) {
+        // TODO Auto-generated method stub class GraphGenerator
+        return null;
     }
+
 }
