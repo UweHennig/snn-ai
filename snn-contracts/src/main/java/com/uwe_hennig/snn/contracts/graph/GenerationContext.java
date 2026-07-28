@@ -11,9 +11,14 @@ package com.uwe_hennig.snn.contracts.graph;
  * @author Uwe Hennig
  */
 public interface GenerationContext {
-    int nextNodeId();
+    // create Node and return node identifier
+    int createNode(int type);
+
+    long createEgeId(int srcNodeId);
+
+    // connect two Nodes and return edge identifier
     long connect(int src, int trg);
 
-    boolean isUsed(int src, int trg);
-    void setUsed(int src, int trg);
+    boolean isUsed(long edgeId);
+    void setUsed(long edgeId);
 }

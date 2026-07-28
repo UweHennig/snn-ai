@@ -8,6 +8,7 @@ package com.uwe_hennig.snn.graph;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.uwe_hennig.snn.contracts.core.NeuronFieldType;
 import com.uwe_hennig.snn.contracts.graph.Edge;
 import com.uwe_hennig.snn.contracts.graph.GenerationContext;
 import com.uwe_hennig.snn.contracts.graph.Graph;
@@ -19,32 +20,42 @@ import com.uwe_hennig.snn.contracts.graph.GraphGenerator;
  * @author Uwe Hennig
  */
 public class DefaultAfferentGraphGenerator implements GraphGenerator {
+    private int type;
+    private int sizeNodes;
+    private int markUsedEdges;
+
+    public DefaultAfferentGraphGenerator(int sizeNodes, int markUsedEdges) {
+        this.type = NeuronFieldType.AFFERENT.code();
+        this.sizeNodes = Math.max(sizeNodes, 2);
+        this.markUsedEdges = Math.max(0, Math.min(sizeNodes - 1, markUsedEdges));
+    }
 
     @Override
     public List<Graph> generate(GenerationContext context, Graph initialGraph) {
         Graph graph = new Graph(new ArrayList<Edge>());
 
-        int startNodeId = context.nextNodeId();
-        int leftNodeId = context.nextNodeId();
-        int rightNodeId = context.nextNodeId();
+        int startNodeId = context.createNode(type);
+        int currentNodeId = startNodeId;
+        for (int i = 0; i < sizeNodes - 1; i++) {
+            int newNodeId = context.createNode(type);
+            long edgeId = context.createEgeId(currentNodeId);
+            Edge edge = new Edge(edgeId, currentNodeId, newNodeId);
+            graph.addEdge(edge);
+            currentNodeId = newNodeId;
+        }
+        int newNodeId = context.createNode(type);
+        long edgeId = context.createEgeId(newNodeId);
+        Edge newEdge = new Edge(edgeId, currentNodeId, startNodeId);
+        graph.addEdge(newEdge);
 
-        long sl = context.connect(startNodeId, leftNodeId);
-        graph.addEdge(new Edge(sl, startNodeId, leftNodeId));
-
-        long ls = context.connect(leftNodeId, startNodeId);
-        graph.addEdge(new Edge(ls, leftNodeId, startNodeId));
-
-        long sr = context.connect(startNodeId, rightNodeId);
-        graph.addEdge(new Edge(sr, startNodeId, rightNodeId));
-
-        long rs = context.connect(rightNodeId, startNodeId);
-        graph.addEdge(new Edge(rs, rightNodeId, startNodeId));
-
-        long lr = context.connect(leftNodeId, rightNodeId);
-        graph.addEdge(new Edge(lr, leftNodeId, rightNodeId));
-
-        long rl = context.connect(rightNodeId, leftNodeId);
-        graph.addEdge(new Edge(rl, rightNodeId, leftNodeId));
+        for (Edge edge : graph.edges()) {
+            if (markUsedEdges > 0) {
+                context.setUsed(edge.edgeId());
+                markUsedEdges--;
+            } else {
+                break;
+            }
+        }
 
         return List.of(graph);
     }
