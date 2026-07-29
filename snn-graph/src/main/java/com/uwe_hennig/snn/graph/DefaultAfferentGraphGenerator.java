@@ -44,8 +44,7 @@ public class DefaultAfferentGraphGenerator implements GraphGenerator {
             currentNodeId = newNodeId;
         }
 
-        int newNodeId = context.createNode(type);
-        long edgeId = context.connect(currentNodeId, newNodeId);
+        long edgeId = context.connect(currentNodeId, startNodeId);
         Edge newEdge = new Edge(edgeId, currentNodeId, startNodeId);
         graph.addEdge(newEdge);
 
