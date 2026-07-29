@@ -19,7 +19,7 @@ import com.uwe_hennig.snn.contracts.graph.GraphGenerator;
 public class DefaultFeedbackGraphGenerator implements GraphGenerator {
 
     @Override
-    public List<Graph> generate(GenerationContext context, Graph initialGraph) {
+    public List<Graph> generate(GenerationContext context, List<Graph> initialGraph) {
         // TODO Auto-generated method stub class GraphGenerator
         return null;
     }

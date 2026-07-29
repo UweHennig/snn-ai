@@ -107,7 +107,7 @@ public final class NeuronFieldView {
         updateIdentifiers(inNeighboursRef, inNodes);
     }
 
-    public static NeuronFieldData createNeuronField(int type) {
+    public static int createNeuronField(int type) {
         NeuronFieldManager manger = NeuronFieldManager.instance();
         int index = manger.nextId();
 
@@ -118,8 +118,7 @@ public final class NeuronFieldView {
 
         setRef(index, neuronRef, outRef, inRef);
 
-        NeuronFieldData data = new NeuronFieldData(index, type, neuronRef, outRef, inRef);
-        return data;
+        return index;
     }
 
     // --- Convenient ---

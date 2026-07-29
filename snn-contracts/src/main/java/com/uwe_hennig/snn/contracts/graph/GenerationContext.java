@@ -14,8 +14,6 @@ public interface GenerationContext {
     // create Node and return node identifier
     int createNode(int type);
 
-    long createEgeId(int srcNodeId);
-
     // connect two Nodes and return edge identifier
     long connect(int src, int trg);
 

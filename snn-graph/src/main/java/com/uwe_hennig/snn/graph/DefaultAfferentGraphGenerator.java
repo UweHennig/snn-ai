@@ -31,20 +31,21 @@ public class DefaultAfferentGraphGenerator implements GraphGenerator {
     }
 
     @Override
-    public List<Graph> generate(GenerationContext context, Graph initialGraph) {
+    public List<Graph> generate(GenerationContext context, List<Graph> initialGraph) {
         Graph graph = new Graph(new ArrayList<Edge>());
 
         int startNodeId = context.createNode(type);
         int currentNodeId = startNodeId;
         for (int i = 0; i < sizeNodes - 1; i++) {
             int newNodeId = context.createNode(type);
-            long edgeId = context.createEgeId(currentNodeId);
+            long edgeId = context.connect(currentNodeId, newNodeId);
             Edge edge = new Edge(edgeId, currentNodeId, newNodeId);
             graph.addEdge(edge);
             currentNodeId = newNodeId;
         }
+
         int newNodeId = context.createNode(type);
-        long edgeId = context.createEgeId(newNodeId);
+        long edgeId = context.connect(currentNodeId, newNodeId);
         Edge newEdge = new Edge(edgeId, currentNodeId, startNodeId);
         graph.addEdge(newEdge);
 
