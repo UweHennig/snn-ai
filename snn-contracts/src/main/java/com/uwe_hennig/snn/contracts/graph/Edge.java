@@ -30,10 +30,6 @@ public record Edge(long edgeId, int nodeFromId, int nodeToId) {
 
     @Override
     public final String toString() {
-        return String.format("%3d : %3d -> %3d", edgeId, nodeFromId, nodeToId());
-    }
-
-    public final String shortString() {
         return String.format("%3d -> %3d", nodeFromId, nodeToId());
     }
 }

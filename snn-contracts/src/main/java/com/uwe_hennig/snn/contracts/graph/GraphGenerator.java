@@ -16,5 +16,5 @@ public interface GraphGenerator {
     /*
      * The 'generate' method extends the initial graph with further edges and returns these as a graph.
      */
-    List<Graph> generate(GenerationContext context, List<Graph> initialGraph);
+    List<Graph> generate(GenerationContext context, Graph initialGraph);
 }

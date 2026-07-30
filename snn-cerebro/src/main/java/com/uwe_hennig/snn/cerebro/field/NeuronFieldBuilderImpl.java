@@ -5,13 +5,16 @@
  */
 package com.uwe_hennig.snn.cerebro.field;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
 import com.uwe_hennig.snn.anatomy.allocator.NeuronFieldManager;
 import com.uwe_hennig.snn.anatomy.neuron.NeuronFieldView;
+import com.uwe_hennig.snn.anatomy.neuron.NeuronFieldView.NeuronFieldData;
 import com.uwe_hennig.snn.cerebro.contracts.FieldGraph;
 import com.uwe_hennig.snn.cerebro.contracts.NeuronFieldBuilder;
+import com.uwe_hennig.snn.contracts.core.NeuronFieldType;
 import com.uwe_hennig.snn.contracts.graph.GenerationContext;
 import com.uwe_hennig.snn.contracts.graph.Graph;
 import com.uwe_hennig.snn.contracts.graph.GraphGenerator;
@@ -22,7 +25,11 @@ import com.uwe_hennig.snn.contracts.graph.GraphGenerator;
  * @author Uwe Hennig
  */
 public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, GenerationContext {
-    private HashSet<Long> bitSet = new HashSet<>();
+    private HashSet<Long>     bitSet      = new HashSet<>();
+    private List<NeuronField> afferent    = new ArrayList<>();
+    private List<NeuronField> associative = new ArrayList<>();
+    private List<NeuronField> efferent    = new ArrayList<>();
+    private List<NeuronField> feedback    = new ArrayList<>();
 
     public NeuronFieldBuilderImpl() {
         if (NeuronFieldManager.instance() == null) {
@@ -57,8 +64,14 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, GenerationCon
         public EfferentStage withAssociative(GraphGenerator generator) {
             GenerationContext context = NeuronFieldBuilderImpl.this;
 
-            List<Graph> genGraphList = generator.generate(context, inputGraphList);
-            return new EfferentStageImpl(genGraphList);
+            List<Graph> resultGraph = new ArrayList<>();
+
+            for (Graph graph : inputGraphList) {
+                List<Graph> genGraphList = generator.generate(context, graph);
+                resultGraph.addAll(genGraphList);
+            }
+
+            return new EfferentStageImpl(resultGraph);
         }
     }
 
@@ -72,9 +85,14 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, GenerationCon
         @Override
         public FeedbackStage withEfferent(GraphGenerator generator) {
             GenerationContext context = NeuronFieldBuilderImpl.this;
-            List<Graph> genGraphList = generator.generate(context, inputGraphList);
+            List<Graph> resultGraph = new ArrayList<>();
 
-            return new FeedbackStageImpl(genGraphList);
+            for (Graph graph : inputGraphList) {
+                List<Graph> genGraphList = generator.generate(context, graph);
+                resultGraph.addAll(genGraphList);
+            }
+
+            return new FeedbackStageImpl(resultGraph);
         }
     }
 
@@ -88,7 +106,12 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, GenerationCon
         @Override
         public BuildStage withFeedback(GraphGenerator generator) {
             GenerationContext context = NeuronFieldBuilderImpl.this;
-            List<Graph> genGraphList = generator.generate(context, inputGraphList);
+            List<Graph> resultGraph = new ArrayList<>();
+
+            for (Graph graph : inputGraphList) {
+                List<Graph> genGraphList = generator.generate(context, graph);
+                resultGraph.addAll(genGraphList);
+            }
 
             return new BuildStageImpl();
         }
@@ -97,20 +120,29 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, GenerationCon
     private final class BuildStageImpl implements BuildStage {
         @Override
         public FieldGraph build() {
-            // TODO
-            return null;
+            return new  FieldGraph(afferent, associative, efferent, feedback);
         }
     }
 
     // --- GenerationContext methods ---
 
     @Override
-    public int createNode(int type) {
-        return NeuronFieldView.createNeuronField(type);
+    public int createNode(NeuronFieldType type) {
+        int neuronFieldId = NeuronFieldView.createNeuronField(type.code());
+        NeuronFieldData data = NeuronFieldView.getData(neuronFieldId);
+        NeuronField field = new NeuronField(neuronFieldId, data.neuronRef(), data.outRef(), data.inRef());
+        switch (type) {
+            case AFFERENT: afferent.add(field); break;
+            case ASSOCIATIVE: associative.add(field); break;
+            case EFFERENT: efferent.add(field); break;
+            case FEEDBACK: feedback.add(field);break;
+            default:;
+        }
+        return neuronFieldId;
     }
 
     @Override
-    public long connect(int src, int trg) {
+    public long createEdge(int src, int trg) {
         long edgeId = packEdge(src, trg);
         NeuronFieldView.addOutNeighbourIds(src, trg);
         NeuronFieldView.addInNeighbourIds(trg, trg);
@@ -118,12 +150,12 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, GenerationCon
     }
 
     @Override
-    public boolean isUsed(long edgeId) {
+    public boolean isUsedEdge(long edgeId) {
         return bitSet.contains(edgeId);
     }
 
     @Override
-    public void setUsed(long edgeId) {
+    public void setUsedEdge(long edgeId) {
         bitSet.add(edgeId);
     }
 
@@ -133,47 +165,4 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, GenerationCon
         long edgeId = ((long) srcId << 32) | (trgId & 0xFFFFFFFFL);
         return edgeId;
     }
-
-    // private boolean contains(int id, int[] list) {
-    // for (int i = 0; i < list.length; i++) {
-    // if (list[i] == id) {
-    // return true;
-    // }
-    // }
-    // return false;
-    // }
-    // private int srcId(long edgeId) {
-    // int srcId = (int) (edgeId >>> 32);
-    // return srcId;
-    // }
-    // private int trgId(long edgeId) {
-    // int trgId = (int) edgeId;
-    // return trgId;
-    // }
-    // private static long pack(int src, int trg) {
-    // long combined = ((long) trg << 32) | (src & 0xFFFFFFFFL);
-    // return combined;
-    // }
-    // private static int unpackSrc(long value) {
-    // return (int) (value & 0xFFFFFFFFL);
-    // }
-    // private static int unpackTrg(long value) {
-    // return (int) (value >> 32);
-    // }
-    // private void addToFieldLists(NeuronFieldType type, NeuronField field) {
-    // switch (type) {
-    // case NeuronFieldType.AFFERENT:
-    // afferent.add(field);
-    // break;
-    // case NeuronFieldType.EFFERENT:
-    // efferent.add(field);
-    // break;
-    // case NeuronFieldType.FEEDBACK:
-    // feedback.add(field);
-    // break;
-    // default:
-    // associative.add(field);
-    // break;
-    // }
-    // }
 }

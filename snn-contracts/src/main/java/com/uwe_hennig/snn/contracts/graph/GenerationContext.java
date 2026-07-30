@@ -5,6 +5,8 @@
  */
 package com.uwe_hennig.snn.contracts.graph;
 
+import com.uwe_hennig.snn.contracts.core.NeuronFieldType;
+
 /**
  * GenerationContext
  *
@@ -12,11 +14,11 @@ package com.uwe_hennig.snn.contracts.graph;
  */
 public interface GenerationContext {
     // create Node and return node identifier
-    int createNode(int type);
+    int createNode(NeuronFieldType type);
 
     // connect two Nodes and return edge identifier
-    long connect(int src, int trg);
+    long createEdge(int src, int trg);
 
-    boolean isUsed(long edgeId);
-    void setUsed(long edgeId);
+    boolean isUsedEdge(long edgeId);
+    void setUsedEdge(long edgeId);
 }
