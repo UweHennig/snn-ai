@@ -22,11 +22,13 @@ import com.uwe_hennig.snn.contracts.graph.GraphGenerator;
  */
 public class RingGraphGenerator implements GraphGenerator {
     private final int sizeNodes;
-    private NeuronFieldType type;
+    private final NeuronFieldType type;
+    private final boolean markUsed;
 
     public RingGraphGenerator(NeuronFieldType type, int sizeNodes) {
         this.sizeNodes = sizeNodes;
         this.type = type;
+        this.markUsed = sizeNodes > 1;
     }
 
     @Override
@@ -53,11 +55,18 @@ public class RingGraphGenerator implements GraphGenerator {
             for (int i = 0; i < sizeNodes; i++) {
                 int newNodeId = context.createNode(type);
                 long edgeId = context.createEdge(currentNodeId, newNodeId);
+                if (i==0 && markUsed) {
+                    context.setUsedEdge(edgeId);
+                }
+
                 resultingGraph.addEdge(new Edge(edgeId, currentNodeId, newNodeId));
                 currentNodeId = newNodeId;
             }
 
             long edgeId = context.createEdge(currentNodeId, endNodeId);
+            if (markUsed) {
+                context.setUsedEdge(edgeId);
+            }
             resultingGraph.addEdge(new Edge(edgeId, currentNodeId, endNodeId));
         }
 

@@ -90,11 +90,13 @@ public class DefaultGeneratorTest {
         long edgeId = context.createEdge(inNodeId, outNodeId);
         inputGraph.addEdge(new Edge(edgeId, inNodeId, outNodeId));
 
-        DefaultAssociativeGraphGenerator generator = new DefaultAssociativeGraphGenerator(5, 2, 1);
+        DefaultAssociativeGraphGenerator generator = new DefaultAssociativeGraphGenerator(3, 2, 1);
         List<Graph> resultGraphs = generator.generate(context, inputGraph);
         resultGraphs.add(inputGraph);
 
         assertNotNull(resultGraphs);
+        assertEquals(6, resultGraphs.size());
+
         Graph printGraph = Graph.create();
         printGraph.addGraphs(resultGraphs);
         GraphvizConsolePrinter.printToConsole(context, printGraph);

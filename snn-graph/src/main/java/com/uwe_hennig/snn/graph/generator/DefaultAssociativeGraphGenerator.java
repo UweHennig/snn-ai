@@ -38,7 +38,7 @@ public class DefaultAssociativeGraphGenerator implements GraphGenerator {
 
     @Override
     public List<Graph> generate(GenerationContext context, Graph initialGraph) {
-        stackA.push(initialGraph);
+        stackB.push(initialGraph);
 
         List<Graph> resultingGraphs = new ArrayList<>();
 
