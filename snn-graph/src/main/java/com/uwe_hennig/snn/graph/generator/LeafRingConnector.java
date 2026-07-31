@@ -6,7 +6,6 @@
 package com.uwe_hennig.snn.graph.generator;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.uwe_hennig.snn.contracts.core.NeuronFieldType;
 import com.uwe_hennig.snn.contracts.graph.Edge;
@@ -15,7 +14,8 @@ import com.uwe_hennig.snn.contracts.graph.Graph;
 import com.uwe_hennig.snn.contracts.graph.GraphGenerator;
 
 /**
- * LeafRingConnector creates a ring from N new nodes and connect the ring with leaves
+ * LeafRingConnector
+ * creates a ring from N new nodes and connect the ring with leafes
  *
  * @author Uwe Hennig
  */
