@@ -8,7 +8,6 @@ package com.uwe_hennig.snn.graph.genrator;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
@@ -23,6 +22,9 @@ import com.uwe_hennig.snn.contracts.graph.GenerationContext;
 import com.uwe_hennig.snn.contracts.graph.Graph;
 import com.uwe_hennig.snn.graph.generator.DefaultAfferentGraphGenerator;
 import com.uwe_hennig.snn.graph.generator.DefaultAssociativeGraphGenerator;
+import com.uwe_hennig.snn.graph.generator.EdgeDirectionMode;
+import com.uwe_hennig.snn.graph.generator.LeafRingConnector;
+import com.uwe_hennig.snn.graph.generator.RingGraphGenerator;
 import com.uwe_hennig.snn.graph.util.GraphvizConsolePrinter;
 
 /**
@@ -31,6 +33,8 @@ import com.uwe_hennig.snn.graph.util.GraphvizConsolePrinter;
  * @author Uwe Hennig
  */
 public class DefaultGeneratorTest {
+    private Graph completeGraph = Graph.create();
+
     public class GenerationContextTest implements GenerationContext {
         private int          nextNode = 0;
         public HashSet<Long> bitSet   = new HashSet<>();
@@ -52,7 +56,9 @@ public class DefaultGeneratorTest {
 
         @Override
         public long createEdge(int src, int trg) {
-            return packEdge(src, trg);
+            long edgeId = packEdge(src, trg);
+            DefaultGeneratorTest.this.completeGraph.addEdge(new Edge(edgeId, src, trg));
+            return edgeId;
         }
 
         private long packEdge(int srcId, int trgId) {
@@ -76,7 +82,8 @@ public class DefaultGeneratorTest {
         assertEquals(graphs, result.size());
         assertEquals(nodes, result.get(0).edges().size());
         assertEquals(markUsedEdges, context.bitSet.size());
-        GraphvizConsolePrinter.printToConsole(context, result.get(0));
+
+        GraphvizConsolePrinter.printToConsole(context, completeGraph);
     }
 
     @Test
@@ -84,7 +91,8 @@ public class DefaultGeneratorTest {
     public void associativeTest() {
         GenerationContextTest context = new GenerationContextTest();
 
-        Graph inputGraph = new Graph(new ArrayList<Edge>());
+        Graph inputGraph = Graph.create();
+
         int inNodeId = context.createNode(NeuronFieldType.ASSOCIATIVE);
         int outNodeId = context.createNode(NeuronFieldType.ASSOCIATIVE);
         long edgeId = context.createEdge(inNodeId, outNodeId);
@@ -97,9 +105,43 @@ public class DefaultGeneratorTest {
         assertNotNull(resultGraphs);
         assertEquals(6, resultGraphs.size());
 
-        Graph printGraph = Graph.create();
-        printGraph.addGraphs(resultGraphs);
-        GraphvizConsolePrinter.printToConsole(context, printGraph);
+        GraphvizConsolePrinter.printToConsole(context, completeGraph);
+    }
+
+    @Test
+    @DisplayName("Ring graph test")
+    public void ringGraphTest() {
+        GenerationContextTest context = new GenerationContextTest();
+        Graph inputGraph = Graph.create();
+
+        int inNodeId = context.createNode(NeuronFieldType.ASSOCIATIVE);
+        int outNodeId = context.createNode(NeuronFieldType.ASSOCIATIVE);
+
+        long edgeId = context.createEdge(inNodeId, outNodeId);
+        inputGraph.addEdge(new Edge(edgeId, inNodeId, outNodeId));
+
+        RingGraphGenerator ringGGenerator = new RingGraphGenerator(NeuronFieldType.UNDEFINED, EdgeDirectionMode.FORWARD, 3);
+        List<Graph> graphList = ringGGenerator.generate(context, inputGraph);
+        assertNotNull(graphList);
+
+        GraphvizConsolePrinter.printToConsole(context, completeGraph);
+    }
+
+    @Test
+    @DisplayName("LeafRing graph test")
+    public void testLeafRing() {
+        GenerationContextTest context = new GenerationContextTest();
+        RingGraphGenerator inputRing = new RingGraphGenerator(NeuronFieldType.UNDEFINED, EdgeDirectionMode.FORWARD, 3);
+
+        List<Graph> graphList = inputRing.generate(context, null);
+        Graph inputGraph = Graph.create().addGraphs(graphList);
+        GraphvizConsolePrinter.printToConsole(context, completeGraph);
+
+        LeafRingConnector lrGenerator = new LeafRingConnector(NeuronFieldType.UNDEFINED, 3, EdgeDirectionMode.FORWARD);
+        List<Graph> resultList = lrGenerator.generate(context, inputGraph);
+        assertNotNull(resultList);
+
+        GraphvizConsolePrinter.printToConsole(context, completeGraph);
     }
 
     private List<Graph> generateAfferentGraph(GenerationContextTest context, int nodes, int markUsedEdges) {
@@ -109,6 +151,8 @@ public class DefaultGeneratorTest {
 
     @BeforeEach
     public void beforeEach(TestInfo info) {
+        completeGraph.edges().clear();
+
         String title = "### " + info.getDisplayName() + " ###";
         System.out.println("\n" + title);
         System.out.println("-".repeat(title.length()));

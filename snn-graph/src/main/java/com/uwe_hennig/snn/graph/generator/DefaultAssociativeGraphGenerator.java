@@ -14,8 +14,6 @@ import com.uwe_hennig.snn.contracts.graph.GenerationContext;
 import com.uwe_hennig.snn.contracts.graph.Graph;
 import com.uwe_hennig.snn.contracts.graph.GraphGenerator;
 
-
-
 /**
  * DefaultAssociativeGraphGenerator
  *
@@ -32,8 +30,8 @@ public class DefaultAssociativeGraphGenerator implements GraphGenerator {
 
     public DefaultAssociativeGraphGenerator(int depth, int nodesA, int nodesB) {
         this.depth = depth;
-        ringA = new RingGraphGenerator(NeuronFieldType.ASSOCIATIVE, nodesA);
-        ringB = new RingGraphGenerator(NeuronFieldType.ASSOCIATIVE, nodesB);
+        ringA = new RingGraphGenerator(NeuronFieldType.ASSOCIATIVE, EdgeDirectionMode.FORWARD, nodesA);
+        ringB = new RingGraphGenerator(NeuronFieldType.ASSOCIATIVE, EdgeDirectionMode.FORWARD, nodesB);
     }
 
     @Override

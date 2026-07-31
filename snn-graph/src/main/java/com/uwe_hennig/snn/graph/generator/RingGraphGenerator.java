@@ -14,21 +14,24 @@ import com.uwe_hennig.snn.contracts.graph.GenerationContext;
 import com.uwe_hennig.snn.contracts.graph.Graph;
 import com.uwe_hennig.snn.contracts.graph.GraphGenerator;
 
-
 /**
- * RingGraphGenerator
+ * RingGraphGenerator For each edge, creates ‘sizeNodes’ nodes that form a ring inclusive the edge
  *
  * @author Uwe Hennig
  */
 public class RingGraphGenerator implements GraphGenerator {
-    private final int sizeNodes;
-    private final NeuronFieldType type;
-    private final boolean markUsed;
+    private final int                sizeNodes;
+    private final NeuronFieldType    type;
+    private final boolean            markUsed;
+    private final EdgeDirectionMode mode;
+    private final Graph              resultingGraph;
 
-    public RingGraphGenerator(NeuronFieldType type, int sizeNodes) {
+    public RingGraphGenerator(NeuronFieldType type, EdgeDirectionMode mode, int sizeNodes) {
         this.sizeNodes = sizeNodes;
         this.type = type;
         this.markUsed = sizeNodes > 1;
+        this.mode = mode;
+        this.resultingGraph = Graph.create();
     }
 
     @Override
@@ -36,8 +39,6 @@ public class RingGraphGenerator implements GraphGenerator {
         if (initialGraph == null || initialGraph.edges().isEmpty()) {
             return generateInital(context);
         }
-
-        Graph resultingGraph = new Graph(new ArrayList<Edge>());
 
         for (Edge edge : initialGraph.edges()) {
             if (context.isUsedEdge(edge.edgeId())) {
@@ -54,20 +55,19 @@ public class RingGraphGenerator implements GraphGenerator {
 
             for (int i = 0; i < sizeNodes; i++) {
                 int newNodeId = context.createNode(type);
-                long edgeId = context.createEdge(currentNodeId, newNodeId);
-                if (i==0 && markUsed) {
-                    context.setUsedEdge(edgeId);
+                Edge newEdge = createEdge(context, currentNodeId, newNodeId);
+
+                if (i == 0 && markUsed) {
+                    context.setUsedEdge(newEdge.edgeId());
                 }
 
-                resultingGraph.addEdge(new Edge(edgeId, currentNodeId, newNodeId));
                 currentNodeId = newNodeId;
             }
 
-            long edgeId = context.createEdge(currentNodeId, endNodeId);
+            Edge newEdge = createEdge(context, currentNodeId, endNodeId);
             if (markUsed) {
-                context.setUsedEdge(edgeId);
+                context.setUsedEdge(newEdge.edgeId());
             }
-            resultingGraph.addEdge(new Edge(edgeId, currentNodeId, endNodeId));
         }
 
         return List.of(resultingGraph);
@@ -79,18 +79,41 @@ public class RingGraphGenerator implements GraphGenerator {
         int startNodeId = context.createNode(type);
         int currentNodeId = startNodeId;
 
-        for (int i = 0; i < sizeNodes; i++) {
+        for (int i = 0; i < sizeNodes - 1; i++) {
             int newNodeId = context.createNode(type);
-            long edgeId = context.createEdge(currentNodeId, newNodeId);
-
-            Edge edge = new Edge(edgeId, currentNodeId, newNodeId);
+            Edge edge = createEdge(context, currentNodeId, newNodeId);
             resultingGraph.addEdge(edge);
+
             currentNodeId = newNodeId;
         }
-        long edgeId = context.createEdge(currentNodeId, startNodeId);
-        Edge edge = new Edge(edgeId, currentNodeId, startNodeId);
+
+        Edge edge = createEdge(context, currentNodeId, startNodeId);
         resultingGraph.addEdge(edge);
 
         return List.of(resultingGraph);
     }
+
+    private Edge createEdge(GenerationContext context, int fromNode, int toNode) {
+        Edge resultEdge = null;
+        if (mode == EdgeDirectionMode.FORWARD || mode == EdgeDirectionMode.BOTH) {
+            long edgeId = context.createEdge(fromNode, toNode);
+            Edge edge = new Edge(edgeId, fromNode, toNode);
+            resultingGraph.addEdge(edge);
+            resultEdge = edge;
+        }
+
+        if (mode == EdgeDirectionMode.BACKWARDS || mode == EdgeDirectionMode.BOTH) {
+            long edgeId = context.createEdge(toNode, fromNode);
+            Edge edge = new Edge(edgeId, toNode, fromNode);
+            resultingGraph.addEdge(edge);
+            if (resultEdge == null) {
+                resultEdge = edge;
+            } else {
+                context.setUsedEdge(edgeId);
+            }
+        }
+
+        return resultEdge;
+    }
+
 }
