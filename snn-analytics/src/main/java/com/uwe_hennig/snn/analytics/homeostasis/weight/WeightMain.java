@@ -33,7 +33,6 @@ public class WeightMain {
     private boolean running;
 
     private float currentTime;
-    private float postSynapticTime;
 
     public WeightMain() {
         initUi();
@@ -46,39 +45,38 @@ public class WeightMain {
 
     public void run() {
         running = true;
-        postSynapticTime = 0.0f;
         while (running) {
             // Sleep has no effect on the calculations!
             sleep();
             currentTime += TIMER_TICK;
             if (rand(0.75f)) {
                 calculateStimulus();
-                postSynapticTime = currentTime;
             } else {
-                calculateFeedback(currentTime - postSynapticTime);
+                calculateFeedback();
             }
         }
     }
 
-    public void calculateFeedback(float deltaT) {
+    public void calculateFeedback() {
         if (running) {
-            float potential = WeightView.applyFeedback(index, deltaT);
-            plotter.addPoint(POTENTIAL_FUNCTION_NAME, deltaT, potential);
+            float deltaTimeFeedback = randFeedbackDT();
+            float potential = WeightView.applyFeedback(index, deltaTimeFeedback);
+            plotter.addPoint(POTENTIAL_FUNCTION_NAME, currentTime, potential);
         }
     }
 
     public void calculateStimulus() {
         if (running) {
-            float potential = randStimulus();
-            WeightView.applyStimulus(index, potential, currentTime);
-            plotter.addPoint(STIMULUS_FUNCTION_NAME, currentTime, potential);
+            float receivingPotential = randStimulus();
+            float potential = WeightView.applyStimulus(index, receivingPotential, currentTime);
+            plotter.addPoint(POTENTIAL_FUNCTION_NAME, currentTime, potential);
         }
     }
 
     private void initUi() {
         this.plotter = GraphPlotter.frame(0.75, 0.5, () -> close())
             .withXRange(0.0, 20.0, 20)
-            .withYRange(-70, 70, 14)
+            .withYRange(-70, 70, 8)
             .addFunction(POTENTIAL_FUNCTION_NAME, Color.blue)
             //            .addFunction(STIMULUS_FUNCTION_NAME, Color.red)
             //            .addFunction(FEEDBACK_FUNCTION_NAME, Color.green)
@@ -97,19 +95,23 @@ public class WeightMain {
         if (model != null) {
             model.close();
         }
-        System.out.println("\ndone");
+        System.out.println("\nclosed!");
     }
 
     private static void sleep() {
         try {
-            Thread.sleep(5);
+            Thread.sleep(10);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
 
     public float randStimulus() {
-        return ThreadLocalRandom.current().nextFloat() * 70.0f - 50.f;
+        return ThreadLocalRandom.current().nextFloat() * 90.0f - 40.f;
+    }
+
+    public float randFeedbackDT() {
+        return ThreadLocalRandom.current().nextFloat() * TIMER_TICK - TIMER_TICK / 2;
     }
 
     public boolean rand(float pct) {

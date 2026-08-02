@@ -15,7 +15,7 @@ import com.uwe_hennig.snn.anatomy.allocator.WeightModelManager;
 public final class WeightView {
     // ----- Domain Logic -----
 
-    // The method is called only by the dendrite corresponding to the timulusType
+    // The method is called only by the dendrite corresponding to the stimulus type
     public static float applyStimulus(int index, float potential, float currentTime) {
         WeightModel model = WeightModelManager.instance().getModel();
         try {
@@ -33,7 +33,7 @@ public final class WeightView {
         }
     }
 
-    // The method is called only by the dendrite corresponding to the timulusType
+    // The method is called only by the dendrite corresponding to the stimulus type
     public static int applyFeedback(int index, float deltaTimeFeedback) {
         WeightModel model = WeightModelManager.instance().getModel();
         model.writeLock(index);
@@ -81,17 +81,23 @@ public final class WeightView {
 
     public static void initDefaultValues(int index) {
         WeightModel model = WeightModelManager.instance().getModel();
-        if (model.getWeightScale(index) == 0.0f) {
-            model.setWeightScale(index, 0.01f);
-        }
-        if (model.getHebbScale(index) == 0.0f) {
-            model.setHebbScale(index, 0.005f);
-        }
-        if (model.getTimeLimit(index) == 0.0f) {
-            model.setTimeLimit(index, 200f);
-        }
-        if (model.getHebbTimeRange(index) == 0.0f) {
-            model.setHebbTimeRange(index, 1f);
+        model.writeLock(index);
+        try {
+            if (model.getWeightScale(index) == 0.0f) {
+                model.setWeightScale(index, 0.01f);
+            }
+            if (model.getHebbScale(index) == 0.0f) {
+                model.setHebbScale(index, 0.005f);
+            }
+            if (model.getTimeLimit(index) == 0.0f) {
+                model.setTimeLimit(index, 200f);
+            }
+            if (model.getHebbTimeRange(index) == 0.0f) {
+                model.setHebbTimeRange(index, 1f);
+            }
+            model.setWeight(index, 1.0f);
+        } finally {
+            model.writeUnlock(index);
         }
     }
 }
