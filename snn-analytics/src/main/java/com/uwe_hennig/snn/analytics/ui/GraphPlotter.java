@@ -7,13 +7,19 @@ package com.uwe_hennig.snn.analytics.ui;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
-import java.util.ArrayList;
+import java.awt.Toolkit;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -24,13 +30,15 @@ import javax.swing.JPanel;
  * @author Uwe Hennig
  */
 public class GraphPlotter extends JFrame {
+    private static final long serialVersionUID = -2738162466635626474L;
+
     private JPanel                placeholder = new JPanel();
     private Map<String, Function> functionMap = new HashMap<>();
 
-    private double xFrom  = 0.0;
-    private double xUntil = 1.0;
-    private double yFrom  = 0.0;
-    private double yUntil = 1.0;
+    private double xFrom  = 0.0f;
+    private double xUntil = 1.0f;
+    private double yFrom  = 0.0f;
+    private double yUntil = 1.0f;
 
     private int xGrids = 10;
     private int yGrids = 10;
@@ -46,6 +54,9 @@ public class GraphPlotter extends JFrame {
     private double highXWater = Double.MIN_VALUE;
     private double lowXWater  = Double.MAX_VALUE;
 
+    private String  title      = "";
+    private boolean showLegend = false;
+
     private record Point(double x, double y) {
     }
 
@@ -56,10 +67,28 @@ public class GraphPlotter extends JFrame {
         setSize(width, height);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         getContentPane().add(placeholder);
+        setTitle("GraphPlotter v. Uwe Hennig");
     }
 
-    public static GraphPlotter frame(int width, int height) {
-        return new GraphPlotter(width, height);
+    public static GraphPlotter frame(double widthRatio, double heightRatio, CleanupCallback  cleanupCallback) {
+        assert widthRatio > 0 && widthRatio <=1 : "Invalid widthRatio";
+        assert heightRatio > 0 && heightRatio <=1 : "Invalid heightRatio";
+
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+
+        GraphPlotter frame = new GraphPlotter((int)(screenSize.width * widthRatio), (int)(screenSize.height * heightRatio));
+        frame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                e.getWindow().dispose();
+                if (cleanupCallback != null) {
+                    cleanupCallback.onCleanup();
+                }
+                System.exit(0);
+            }
+        });
+
+        return frame;
     }
 
     public GraphPlotter withXRange(double xFrom, double xUntil, int grids) {
@@ -76,8 +105,18 @@ public class GraphPlotter extends JFrame {
         return this;
     }
 
+    public GraphPlotter withTitle(String title) {
+        this.title = title;
+        return this;
+    }
+
+    public GraphPlotter withLegend(boolean show) {
+        this.showLegend = show;
+        return this;
+    }
+
     public GraphPlotter addFunction(String name, Color color) {
-        functionMap.put(name, new Function(name, color, new ArrayList<>()));
+        functionMap.put(name, new Function(name, color, new CopyOnWriteArrayList<>()));
         return this;
     }
 
@@ -136,8 +175,21 @@ public class GraphPlotter extends JFrame {
     private void paintGraph(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
         drawAxes(g2);
         drawFunctions(g2);
+
+        if (showLegend) {
+            drawLegend(g2);
+        }
+
+        if (!title.isEmpty()) {
+            g2.setColor(Color.BLACK);
+            g2.setFont(new Font("SansSerif", Font.BOLD, 15));
+            FontMetrics fm = g2.getFontMetrics();
+            int titleWidth = fm.stringWidth(title);
+            g2.drawString(title, (getWidth() - titleWidth) / 2, paddingTop);
+        }
     }
 
     private void drawAxes(Graphics g2) {
@@ -166,8 +218,9 @@ public class GraphPlotter extends JFrame {
             int px = toPixelX(xVal, xLeft, xRight);
             g2.drawLine(px, yBottom, px, yBottom - tickSize);
 
-            // String label = String.format("%.2f", xVal);
-            // g2.drawString(label, px - 10, yBottom + 15);
+            String label = String.format("%.1f", xVal);
+            int labelWidth = g2.getFontMetrics().stringWidth(label);
+            g2.drawString(label, px - labelWidth / 2, yBottom + 20);
         }
 
         for (int i = 0; i <= yGrids; i++) {
@@ -225,7 +278,21 @@ public class GraphPlotter extends JFrame {
         g2.drawString("High: " + String.format("%.2f", highYWater), xLeft + 20, yH - 5);
         g2.drawString("Low: " + String.format("%.2f", lowYWater), xLeft + 20, yL - 5);
 
-        g2.drawString(String.format("X-Achse: [%2.1f .. %2.1f]", lowXWater, highXWater), xLeft + 20, yBottom + 20);
+        // g2.drawString(String.format("X-Achse: [%2.1f .. %2.1f]", lowXWater, highXWater), xLeft+20, yBottom+20);
+    }
+
+    private void drawLegend(Graphics2D g2) {
+        int x = getWidth() - paddingRight - 100;
+        int y = paddingTop - 10;
+
+        g2.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        for (Function f : functionMap.values()) {
+            g2.setColor(f.color());
+            g2.fillRect(x, y, 15, 10);
+            g2.setColor(Color.BLACK);
+            g2.drawString(f.name(), x + 20, y + 10);
+            y += 20;
+        }
     }
 
     private int toPixelX(double x, int xLeft, int xRight) {
@@ -247,9 +314,13 @@ public class GraphPlotter extends JFrame {
     }
 
     public static void main(String[] args) {
-        GraphPlotter plotter = GraphPlotter.frame(800, 600)
-            .withXRange(0.0, 2.0 * Math.PI, 20)
-            .withYRange(-1.1, 1.1, 10)
+        CleanupCallback cb = () -> {System.out.println("closing");};
+        GraphPlotter plotter = GraphPlotter
+            .frame(0.75f, 0.5f, cb)
+            .withTitle("Ein TEST")
+            .withLegend(true)
+            .withXRange(0.0f, 2.0 * Math.PI, 20)
+            .withYRange(-1.1f, 1.1f, 10)
             .addFunction("sin", Color.blue)
             .addFunction("cos", Color.red)
             .addFunction("fun", Color.green)

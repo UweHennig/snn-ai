@@ -28,7 +28,7 @@ import com.uwe_hennig.snn.graph.generator.EdgeDirectionMode;
  */
 public class NeuronFieldBuilderTest {
 
-    //@Test
+    @Test
     @DisplayName("Simple NeuronField pipeline Test")
     public void testSimplePipeline() {
         try {

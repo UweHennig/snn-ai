@@ -7,4 +7,10 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>snn-analytics</artifactId>
+  <dependencies>
+    <dependency>
+        <groupId>com.uwe-hennig</groupId>
+        <artifactId>snn-anatomy</artifactId>
+    </dependency>
+  </dependencies>
 </project>
