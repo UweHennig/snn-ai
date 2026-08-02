@@ -84,6 +84,7 @@ public class GraphPlotter extends JFrame {
                 if (cleanupCallback != null) {
                     cleanupCallback.onCleanup();
                 }
+                sleep();
                 System.exit(0);
             }
         });
@@ -307,7 +308,7 @@ public class GraphPlotter extends JFrame {
 
     private static void sleep() {
         try {
-            Thread.sleep(5);
+            Thread.sleep(10);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
