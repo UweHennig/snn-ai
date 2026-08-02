@@ -13,6 +13,7 @@ import com.uwe_hennig.snn.contracts.core.NeuronFieldType;
 import com.uwe_hennig.snn.contracts.graph.GenerationContext;
 import com.uwe_hennig.snn.contracts.graph.Graph;
 import com.uwe_hennig.snn.contracts.graph.GraphGenerator;
+import com.uwe_hennig.snn.graph.util.GraphvizConsolePrinter;
 
 /**
  * DefaultAssociativeGraphGenerator
@@ -48,6 +49,7 @@ public class DefaultAssociativeGraphGenerator implements GraphGenerator {
 
                 if (nextGraphLayer != null) {
                     resultingGraphs.addAll(nextGraphLayer);
+                    GraphvizConsolePrinter.printGraph(context, "DefaultAssociativeGraphGenerator B", Graph.create().addGraphs(resultingGraphs));
                     for (Graph graph : nextGraphLayer) {
                         stackB.push(graph);
                     }
@@ -61,6 +63,7 @@ public class DefaultAssociativeGraphGenerator implements GraphGenerator {
 
                 if (nextGraphLayer != null) {
                     resultingGraphs.addAll(nextGraphLayer);
+                    GraphvizConsolePrinter.printGraph(context, "DefaultAssociativeGraphGenerator A", Graph.create().addGraphs(resultingGraphs));
                     for (Graph graph : nextGraphLayer) {
                         stackA.push(graph);
                     }
@@ -68,6 +71,7 @@ public class DefaultAssociativeGraphGenerator implements GraphGenerator {
             }
         }
 
+        GraphvizConsolePrinter.printGraph(context, "DefaultAssociativeGraphGenerator total", Graph.create().addGraphs(resultingGraphs));
 
         return resultingGraphs;
     }

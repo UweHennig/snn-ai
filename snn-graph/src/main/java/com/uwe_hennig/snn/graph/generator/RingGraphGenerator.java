@@ -5,7 +5,6 @@
  */
 package com.uwe_hennig.snn.graph.generator;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.uwe_hennig.snn.contracts.core.NeuronFieldType;
@@ -13,6 +12,7 @@ import com.uwe_hennig.snn.contracts.graph.Edge;
 import com.uwe_hennig.snn.contracts.graph.GenerationContext;
 import com.uwe_hennig.snn.contracts.graph.Graph;
 import com.uwe_hennig.snn.contracts.graph.GraphGenerator;
+import com.uwe_hennig.snn.graph.util.GraphvizConsolePrinter;
 
 /**
  * RingGraphGenerator For each edge, creates ‘sizeNodes’ nodes that form a ring inclusive the edge
@@ -69,12 +69,12 @@ public class RingGraphGenerator implements GraphGenerator {
                 context.setUsedEdge(newEdge.edgeId());
             }
         }
-
+        GraphvizConsolePrinter.printGraph(context, "RingGraphGenerator", resultingGraph);
         return List.of(resultingGraph);
     }
 
     private List<Graph> generateInital(GenerationContext context) {
-        Graph resultingGraph = new Graph(new ArrayList<Edge>());
+        Graph resultingGraph = Graph.create();
 
         int startNodeId = context.createNode(type);
         int currentNodeId = startNodeId;
@@ -89,6 +89,8 @@ public class RingGraphGenerator implements GraphGenerator {
 
         Edge edge = createEdge(context, currentNodeId, startNodeId);
         resultingGraph.addEdge(edge);
+
+        GraphvizConsolePrinter.printGraph(context, "RingGraphGenerator initial", resultingGraph);
 
         return List.of(resultingGraph);
     }

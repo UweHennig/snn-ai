@@ -11,6 +11,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.util.HashSet;
 import java.util.List;
 
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,7 +26,7 @@ import com.uwe_hennig.snn.contracts.graph.Graph;
 import com.uwe_hennig.snn.graph.generator.DefaultAfferentGraphGenerator;
 import com.uwe_hennig.snn.graph.generator.DefaultAssociativeGraphGenerator;
 import com.uwe_hennig.snn.graph.generator.EdgeDirectionMode;
-import com.uwe_hennig.snn.graph.generator.LeafRingConnector;
+import com.uwe_hennig.snn.graph.generator.LeafRingConnectorGenerator;
 import com.uwe_hennig.snn.graph.generator.RingGraphGenerator;
 import com.uwe_hennig.snn.graph.util.GraphvizConsolePrinter;
 
@@ -83,7 +86,7 @@ public class DefaultGeneratorTest {
         assertEquals(nodes, result.get(0).edges().size());
         assertEquals(markUsedEdges, context.bitSet.size());
 
-        GraphvizConsolePrinter.printToConsole(context, completeGraph);
+        GraphvizConsolePrinter.printGraph(context, "Afferent Test", completeGraph);
     }
 
     @Test
@@ -105,7 +108,7 @@ public class DefaultGeneratorTest {
         assertNotNull(resultGraphs);
         assertEquals(6, resultGraphs.size());
 
-        GraphvizConsolePrinter.printToConsole(context, completeGraph);
+        GraphvizConsolePrinter.printGraph(context, "Associative Test", completeGraph);
     }
 
     @Test
@@ -124,7 +127,7 @@ public class DefaultGeneratorTest {
         List<Graph> graphList = ringGGenerator.generate(context, inputGraph);
         assertNotNull(graphList);
 
-        GraphvizConsolePrinter.printToConsole(context, completeGraph);
+        GraphvizConsolePrinter.printGraph(context, "Ring Test", completeGraph);
     }
 
     @Test
@@ -135,13 +138,13 @@ public class DefaultGeneratorTest {
 
         List<Graph> graphList = inputRing.generate(context, null);
         Graph inputGraph = Graph.create().addGraphs(graphList);
-        GraphvizConsolePrinter.printToConsole(context, completeGraph);
+        GraphvizConsolePrinter.printGraph(context, "LeafRing Test 1", completeGraph);
 
-        LeafRingConnector lrGenerator = new LeafRingConnector(NeuronFieldType.UNDEFINED, 3, EdgeDirectionMode.FORWARD);
+        LeafRingConnectorGenerator lrGenerator = new LeafRingConnectorGenerator(NeuronFieldType.UNDEFINED, 3, EdgeDirectionMode.FORWARD);
         List<Graph> resultList = lrGenerator.generate(context, inputGraph);
         assertNotNull(resultList);
 
-        GraphvizConsolePrinter.printToConsole(context, completeGraph);
+        GraphvizConsolePrinter.printGraph(context, "LeafRing Test 2", completeGraph);
     }
 
     private List<Graph> generateAfferentGraph(GenerationContextTest context, int nodes, int markUsedEdges) {
@@ -151,11 +154,25 @@ public class DefaultGeneratorTest {
 
     @BeforeEach
     public void beforeEach(TestInfo info) {
-        completeGraph.edges().clear();
+        completeGraph = Graph.create();
 
         String title = "### " + info.getDisplayName() + " ###";
         System.out.println("\n" + title);
         System.out.println("-".repeat(title.length()));
     }
 
+    @AfterEach
+    public void afterEach() {
+        completeGraph = null;
+    }
+
+    @BeforeAll
+    public static void beforeAll() {
+        System.setProperty("snn.logging", "true");
+    }
+
+    @AfterAll
+    public static void afterAll() {
+        System.setProperty("snn.logging", "false");
+    }
 }

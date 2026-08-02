@@ -5,11 +5,21 @@
  */
 package com.uwe_hennig.snn.cerebro.field;
 
+import static org.junit.jupiter.api.Assertions.fail;
+
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+
+import com.uwe_hennig.snn.anatomy.allocator.NeuronFieldManager;
+import com.uwe_hennig.snn.graph.generator.DefaultAfferentGraphGenerator;
+import com.uwe_hennig.snn.graph.generator.DefaultAssociativeGraphGenerator;
+import com.uwe_hennig.snn.graph.generator.DefaultEfferentGraphGenerator;
+import com.uwe_hennig.snn.graph.generator.EdgeDirectionMode;
 
 /**
  * NeuronFieldBuilderTest
@@ -18,30 +28,28 @@ import org.junit.jupiter.api.TestInfo;
  */
 public class NeuronFieldBuilderTest {
 
-    @Test
+    //@Test
     @DisplayName("Simple NeuronField pipeline Test")
     public void testSimplePipeline() {
-    }
+        try {
+            NeuronFieldBuilderImpl builder = new NeuronFieldBuilderImpl();
 
-    @Test
-    @DisplayName("Simple NeuronField branching Test")
-    public void testBranching() {
-    }
+            builder.start()
+                .withAfferent(new DefaultAfferentGraphGenerator(2, 0))
+                .withAssociative(new DefaultAssociativeGraphGenerator(3, 1, 2))
+                .withEfferent(new DefaultEfferentGraphGenerator(2, EdgeDirectionMode.FORWARD))
+                .withFeedback(null)
+                .build();
 
-    @Test
-    @DisplayName("Simple NeuronField feedback type Test")
-    public void testFeedbackField() {
-    }
-
-    @Test
-    @DisplayName("Simple NeuronField nested structure Test")
-    public void testNestedStructure() {
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getLocalizedMessage());
+        }
     }
 
     @BeforeEach
     public void beforeEach(TestInfo info) {
-//        NeuronFieldModelManager.init(10);
-//        NeuronFieldListManager.init(100, 100);
+        NeuronFieldManager.init(1000, 1000, 20);
 
         String title = "### " + info.getDisplayName() + " ###";
         System.out.println("\n" + title);
@@ -50,9 +58,16 @@ public class NeuronFieldBuilderTest {
 
     @AfterEach
     public void clearEach() {
-//        if (NeuronFieldModelManager.instance() != null) {
-//            NeuronFieldModelManager.instance();
-//            NeuronFieldModelManager.close();
-//        }
+        NeuronFieldManager.close();
+    }
+
+    @BeforeAll
+    public static void beforeAll() {
+        System.setProperty("snn.logging", "true");
+    }
+
+    @AfterAll
+    public static void afterAll() {
+        System.setProperty("snn.logging", "false");
     }
 }

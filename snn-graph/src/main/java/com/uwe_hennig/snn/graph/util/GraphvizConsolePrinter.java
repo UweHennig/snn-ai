@@ -8,6 +8,7 @@ package com.uwe_hennig.snn.graph.util;
 import com.uwe_hennig.snn.contracts.graph.Edge;
 import com.uwe_hennig.snn.contracts.graph.GenerationContext;
 import com.uwe_hennig.snn.contracts.graph.Graph;
+import com.uwe_hennig.snn.util.logging.SNNLogger;
 
 /**
  * GraphvizConsolePrinter
@@ -15,13 +16,22 @@ import com.uwe_hennig.snn.contracts.graph.Graph;
  * @author Uwe Hennig
  */
 public class GraphvizConsolePrinter {
+    public static final SNNLogger log = new SNNLogger();
 
-    public static void printToConsole(GenerationContext context, Graph graph) {
+    public static void printGraph(GenerationContext context, String comment, Graph graph) {
+        log.debug(() -> renderToString(context, comment, graph));
+    }
+
+    private static String renderToString(GenerationContext context, String comment, Graph graph) {
         StringBuilder builder = new StringBuilder();
         builder.append("digraph SNN {\n");
+        builder.append("// " + comment + "\n");
 
         if (graph != null && graph.edges().size() < 350) {
-            builder.append("node [shape=none];\n").append("layout = neato;\n").append("edge [arrowhead=empty color=red];\n");
+            builder
+                .append("node [shape=none];\n")
+                .append("layout = neato;\n")
+                .append("edge [arrowhead=empty color=red];\n");
 
             for (Edge edge : graph.edges()) {
                 if (context.isUsedEdge(edge.edgeId())) {
@@ -31,7 +41,10 @@ public class GraphvizConsolePrinter {
                 }
             }
         } else {
-            builder.append("node [label=\".\", shape=none];\n").append("layout = fdp;\n").append("edge [arrowhead=empty color=gray dir=none];\n");
+            builder
+                .append("node [label=\".\", shape=none];\n")
+                .append("layout = fdp;\n")
+                .append("edge [arrowhead=empty color=gray dir=none];\n");
 
             for (Edge edge : graph.edges()) {
                 builder.append(edge).append("\n");
@@ -39,6 +52,6 @@ public class GraphvizConsolePrinter {
         }
 
         builder.append("}\n");
-        System.out.println(builder.toString());
+        return builder.toString();
     }
 }

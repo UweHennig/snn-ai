@@ -5,7 +5,6 @@
  */
 package com.uwe_hennig.snn.graph.generator;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.uwe_hennig.snn.contracts.core.NeuronFieldType;
@@ -13,6 +12,7 @@ import com.uwe_hennig.snn.contracts.graph.Edge;
 import com.uwe_hennig.snn.contracts.graph.GenerationContext;
 import com.uwe_hennig.snn.contracts.graph.Graph;
 import com.uwe_hennig.snn.contracts.graph.GraphGenerator;
+import com.uwe_hennig.snn.graph.util.GraphvizConsolePrinter;
 
 /**
  * DefaultAfferentGraphGenerator
@@ -30,7 +30,7 @@ public class DefaultAfferentGraphGenerator implements GraphGenerator {
 
     @Override
     public List<Graph> generate(GenerationContext context, Graph initialGraph) {
-        Graph graph = new Graph(new ArrayList<Edge>());
+        Graph graph = Graph.create();
 
         int startNodeId = context.createNode(NeuronFieldType.AFFERENT);
         int currentNodeId = startNodeId;
@@ -47,10 +47,13 @@ public class DefaultAfferentGraphGenerator implements GraphGenerator {
             }
         }
 
-        long edgeId = context.createEdge(currentNodeId, startNodeId);
-        Edge newEdge = new Edge(edgeId, currentNodeId, startNodeId);
-        graph.addEdge(newEdge);
+        if (sizeNodes > 2) {
+            long edgeId = context.createEdge(currentNodeId, startNodeId);
+            Edge newEdge = new Edge(edgeId, currentNodeId, startNodeId);
+            graph.addEdge(newEdge);
+        }
 
+        GraphvizConsolePrinter.printGraph(context, "DefaultAfferentGraphGenerator", graph);
         return List.of(graph);
     }
 }

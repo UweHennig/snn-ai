@@ -5,46 +5,61 @@
  */
 package com.uwe_hennig.snn.contracts.graph;
 
-import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Graph
  *
  * @author Uwe Hennig
  */
-public record Graph(List<Edge> edges) {
+public final class Graph {
+    private final Set<Edge> edges;
+
+    private Graph(Set<Edge> edges) {
+        this.edges = edges;
+    }
+
+    public static Graph create() {
+        return new Graph(new HashSet<>());
+    }
+
     public Graph addEdge(Edge edge) {
         edges.add(edge);
         return this;
     }
 
-    public static Graph create() {
-        return new Graph(new ArrayList<>());
-    }
-
-    public Graph addAllEdges(List<Edge> edgeList) {
+    public Graph addAllEdges(Set<Edge> edgeList) {
         edges.addAll(edgeList);
         return this;
     }
 
     public Graph addGraphs(List<Graph> graphList) {
-        for (Graph graph: graphList) {
-            this.addAllEdges(graph.edges());
+        for (Graph graph : graphList) {
+            this.addAllEdges(graph.edges);
         }
         return this;
+    }
+
+    public Set<Edge> edges() {
+        return Collections.unmodifiableSet(edges);
     }
 
     @Override
     public final String toString() {
         if (edges != null && !edges.isEmpty()) {
             StringBuilder builder = new StringBuilder();
-            for (int i = 0; i < edges.size(); i++) {
-                builder.append(edges.get(i).toString()).append("\n");
+            Iterator<Edge> it = edges.iterator();
+            while (it.hasNext()) {
+                builder.append(it.next().toString()).append("\n");
             }
             return builder.toString();
         }
 
         return "empty";
     }
+
 }
