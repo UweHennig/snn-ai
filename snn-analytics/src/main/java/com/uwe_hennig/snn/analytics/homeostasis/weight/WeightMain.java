@@ -67,7 +67,7 @@ public class WeightMain {
 
     public void calculateStimulus() {
         if (running) {
-            float receivingPotential = randStimulus();
+            float receivingPotential = createStimulus();
             float potential = WeightView.applyStimulus(index, receivingPotential, currentTime);
             plotter.addPoint(POTENTIAL_FUNCTION_NAME, currentTime, potential);
         }
@@ -100,14 +100,14 @@ public class WeightMain {
 
     private static void sleep() {
         try {
-            Thread.sleep(10);
+            Thread.sleep(100);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
 
-    public float randStimulus() {
-        return ThreadLocalRandom.current().nextFloat() * 90.0f - 40.f;
+    public float createStimulus() {
+        return (float)Math.sin(currentTime) * 50.0f;
     }
 
     public float randFeedbackDT() {
