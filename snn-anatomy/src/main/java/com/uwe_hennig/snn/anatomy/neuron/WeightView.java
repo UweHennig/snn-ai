@@ -55,6 +55,16 @@ public final class WeightView {
         }
     }
 
+    public static float getWeight(int index) {
+        WeightModel model = WeightModelManager.instance().getModel();
+        try {
+            model.readLock(index);
+            return model.getWeight(index);
+        } finally {
+            model.readUnlock(index);
+        }
+    }
+
     // ----- convenience -----
 
     static float deltaWeight(int index, float deltaTimeFeedback) {
@@ -95,7 +105,7 @@ public final class WeightView {
             if (model.getHebbTimeRange(index) == 0.0f) {
                 model.setHebbTimeRange(index, 1f);
             }
-            model.setWeight(index, 1.0f);
+            model.setWeight(index, 0.50f);
         } finally {
             model.writeUnlock(index);
         }

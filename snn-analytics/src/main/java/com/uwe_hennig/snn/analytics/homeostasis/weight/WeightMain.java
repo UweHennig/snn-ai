@@ -21,7 +21,7 @@ import com.uwe_hennig.snn.anatomy.neuron.WeightView;
 
 public class WeightMain {
     public static final String POTENTIAL_FUNCTION_NAME = "potential";
-    public static final String STIMULUS_FUNCTION_NAME  = "stimulus";
+    public static final String WEIGHT_FUNCTION_NAME    = "weight";
     public static final String FEEDBACK_FUNCTION_NAME  = "feedback";
 
     private static float TIMER_TICK = 0.1f;
@@ -54,12 +54,13 @@ public class WeightMain {
             } else {
                 calculateFeedback();
             }
+            calculateWeight();
         }
     }
 
     public void calculateFeedback() {
         if (running) {
-            float deltaTimeFeedback = randFeedbackDT();
+            float deltaTimeFeedback = calculateFeedbackDT();
             float potential = WeightView.applyFeedback(index, deltaTimeFeedback);
             plotter.addPoint(POTENTIAL_FUNCTION_NAME, currentTime, potential);
         }
@@ -73,13 +74,20 @@ public class WeightMain {
         }
     }
 
+    public void calculateWeight() {
+        if (running) {
+            float weight = WeightView.getWeight(index);
+            plotter.addPoint(WEIGHT_FUNCTION_NAME, currentTime, weight);
+        }
+    }
+
     private void initUi() {
         this.plotter = GraphPlotter.frame(0.75, 0.5, () -> close())
             .withXRange(0.0, 20.0, 20)
-            .withYRange(-70, 70, 8)
+            .withYRange(-5, 5, 10)
+            .withLegend(true)
             .addFunction(POTENTIAL_FUNCTION_NAME, Color.blue)
-            //            .addFunction(STIMULUS_FUNCTION_NAME, Color.red)
-            //            .addFunction(FEEDBACK_FUNCTION_NAME, Color.green)
+            .addFunction(WEIGHT_FUNCTION_NAME, Color.red)
             .build();
     }
 
@@ -107,11 +115,11 @@ public class WeightMain {
     }
 
     public float createStimulus() {
-        return (float)Math.sin(currentTime) * 50.0f;
+        return (float) Math.sin(currentTime) * 3.0f;
     }
 
-    public float randFeedbackDT() {
-        return ThreadLocalRandom.current().nextFloat() * TIMER_TICK - TIMER_TICK / 2;
+    public float calculateFeedbackDT() {
+        return 10.0f;
     }
 
     public boolean rand(float pct) {
