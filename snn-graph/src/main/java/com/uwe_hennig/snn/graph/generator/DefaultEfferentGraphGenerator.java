@@ -5,13 +5,11 @@
  */
 package com.uwe_hennig.snn.graph.generator;
 
-import java.util.List;
-
-import com.uwe_hennig.snn.contracts.core.NeuronFieldType;
+import com.uwe_hennig.snn.contracts.graph.EdgeDirectionMode;
 import com.uwe_hennig.snn.contracts.graph.GenerationContext;
-import com.uwe_hennig.snn.contracts.graph.Graph;
+import com.uwe_hennig.snn.contracts.graph.GraphFragments;
 import com.uwe_hennig.snn.contracts.graph.GraphGenerator;
-import com.uwe_hennig.snn.graph.util.GraphvizConsolePrinter;
+import com.uwe_hennig.snn.contracts.graph.SingleGraphFragment;
 
 /**
  * DefaultEfferentGraphGenerator
@@ -28,11 +26,16 @@ public class DefaultEfferentGraphGenerator implements GraphGenerator {
     }
 
     @Override
-    public List<Graph> generate(GenerationContext context, Graph initialGraph) {
-        LeafRingConnectorGenerator generator = new LeafRingConnectorGenerator(NeuronFieldType.EFFERENT, nodes, mode);
-        List<Graph> result = generator.generate(context, initialGraph);
-        GraphvizConsolePrinter.printGraph(context, "DefaultEfferentGraphGenerator", Graph.create().addGraphs(result));
-        return result;
+    public GraphFragments generate(GenerationContext context, SingleGraphFragment graph) {
+        // TODO Auto-generated method stub class GraphGenerator
+        return null;
     }
+
+    @Override
+    public SingleGraphFragment generate(GenerationContext context) {
+        // TODO Auto-generated method stub class GraphGenerator
+        return null;
+    }
+
 
 }

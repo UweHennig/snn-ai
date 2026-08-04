@@ -7,7 +7,7 @@ package com.uwe_hennig.snn.graph.util;
 
 import com.uwe_hennig.snn.contracts.graph.Edge;
 import com.uwe_hennig.snn.contracts.graph.GenerationContext;
-import com.uwe_hennig.snn.contracts.graph.Graph;
+import com.uwe_hennig.snn.contracts.graph.SingleGraphFragment;
 import com.uwe_hennig.snn.util.logging.SNNLogger;
 
 /**
@@ -18,11 +18,11 @@ import com.uwe_hennig.snn.util.logging.SNNLogger;
 public class GraphvizConsolePrinter {
     public static final SNNLogger log = new SNNLogger();
 
-    public static void printGraph(GenerationContext context, String comment, Graph graph) {
+    public static void printGraph(GenerationContext context, String comment, SingleGraphFragment graph) {
         log.debug(() -> renderToString(context, comment, graph));
     }
 
-    private static String renderToString(GenerationContext context, String comment, Graph graph) {
+    private static String renderToString(GenerationContext context, String comment, SingleGraphFragment graph) {
         StringBuilder builder = new StringBuilder();
         builder.append("digraph SNN {\n");
         builder.append("// " + comment + "\n");

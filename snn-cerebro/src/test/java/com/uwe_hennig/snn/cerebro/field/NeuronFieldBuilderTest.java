@@ -16,10 +16,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
 import com.uwe_hennig.snn.anatomy.allocator.NeuronFieldManager;
+import com.uwe_hennig.snn.contracts.graph.EdgeDirectionMode;
 import com.uwe_hennig.snn.graph.generator.DefaultAfferentGraphGenerator;
 import com.uwe_hennig.snn.graph.generator.DefaultAssociativeGraphGenerator;
 import com.uwe_hennig.snn.graph.generator.DefaultEfferentGraphGenerator;
-import com.uwe_hennig.snn.graph.generator.EdgeDirectionMode;
 
 /**
  * NeuronFieldBuilderTest

@@ -15,9 +15,11 @@ import com.uwe_hennig.snn.anatomy.neuron.NeuronFieldView.NeuronFieldData;
 import com.uwe_hennig.snn.cerebro.contracts.FieldGraph;
 import com.uwe_hennig.snn.cerebro.contracts.NeuronFieldBuilder;
 import com.uwe_hennig.snn.contracts.core.NeuronFieldType;
+import com.uwe_hennig.snn.contracts.graph.Edge;
 import com.uwe_hennig.snn.contracts.graph.GenerationContext;
-import com.uwe_hennig.snn.contracts.graph.Graph;
+import com.uwe_hennig.snn.contracts.graph.GraphFragments;
 import com.uwe_hennig.snn.contracts.graph.GraphGenerator;
+import com.uwe_hennig.snn.contracts.graph.SingleGraphFragment;
 
 /**
  * NeuronFieldBuilderImpl
@@ -48,15 +50,15 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, GenerationCon
         public AssociativeStage withAfferent(GraphGenerator generator) {
             GenerationContext context = NeuronFieldBuilderImpl.this;
 
-            List<Graph> genGraphList = generator.generate(context, null);
+            SingleGraphFragment genGraphList = generator.generate(context);
             return new AssociativeStageImpl(genGraphList);
         }
     }
 
     private final class AssociativeStageImpl implements AssociativeStage {
-        private List<Graph> inputGraphList;
+        private SingleGraphFragment inputGraphList;
 
-        public AssociativeStageImpl(List<Graph> inputGraphList) {
+        public AssociativeStageImpl(SingleGraphFragment inputGraphList) {
             this.inputGraphList = inputGraphList;
         }
 
@@ -64,54 +66,41 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, GenerationCon
         public EfferentStage withAssociative(GraphGenerator generator) {
             GenerationContext context = NeuronFieldBuilderImpl.this;
 
-            List<Graph> resultGraph = new ArrayList<>();
+            GraphFragments genGraphList = generator.generate(context, inputGraphList);
 
-            for (Graph graph : inputGraphList) {
-                List<Graph> genGraphList = generator.generate(context, graph);
-                resultGraph.addAll(genGraphList);
-            }
-
-            return new EfferentStageImpl(resultGraph);
+            return new EfferentStageImpl(genGraphList.meld());
         }
     }
 
     private final class EfferentStageImpl implements EfferentStage {
-        private List<Graph> inputGraphList;
+        private SingleGraphFragment inputGraphList;
 
-        public EfferentStageImpl(List<Graph> inputGraphList) {
+        public EfferentStageImpl(SingleGraphFragment inputGraphList) {
             this.inputGraphList = inputGraphList;
         }
 
         @Override
         public FeedbackStage withEfferent(GraphGenerator generator) {
             GenerationContext context = NeuronFieldBuilderImpl.this;
-            List<Graph> resultGraph = new ArrayList<>();
 
-            for (Graph graph : inputGraphList) {
-                List<Graph> genGraphList = generator.generate(context, graph);
-                resultGraph.addAll(genGraphList);
-            }
+            GraphFragments genGraphList = generator.generate(context, inputGraphList);
 
-            return new FeedbackStageImpl(resultGraph);
+            return new FeedbackStageImpl(genGraphList.meld());
         }
     }
 
     private final class FeedbackStageImpl implements FeedbackStage {
-        private List<Graph> inputGraphList;
+        private SingleGraphFragment inputGraphList;
 
-        public FeedbackStageImpl(List<Graph> inputGraphList) {
+        public FeedbackStageImpl(SingleGraphFragment inputGraphList) {
             this.inputGraphList = inputGraphList;
         }
 
         @Override
         public BuildStage withFeedback(GraphGenerator generator) {
             GenerationContext context = NeuronFieldBuilderImpl.this;
-            List<Graph> resultGraph = new ArrayList<>();
 
-            for (Graph graph : inputGraphList) {
-                List<Graph> genGraphList = generator.generate(context, graph);
-                resultGraph.addAll(genGraphList);
-            }
+            generator.generate(context, inputGraphList);
 
             return new BuildStageImpl();
         }
@@ -142,11 +131,11 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, GenerationCon
     }
 
     @Override
-    public long createEdge(int src, int trg) {
+    public Edge createEdge(int src, int trg) {
         long edgeId = packEdge(src, trg);
         NeuronFieldView.addOutNeighbourIds(src, trg);
         NeuronFieldView.addInNeighbourIds(trg, trg);
-        return edgeId;
+        return new Edge(edgeId, src, trg);
     }
 
     @Override

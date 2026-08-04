@@ -5,15 +5,12 @@
  */
 package com.uwe_hennig.snn.graph.generator;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Stack;
 
-import com.uwe_hennig.snn.contracts.core.NeuronFieldType;
 import com.uwe_hennig.snn.contracts.graph.GenerationContext;
-import com.uwe_hennig.snn.contracts.graph.Graph;
+import com.uwe_hennig.snn.contracts.graph.GraphFragments;
 import com.uwe_hennig.snn.contracts.graph.GraphGenerator;
-import com.uwe_hennig.snn.graph.util.GraphvizConsolePrinter;
+import com.uwe_hennig.snn.contracts.graph.SingleGraphFragment;
 
 /**
  * DefaultAssociativeGraphGenerator
@@ -23,57 +20,27 @@ import com.uwe_hennig.snn.graph.util.GraphvizConsolePrinter;
 public class DefaultAssociativeGraphGenerator implements GraphGenerator {
     private final int depth;
 
-    private Stack<Graph> stackA = new Stack<>();
-    private Stack<Graph> stackB = new Stack<>();
+    private Stack<SingleGraphFragment> stackA = new Stack<>();
+    private Stack<SingleGraphFragment> stackB = new Stack<>();
 
     private RingGraphGenerator ringA;
     private RingGraphGenerator ringB;
 
     public DefaultAssociativeGraphGenerator(int depth, int nodesA, int nodesB) {
         this.depth = depth;
-        ringA = new RingGraphGenerator(NeuronFieldType.ASSOCIATIVE, EdgeDirectionMode.FORWARD, nodesA);
-        ringB = new RingGraphGenerator(NeuronFieldType.ASSOCIATIVE, EdgeDirectionMode.FORWARD, nodesB);
     }
 
     @Override
-    public List<Graph> generate(GenerationContext context, Graph initialGraph) {
-        stackB.push(initialGraph);
-
-        List<Graph> resultingGraphs = new ArrayList<>();
-
-        for (int i = 0; i < depth; i++) {
-            // Phase A -> B
-            while (!stackA.isEmpty()) {
-                Graph currentGraph = stackA.pop();
-                List<Graph> nextGraphLayer = ringB.generate(context, currentGraph);
-
-                if (nextGraphLayer != null) {
-                    resultingGraphs.addAll(nextGraphLayer);
-                    GraphvizConsolePrinter.printGraph(context, "DefaultAssociativeGraphGenerator B", Graph.create().addGraphs(resultingGraphs));
-                    for (Graph graph : nextGraphLayer) {
-                        stackB.push(graph);
-                    }
-                }
-            }
-
-            // Phase B -> A
-            while (!stackB.isEmpty()) {
-                Graph currentGraph = stackB.pop();
-                List<Graph> nextGraphLayer = ringA.generate(context, currentGraph);
-
-                if (nextGraphLayer != null) {
-                    resultingGraphs.addAll(nextGraphLayer);
-                    GraphvizConsolePrinter.printGraph(context, "DefaultAssociativeGraphGenerator A", Graph.create().addGraphs(resultingGraphs));
-                    for (Graph graph : nextGraphLayer) {
-                        stackA.push(graph);
-                    }
-                }
-            }
-        }
-
-        GraphvizConsolePrinter.printGraph(context, "DefaultAssociativeGraphGenerator total", Graph.create().addGraphs(resultingGraphs));
-
-        return resultingGraphs;
+    public GraphFragments generate(GenerationContext context, SingleGraphFragment graph) {
+        // TODO Auto-generated method stub class GraphGenerator
+        return null;
     }
+
+    @Override
+    public SingleGraphFragment generate(GenerationContext context) {
+        // TODO Auto-generated method stub class GraphGenerator
+        return null;
+    }
+
 
 }

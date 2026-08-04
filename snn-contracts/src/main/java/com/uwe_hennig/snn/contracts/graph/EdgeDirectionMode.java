@@ -3,7 +3,7 @@
  * Copyright (c) 2026 Uwe Hennig
  * All rights reserved.
  */
-package com.uwe_hennig.snn.graph.generator;
+package com.uwe_hennig.snn.contracts.graph;
 
 /**
  * EdgeDirectionMode
@@ -11,5 +11,5 @@ package com.uwe_hennig.snn.graph.generator;
  * @author Uwe Hennig
  */
 public enum EdgeDirectionMode {
-    FORWARD, BACKWARDS, BOTH
+    FORWARD, BACKWARDS
 }

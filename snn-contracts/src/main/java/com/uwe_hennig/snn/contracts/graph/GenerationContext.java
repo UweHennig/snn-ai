@@ -17,7 +17,7 @@ public interface GenerationContext {
     int createNode(NeuronFieldType type);
 
     // connect two Nodes and return edge identifier
-    long createEdge(int src, int trg);
+    Edge createEdge(int src, int trg);
 
     boolean isUsedEdge(long edgeId);
     void setUsedEdge(long edgeId);

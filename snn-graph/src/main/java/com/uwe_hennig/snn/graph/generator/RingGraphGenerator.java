@@ -5,14 +5,14 @@
  */
 package com.uwe_hennig.snn.graph.generator;
 
-import java.util.List;
-
 import com.uwe_hennig.snn.contracts.core.NeuronFieldType;
 import com.uwe_hennig.snn.contracts.graph.Edge;
 import com.uwe_hennig.snn.contracts.graph.GenerationContext;
-import com.uwe_hennig.snn.contracts.graph.Graph;
+import com.uwe_hennig.snn.contracts.graph.GraphFragments;
 import com.uwe_hennig.snn.contracts.graph.GraphGenerator;
-import com.uwe_hennig.snn.graph.util.GraphvizConsolePrinter;
+import com.uwe_hennig.snn.contracts.graph.SingleGraphFragment;
+import com.uwe_hennig.snn.graph.GraphFragmentsImpl;
+import com.uwe_hennig.snn.graph.SingleGraphFragmentImpl;
 
 /**
  * RingGraphGenerator For each edge, creates ‘sizeNodes’ nodes that form a ring inclusive the edge
@@ -20,102 +20,64 @@ import com.uwe_hennig.snn.graph.util.GraphvizConsolePrinter;
  * @author Uwe Hennig
  */
 public class RingGraphGenerator implements GraphGenerator {
-    private final int                sizeNodes;
-    private final NeuronFieldType    type;
-    private final boolean            markUsed;
-    private final EdgeDirectionMode mode;
-    private final Graph              resultingGraph;
+    private final NeuronFieldType     type;
 
-    public RingGraphGenerator(NeuronFieldType type, EdgeDirectionMode mode, int sizeNodes) {
+    private int sizeNodes;
+
+    public RingGraphGenerator(NeuronFieldType type, int sizeNodes) {
+        assert sizeNodes > 2;
+        assert type != null;
+
         this.sizeNodes = sizeNodes;
         this.type = type;
-        this.markUsed = sizeNodes > 1;
-        this.mode = mode;
-        this.resultingGraph = Graph.create();
     }
 
     @Override
-    public List<Graph> generate(GenerationContext context, Graph initialGraph) {
-        if (initialGraph == null || initialGraph.edges().isEmpty()) {
-            return generateInital(context);
-        }
+    public SingleGraphFragment generate(GenerationContext context) {
+        int startNode = context.createNode(type);
+        int endNode = context.createNode(type);
+        sizeNodes -= 2;
+
+        Edge edge = context.createEdge(startNode, endNode);
+        SingleGraphFragment singleFragment = SingleGraphFragmentImpl.create().addEdge(edge);
+
+        GraphFragments fragments = generate(context, singleFragment);
+        fragments.addFragement(singleFragment);
+
+        return fragments.meld();
+    }
+
+    @Override
+    public GraphFragments generate(GenerationContext context, SingleGraphFragment initialGraph) {
+        GraphFragments graphFragments = GraphFragmentsImpl.create();
 
         for (Edge edge : initialGraph.edges()) {
             if (context.isUsedEdge(edge.edgeId())) {
                 continue;
             }
+            SingleGraphFragment singleFragment = SingleGraphFragmentImpl.create();
 
-            Edge currentEdge = edge;
-            context.setUsedEdge(currentEdge.edgeId());
+            int startNode = context.createNode(type);
+            int currentNode = startNode;
 
-            int startNodeId = currentEdge.nodeToId();
-            int endNodeId = currentEdge.nodeFromId();
-
-            int currentNodeId = startNodeId;
-
-            for (int i = 0; i < sizeNodes; i++) {
-                int newNodeId = context.createNode(type);
-                Edge newEdge = createEdge(context, currentNodeId, newNodeId);
-
-                if (i == 0 && markUsed) {
-                    context.setUsedEdge(newEdge.edgeId());
-                }
-
-                currentNodeId = newNodeId;
+            for (int i = 1; i < sizeNodes; i++) {
+                int nextNode = context.createNode(type);
+                Edge ringEdge = context.createEdge(currentNode, nextNode);
+                singleFragment.addEdge(ringEdge);
+                currentNode = nextNode;
             }
 
-            Edge newEdge = createEdge(context, currentNodeId, endNodeId);
-            if (markUsed) {
-                context.setUsedEdge(newEdge.edgeId());
-            }
+            context.setUsedEdge(edge.edgeId());
+
+            Edge ringEdgeStart = context.createEdge(edge.nodeToId(), startNode);
+            singleFragment.addEdge(ringEdgeStart);
+
+            Edge ringEdgeEnd = context.createEdge(currentNode, edge.nodeFromId());
+            singleFragment.addEdge(ringEdgeEnd);
+
+            graphFragments.addFragement(singleFragment);
         }
-        GraphvizConsolePrinter.printGraph(context, "RingGraphGenerator", resultingGraph);
-        return List.of(resultingGraph);
+
+        return graphFragments;
     }
-
-    private List<Graph> generateInital(GenerationContext context) {
-        Graph resultingGraph = Graph.create();
-
-        int startNodeId = context.createNode(type);
-        int currentNodeId = startNodeId;
-
-        for (int i = 0; i < sizeNodes - 1; i++) {
-            int newNodeId = context.createNode(type);
-            Edge edge = createEdge(context, currentNodeId, newNodeId);
-            resultingGraph.addEdge(edge);
-
-            currentNodeId = newNodeId;
-        }
-
-        Edge edge = createEdge(context, currentNodeId, startNodeId);
-        resultingGraph.addEdge(edge);
-
-        GraphvizConsolePrinter.printGraph(context, "RingGraphGenerator initial", resultingGraph);
-
-        return List.of(resultingGraph);
-    }
-
-    private Edge createEdge(GenerationContext context, int fromNode, int toNode) {
-        Edge resultEdge = null;
-        if (mode == EdgeDirectionMode.FORWARD || mode == EdgeDirectionMode.BOTH) {
-            long edgeId = context.createEdge(fromNode, toNode);
-            Edge edge = new Edge(edgeId, fromNode, toNode);
-            resultingGraph.addEdge(edge);
-            resultEdge = edge;
-        }
-
-        if (mode == EdgeDirectionMode.BACKWARDS || mode == EdgeDirectionMode.BOTH) {
-            long edgeId = context.createEdge(toNode, fromNode);
-            Edge edge = new Edge(edgeId, toNode, fromNode);
-            resultingGraph.addEdge(edge);
-            if (resultEdge == null) {
-                resultEdge = edge;
-            } else {
-                context.setUsedEdge(edgeId);
-            }
-        }
-
-        return resultEdge;
-    }
-
 }

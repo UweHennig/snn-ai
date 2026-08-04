@@ -6,25 +6,27 @@
 package com.uwe_hennig.snn.graph.generator;
 
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 import com.uwe_hennig.snn.contracts.core.NeuronFieldType;
 import com.uwe_hennig.snn.contracts.graph.Edge;
+import com.uwe_hennig.snn.contracts.graph.EdgeDirectionMode;
 import com.uwe_hennig.snn.contracts.graph.GenerationContext;
-import com.uwe_hennig.snn.contracts.graph.Graph;
+import com.uwe_hennig.snn.contracts.graph.GraphFragments;
 import com.uwe_hennig.snn.contracts.graph.GraphGenerator;
-import com.uwe_hennig.snn.graph.util.GraphvizConsolePrinter;
+import com.uwe_hennig.snn.contracts.graph.SingleGraphFragment;
+import com.uwe_hennig.snn.graph.GraphFragmentsImpl;
+import com.uwe_hennig.snn.graph.SingleGraphFragmentImpl;
 
 /**
- * LeafRingConnectorGenerator
- * creates a ring from N new nodes and connect the ring with leafes
+ * LeafRingConnectorGenerator creates a ring from N new nodes and connect the ring with leafes
  *
  * @author Uwe Hennig
  */
 public class LeafRingConnectorGenerator implements GraphGenerator {
-    private final int               sizeNodes;
-    private final EdgeDirectionMode mode;
-    private final NeuronFieldType   type;
-    private final Graph             resultingGraph = Graph.create();
+    private final int                 sizeNodes;
+    private final EdgeDirectionMode   mode;
+    private final NeuronFieldType     type;
 
     public LeafRingConnectorGenerator(NeuronFieldType type, int sizeNodes, EdgeDirectionMode edgeDirectionMode) {
         this.mode = edgeDirectionMode;
@@ -33,67 +35,45 @@ public class LeafRingConnectorGenerator implements GraphGenerator {
     }
 
     @Override
-    public List<Graph> generate(GenerationContext context, Graph initialGraph) {
-        RingGraphGenerator ringGen = new RingGraphGenerator(type, mode, sizeNodes);
-        List<Graph> ringList = ringGen.generate(context, null);
+    public GraphFragments generate(GenerationContext context, SingleGraphFragment graph) {
+        RingGraphGenerator rgg = new RingGraphGenerator(type, sizeNodes);
+        SingleGraphFragment ringGraph = rgg.generate(context);
+        List<Edge> filteredInputEdges = graph.edges().stream().filter(e -> !context.isUsedEdge(e.edgeId())).toList();
+        SingleGraphFragment leafGraph = SingleGraphFragmentImpl.create().addAllEdges(filteredInputEdges);
 
-        List<Edge> filteredNewEdges = ringList.stream().flatMap(g -> g.edges().stream()).filter(edge -> !context.isUsedEdge(edge.edgeId())).toList();
-        int newModulus = filteredNewEdges.size();
+        SingleGraphFragment singleResult;
 
-        if (filteredNewEdges.isEmpty()) {
-            System.err.println("No edges in ring generator found!");
-            throw new RuntimeException("No edges in ring generator found!");
+        if (EdgeDirectionMode.FORWARD == mode) {
+            singleResult = connect(context, ringGraph, leafGraph);
+        } else {
+            singleResult = connect(context, leafGraph, ringGraph);
         }
 
-
-        List<Edge> filterdInitialEdges = initialGraph.edges().stream().filter(edge -> !context.isUsedEdge(edge.edgeId())).toList();
-        int initialModulus = filterdInitialEdges.size();
-
-        if (filterdInitialEdges.isEmpty()) {
-            System.err.println("No edges in initial graph found!");
-            throw new RuntimeException("No edges in initial graph found!");
-        }
-
-        boolean forward = mode == EdgeDirectionMode.FORWARD || mode == EdgeDirectionMode.BOTH;
-
-        int interations = forward ? newModulus : initialModulus;
-
-        for (int i = 0; i < interations; i++) {
-            Edge newEdge = filteredNewEdges.get(i % newModulus);
-            Edge iniEdge = filterdInitialEdges.get(i % initialModulus);
-
-            int fromNode = forward ? newEdge.nodeToId() : iniEdge.nodeToId();
-            int toNode = forward ? iniEdge.nodeToId() : newEdge.nodeFromId();
-
-            context.setUsedEdge(newEdge.edgeId());
-            context.setUsedEdge(iniEdge.edgeId());
-
-            createEdge(context, fromNode, toNode);
-        }
-
-        GraphvizConsolePrinter.printGraph(context, "LeafRingConnectorGenerator", resultingGraph);
-        return List.of(resultingGraph);
+        return GraphFragmentsImpl.create().addFragement(singleResult);
     }
 
-    private Edge createEdge(GenerationContext context, int fromNode, int toNode) {
-        Edge resultEdge = null;
-        if (mode == EdgeDirectionMode.FORWARD || mode == EdgeDirectionMode.BOTH) {
-            long edgeId = context.createEdge(fromNode, toNode);
-            Edge edge = new Edge(edgeId, fromNode, toNode);
-            resultingGraph.addEdge(edge);
-            resultEdge = edge;
+    private SingleGraphFragment connect(GenerationContext context, SingleGraphFragment fromGraph, SingleGraphFragment toGraph) {
+        SingleGraphFragment singleResult = SingleGraphFragmentImpl.create();
+
+        for (Edge edge: fromGraph.edges()) {
+            int fromNode = edge.nodeToId();
+            int toNode = randEdge(toGraph).nodeFromId();
+            Edge newEdge = context.createEdge(fromNode, toNode);
+            singleResult.addEdge(newEdge);
         }
 
-        if (mode == EdgeDirectionMode.BACKWARDS || mode == EdgeDirectionMode.BOTH) {
-            long edgeId = context.createEdge(toNode, fromNode);
-            Edge edge = new Edge(edgeId, toNode, fromNode);
-            resultingGraph.addEdge(edge);
-            if (resultEdge == null) {
-                resultEdge = edge;
-            } else {
-                context.setUsedEdge(edgeId);
-            }
-        }
-        return resultEdge;
+        return singleResult;
     }
+
+    private Edge randEdge(SingleGraphFragment fragment) {
+        int size = fragment.edges().size();
+        int randPos = ThreadLocalRandom.current().nextInt(size);
+        return fragment.edges().get(randPos);
+    }
+
+    @Override
+    public SingleGraphFragment generate(GenerationContext context) {
+        return SingleGraphFragmentImpl.create();
+    }
+
 }
