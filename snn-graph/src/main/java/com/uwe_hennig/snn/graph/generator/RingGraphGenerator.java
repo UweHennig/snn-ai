@@ -52,7 +52,7 @@ public class RingGraphGenerator implements GraphGenerator {
         GraphFragments graphFragments = GraphFragmentsImpl.create();
 
         for (Edge edge : initialGraph.edges()) {
-            if (context.isUsedEdge(edge.edgeId())) {
+            if (context.isEdgeMarked(edge.edgeId())) {
                 continue;
             }
             SingleGraphFragment singleFragment = SingleGraphFragmentImpl.create();
@@ -67,7 +67,7 @@ public class RingGraphGenerator implements GraphGenerator {
                 currentNode = nextNode;
             }
 
-            context.setUsedEdge(edge.edgeId());
+            context.markEdge(edge.edgeId());
 
             Edge ringEdgeStart = context.createEdge(edge.nodeToId(), startNode);
             singleFragment.addEdge(ringEdgeStart);

@@ -44,7 +44,7 @@ public class BubbleGraphGenerator implements GraphGenerator {
 
         while (!stack.isEmpty() && depth-- > 0) {
             SingleGraphFragment singleFragment = stack.pop();
-            List<Edge> filteredEdges = singleFragment.edges().stream().filter(e -> !context.isUsedEdge(e.edgeId())).toList();
+            List<Edge> filteredEdges = singleFragment.edges().stream().filter(e -> !context.isEdgeMarked(e.edgeId())).toList();
             if (filteredEdges.isEmpty()) {
                 continue;
             }
@@ -52,7 +52,7 @@ public class BubbleGraphGenerator implements GraphGenerator {
             List<Edge> newEdges = new ArrayList<>();
             for (int e = 0; e < filteredEdges.size(); e++) {
                 Edge edge = filteredEdges.get(e);
-                context.setUsedEdge(edge.edgeId());
+                context.markEdge(edge.edgeId());
 
                 newEdges = loop(context, edge.nodeToId(), edge.nodeFromId(), randomBubbleLength());
             }

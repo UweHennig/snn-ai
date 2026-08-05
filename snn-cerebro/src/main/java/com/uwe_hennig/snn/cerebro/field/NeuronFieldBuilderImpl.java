@@ -139,12 +139,12 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, GenerationCon
     }
 
     @Override
-    public boolean isUsedEdge(long edgeId) {
+    public boolean isEdgeMarked(long edgeId) {
         return bitSet.contains(edgeId);
     }
 
     @Override
-    public void setUsedEdge(long edgeId) {
+    public void markEdge(long edgeId) {
         bitSet.add(edgeId);
     }
 

@@ -28,6 +28,7 @@ import com.uwe_hennig.snn.contracts.graph.SingleGraphFragment;
 import com.uwe_hennig.snn.graph.SingleGraphFragmentImpl;
 import com.uwe_hennig.snn.graph.generator.BubbleGraphGenerator;
 import com.uwe_hennig.snn.graph.generator.LeafRingConnectorGenerator;
+import com.uwe_hennig.snn.graph.generator.PythagorasGraphGenerator;
 import com.uwe_hennig.snn.graph.generator.RingGraphGenerator;
 import com.uwe_hennig.snn.graph.util.GraphvizConsolePrinter;
 
@@ -47,12 +48,12 @@ public class GraphGeneratorsTest {
         public HashSet<Long> bitSet   = new HashSet<>();
 
         @Override
-        public boolean isUsedEdge(long edgeId) {
+        public boolean isEdgeMarked(long edgeId) {
             return bitSet.contains(edgeId);
         }
 
         @Override
-        public void setUsedEdge(long edgeId) {
+        public void markEdge(long edgeId) {
             bitSet.add(edgeId);
         }
 
@@ -139,6 +140,15 @@ public class GraphGeneratorsTest {
 
         completeGraph = SingleGraphFragmentImpl.create();
         context = new GenerationContextTest();
+    }
+
+    @Test
+    @DisplayName("Pythagoras graph test")
+    public void testPythagoras() {
+        PythagorasGraphGenerator generator = new PythagorasGraphGenerator(NeuronFieldType.UNDEFINED, 3, 3, 4);
+        SingleGraphFragment singleFrgm = generator.generate(context);
+        assertNotNull(singleFrgm);
+        GraphvizConsolePrinter.printGraph(context, "Pythagoras graph test", completeGraph);
     }
 
     @AfterEach

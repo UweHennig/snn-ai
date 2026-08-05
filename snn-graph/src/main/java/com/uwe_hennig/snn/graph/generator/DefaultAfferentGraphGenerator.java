@@ -5,6 +5,7 @@
  */
 package com.uwe_hennig.snn.graph.generator;
 
+import com.uwe_hennig.snn.contracts.core.NeuronFieldType;
 import com.uwe_hennig.snn.contracts.graph.GenerationContext;
 import com.uwe_hennig.snn.contracts.graph.GraphFragments;
 import com.uwe_hennig.snn.contracts.graph.GraphGenerator;
@@ -17,23 +18,22 @@ import com.uwe_hennig.snn.contracts.graph.SingleGraphFragment;
  */
 public class DefaultAfferentGraphGenerator implements GraphGenerator {
     private int sizeNodes;
-    private int markUsedEdges;
 
     public DefaultAfferentGraphGenerator(int sizeNodes, int markUsedEdges) {
         this.sizeNodes = Math.max(sizeNodes, 2);
-        this.markUsedEdges = Math.max(0, Math.min(sizeNodes, markUsedEdges));
     }
 
     @Override
-    public GraphFragments generate(GenerationContext context, SingleGraphFragment graph) {
-        // TODO
-        return null;
+    public GraphFragments generate(GenerationContext context, SingleGraphFragment inputGraph) {
+        RingGraphGenerator ringG = new RingGraphGenerator(NeuronFieldType.AFFERENT, sizeNodes);
+        GraphFragments graph = ringG.generate(context, inputGraph);
+        return graph;
     }
 
     @Override
     public SingleGraphFragment generate(GenerationContext context) {
-        // TODO
-        return null;
+        RingGraphGenerator ringG = new RingGraphGenerator(NeuronFieldType.AFFERENT, sizeNodes);
+        SingleGraphFragment graph = ringG.generate(context);
+        return graph;
     }
-
 }

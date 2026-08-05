@@ -19,6 +19,6 @@ public interface GenerationContext {
     // connect two Nodes and return edge identifier
     Edge createEdge(int src, int trg);
 
-    boolean isUsedEdge(long edgeId);
-    void setUsedEdge(long edgeId);
+    boolean isEdgeMarked(long edgeId);
+    void markEdge(long edgeId);
 }

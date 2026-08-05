@@ -38,7 +38,7 @@ public class LeafRingConnectorGenerator implements GraphGenerator {
     public GraphFragments generate(GenerationContext context, SingleGraphFragment graph) {
         RingGraphGenerator rgg = new RingGraphGenerator(type, sizeNodes);
         SingleGraphFragment ringGraph = rgg.generate(context);
-        List<Edge> filteredInputEdges = graph.edges().stream().filter(e -> !context.isUsedEdge(e.edgeId())).toList();
+        List<Edge> filteredInputEdges = graph.edges().stream().filter(e -> !context.isEdgeMarked(e.edgeId())).toList();
         SingleGraphFragment leafGraph = SingleGraphFragmentImpl.create().addAllEdges(filteredInputEdges);
 
         SingleGraphFragment singleResult;

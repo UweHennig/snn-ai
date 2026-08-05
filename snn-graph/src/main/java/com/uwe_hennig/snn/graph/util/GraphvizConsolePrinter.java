@@ -34,7 +34,7 @@ public class GraphvizConsolePrinter {
                 .append("edge [arrowhead=empty color=red];\n");
 
             for (Edge edge : graph.edges()) {
-                if (context.isUsedEdge(edge.edgeId())) {
+                if (context.isEdgeMarked(edge.edgeId())) {
                     builder.append(edge).append("\n");
                 } else {
                     builder.append(edge).append(" [color=green]").append("\n");
