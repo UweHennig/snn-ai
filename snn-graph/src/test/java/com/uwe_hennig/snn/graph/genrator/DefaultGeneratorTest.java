@@ -46,6 +46,11 @@ public class DefaultGeneratorTest {
         }
 
         @Override
+        public void unmarkEdge(long edgeId) {
+            bitSet.remove(edgeId);
+        }
+
+        @Override
         public int createNode(NeuronFieldType type) {
             return nextNode++;
         }

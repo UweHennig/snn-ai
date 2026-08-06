@@ -26,20 +26,19 @@ public class GraphConcatenator implements GraphGenerator {
     private final NeuronFieldType type;
     private SingleGraphFragment   left;
     private SingleGraphFragment   right;
+    private int                   sizeNodes;
 
-    public GraphConcatenator(NeuronFieldType type, SingleGraphFragment left, SingleGraphFragment right) {
+    public GraphConcatenator(NeuronFieldType type, SingleGraphFragment left, SingleGraphFragment right, int sizeNodes) {
         this.left = left;
         this.right = right;
         this.type = type;
+        this.sizeNodes = sizeNodes;
     }
 
     @Override
     public GraphFragments generate(GenerationContext context, SingleGraphFragment right) {
         this.right = right;
-
-        SingleGraphFragment fragement = generate(context);
-        GraphFragments gf = GraphFragmentsImpl.create().addFragement(fragement);
-        return gf;
+        return GraphFragmentsImpl.create().addFragement(generate(context));
     }
 
     @Override
@@ -52,42 +51,42 @@ public class GraphConcatenator implements GraphGenerator {
         int n = leftNodes.size();
         int m = rightNodes.size();
 
-        RingGraphGenerator ringGraphGen = new RingGraphGenerator(type, n + m + 1);
-        SingleGraphFragment ring = ringGraphGen.generate(context);
-        List<Integer> ringNodes = getNodes(context, ring, true);
-
-        int nodePos = 0;
-
-        for (int i = 0; i < n; i++) {
-            int startNode = leftNodes.get(i);
-            int endNode = ringNodes.get(nodePos);
-
-            Edge edge = context.createEdge(startNode, endNode);
-            resultFragement.addEdge(edge);
-            nodePos++;
+        if (n == 0 || m == 0) {
+            return resultFragement;
         }
 
-        for (int i = 0; i < m; i++) {
-            int startNode = ringNodes.get(nodePos);
-            int endNode = rightNodes.get(i);
+        for (int i = 0; i < Math.max(n, m); i++) {
+            int startNode = leftNodes.get(i % n);
+            int endNode = rightNodes.get(i % m);
 
-            Edge edge = context.createEdge(startNode, endNode);
+            int currentNode = startNode;
+            for (int j = 0; j < sizeNodes; j++) {
+                int newNode = context.createNode(type);
+                Edge edge = context.createEdge(currentNode, newNode);
+                resultFragement.addEdge(edge);
+                currentNode = newNode;
+            }
+
+            Edge edge = context.createEdge(currentNode, endNode);
             resultFragement.addEdge(edge);
-            nodePos++;
         }
 
         return resultFragement;
     }
 
-    private List<Integer> getNodes(GenerationContext context, SingleGraphFragment fragment, boolean out) {
+    private List<Integer> getNodes(GenerationContext context, SingleGraphFragment fragment, boolean nodeToId) {
         List<Integer> nodesIdList = new ArrayList<>();
+        if (fragment == null) {
+            return nodesIdList;
+        }
+
         for (Edge edge : fragment.edges()) {
             if (!context.isEdgeMarked(edge.edgeId())) {
-                nodesIdList.add(out ? edge.nodeToId() : edge.nodeFromId());
+                int id = nodeToId ? edge.nodeToId() : edge.nodeFromId();
+                nodesIdList.add(id);
                 context.markEdge(edge.edgeId());
             }
         }
         return nodesIdList;
     }
-
 }

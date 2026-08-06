@@ -27,6 +27,7 @@ import com.uwe_hennig.snn.contracts.graph.GraphFragments;
 import com.uwe_hennig.snn.contracts.graph.SingleGraphFragment;
 import com.uwe_hennig.snn.graph.SingleGraphFragmentImpl;
 import com.uwe_hennig.snn.graph.generator.BubbleGraphGenerator;
+import com.uwe_hennig.snn.graph.generator.GraphConcatenator;
 import com.uwe_hennig.snn.graph.generator.LeafRingConnectorGenerator;
 import com.uwe_hennig.snn.graph.generator.PythagorasGraphGenerator;
 import com.uwe_hennig.snn.graph.generator.RingGraphGenerator;
@@ -55,6 +56,11 @@ public class GraphGeneratorsTest {
         @Override
         public void markEdge(long edgeId) {
             bitSet.add(edgeId);
+        }
+
+        @Override
+        public void unmarkEdge(long edgeId) {
+            bitSet.remove(edgeId);
         }
 
         @Override
@@ -132,6 +138,46 @@ public class GraphGeneratorsTest {
         GraphvizConsolePrinter.printGraph(context, "LeafRing graph test 2", completeGraph);
     }
 
+    @Test
+    @DisplayName("Pythagoras graph test")
+    public void testPythagoras1() {
+        PythagorasGraphGenerator generator = new PythagorasGraphGenerator(NeuronFieldType.UNDEFINED, 3, 3, 4);
+        SingleGraphFragment singleFrgm = generator.generate(context);
+        assertNotNull(singleFrgm);
+        GraphvizConsolePrinter.printGraph(context, "Pythagoras graph test", completeGraph);
+    }
+
+    @Test
+    @DisplayName("Pythagoras graph test")
+    public void testPythagoras2() {
+        RingGraphGenerator rgg = new RingGraphGenerator(NeuronFieldType.UNDEFINED, 10);
+        SingleGraphFragment gen = rgg.generate(context);
+        assertNotNull(gen);
+
+        PythagorasGraphGenerator generator = new PythagorasGraphGenerator(NeuronFieldType.UNDEFINED, 3, 3, 4);
+        GraphFragments fragments = generator.generate(context, gen);
+        assertNotNull(fragments);
+        assertEquals(99, fragments.meld().edges().size());
+
+        GraphvizConsolePrinter.printGraph(context, "Pythagoras graph test", completeGraph);
+    }
+
+    @Test
+    @DisplayName("Concatenator graph test")
+    public void testConatenator() {
+        RingGraphGenerator rgg4 = new RingGraphGenerator(NeuronFieldType.UNDEFINED, 4);
+        RingGraphGenerator rgg6 = new RingGraphGenerator(NeuronFieldType.UNDEFINED, 6);
+
+        SingleGraphFragment ring4 = rgg4.generate(context);
+        SingleGraphFragment ring6 = rgg6.generate(context);
+
+        GraphConcatenator concatGen = new GraphConcatenator(NeuronFieldType.UNDEFINED, ring4, ring6, 4);
+        SingleGraphFragment result = concatGen.generate(context);
+        assertNotNull(result);
+
+        GraphvizConsolePrinter.printGraph(context, "Concatenator graph test", completeGraph);
+    }
+
     @BeforeEach
     public void beforeEach(TestInfo info) {
         String title = "### " + info.getDisplayName() + " ###";
@@ -140,15 +186,6 @@ public class GraphGeneratorsTest {
 
         completeGraph = SingleGraphFragmentImpl.create();
         context = new GenerationContextTest();
-    }
-
-    @Test
-    @DisplayName("Pythagoras graph test")
-    public void testPythagoras() {
-        PythagorasGraphGenerator generator = new PythagorasGraphGenerator(NeuronFieldType.UNDEFINED, 3, 3, 4);
-        SingleGraphFragment singleFrgm = generator.generate(context);
-        assertNotNull(singleFrgm);
-        GraphvizConsolePrinter.printGraph(context, "Pythagoras graph test", completeGraph);
     }
 
     @AfterEach

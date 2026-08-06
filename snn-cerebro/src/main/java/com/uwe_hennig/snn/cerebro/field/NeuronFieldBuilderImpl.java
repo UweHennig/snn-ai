@@ -148,6 +148,11 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, GenerationCon
         bitSet.add(edgeId);
     }
 
+    @Override
+    public void unmarkEdge(long edgeId) {
+        bitSet.remove(edgeId);
+    }
+
     // --- convenient methods ---
 
     private long packEdge(int srcId, int trgId) {

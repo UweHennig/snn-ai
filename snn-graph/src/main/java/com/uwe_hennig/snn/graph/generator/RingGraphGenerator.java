@@ -25,7 +25,7 @@ public class RingGraphGenerator implements GraphGenerator {
     private int sizeNodes;
 
     public RingGraphGenerator(NeuronFieldType type, int sizeNodes) {
-        assert sizeNodes > 2;
+        assert sizeNodes >= 2;
         assert type != null;
 
         this.sizeNodes = sizeNodes;

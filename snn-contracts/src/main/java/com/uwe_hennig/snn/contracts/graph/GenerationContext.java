@@ -21,4 +21,5 @@ public interface GenerationContext {
 
     boolean isEdgeMarked(long edgeId);
     void markEdge(long edgeId);
+    void unmarkEdge(long edgeId);
 }
