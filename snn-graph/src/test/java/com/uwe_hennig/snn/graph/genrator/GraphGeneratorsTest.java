@@ -31,6 +31,7 @@ import com.uwe_hennig.snn.graph.generator.GraphConcatenator;
 import com.uwe_hennig.snn.graph.generator.LeafRingConnectorGenerator;
 import com.uwe_hennig.snn.graph.generator.PythagorasGraphGenerator;
 import com.uwe_hennig.snn.graph.generator.RingGraphGenerator;
+import com.uwe_hennig.snn.graph.generator.TubeGraphGenerator;
 import com.uwe_hennig.snn.graph.util.GraphvizConsolePrinter;
 
 /**
@@ -141,7 +142,7 @@ public class GraphGeneratorsTest {
     @Test
     @DisplayName("Pythagoras graph test")
     public void testPythagoras1() {
-        PythagorasGraphGenerator generator = new PythagorasGraphGenerator(NeuronFieldType.UNDEFINED, 3, 3, 4);
+        PythagorasGraphGenerator generator = new PythagorasGraphGenerator(NeuronFieldType.UNDEFINED, 17, 3, 4);
         SingleGraphFragment singleFrgm = generator.generate(context);
         assertNotNull(singleFrgm);
         GraphvizConsolePrinter.printGraph(context, "Pythagoras graph test", completeGraph);
@@ -175,6 +176,15 @@ public class GraphGeneratorsTest {
         SingleGraphFragment result = concatGen.generate(context);
         assertNotNull(result);
 
+        GraphvizConsolePrinter.printGraph(context, "Concatenator graph test", completeGraph);
+    }
+
+    @Test
+    @DisplayName("Tube graph test")
+    public void testTubeGraph() {
+        TubeGraphGenerator gen = new TubeGraphGenerator(NeuronFieldType.UNDEFINED, 4, 10);
+        SingleGraphFragment result = gen.generate(context);
+        assertNotNull(result);
         GraphvizConsolePrinter.printGraph(context, "Concatenator graph test", completeGraph);
     }
 

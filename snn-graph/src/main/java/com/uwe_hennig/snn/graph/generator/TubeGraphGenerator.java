@@ -5,6 +5,8 @@
  */
 package com.uwe_hennig.snn.graph.generator;
 
+import java.util.List;
+
 import com.uwe_hennig.snn.contracts.core.NeuronFieldType;
 import com.uwe_hennig.snn.contracts.graph.Edge;
 import com.uwe_hennig.snn.contracts.graph.GenerationContext;
@@ -12,6 +14,7 @@ import com.uwe_hennig.snn.contracts.graph.GraphFragments;
 import com.uwe_hennig.snn.contracts.graph.GraphGenerator;
 import com.uwe_hennig.snn.contracts.graph.SingleGraphFragment;
 import com.uwe_hennig.snn.graph.GraphFragmentsImpl;
+import com.uwe_hennig.snn.graph.SingleGraphFragmentImpl;
 
 /**
  * TubeGraphGenerator
@@ -19,9 +22,10 @@ import com.uwe_hennig.snn.graph.GraphFragmentsImpl;
  * @author Uwe Hennig
  */
 public class TubeGraphGenerator implements GraphGenerator {
-    private NeuronFieldType type;
-    private int ringSize;
-    private int depth;
+    private NeuronFieldType    type;
+    private int                ringSize;
+    private int                depth;
+    private RingGraphGenerator ringGen;
 
     public TubeGraphGenerator(NeuronFieldType type, int ringSize, int depth) {
         this.type = type;
@@ -31,36 +35,53 @@ public class TubeGraphGenerator implements GraphGenerator {
 
     @Override
     public GraphFragments generate(GenerationContext context, SingleGraphFragment graph) {
-        RingGraphGenerator r1 = new RingGraphGenerator(type, ringSize);
-        SingleGraphFragment fragment1 =  r1.generate(context);
-
-        SingleGraphFragment resultSingle = generate(context, fragment1, graph, false);
-
-        return GraphFragmentsImpl.create().addFragement(resultSingle);
+        // TODO
+        return GraphFragmentsImpl.create().addFragement(generate(context));
     }
 
     @Override
     public SingleGraphFragment generate(GenerationContext context) {
-        RingGraphGenerator r1 = new RingGraphGenerator(type, ringSize);
-        RingGraphGenerator r2 = new RingGraphGenerator(type, ringSize);
+        ringGen = new RingGraphGenerator(type, ringSize);
+        SingleGraphFragment srcFragment = null;
+        SingleGraphFragment trgFragment = null;
 
-        SingleGraphFragment fragment1 =  r1.generate(context);
-        SingleGraphFragment fragment2 =  r2.generate(context);
-        return generate(context, fragment1, fragment2, true);
-    }
+        GraphFragments fragments = GraphFragmentsImpl.create();
+        srcFragment =  ringGen.generate(context);
 
-    public SingleGraphFragment generate(GenerationContext context, SingleGraphFragment fragment1, SingleGraphFragment fragment2, boolean allEdges) {
-        if (allEdges) {
-            for (Edge edge : fragment1.edges()) {
-                context.unmarkEdge(edge.edgeId());
-            }
+        for (int i = 0; i < depth - 1; i++) {
+            trgFragment = ringGen.generate(context);
 
-            for (Edge edge : fragment2.edges()) {
-                context.unmarkEdge(edge.edgeId());
-            }
+            fragments.addFragement(srcFragment);
+            fragments.addFragement(trgFragment);
+
+            SingleGraphFragment conFragment = createLayer(context, srcFragment, trgFragment);
+            fragments.addFragement(conFragment);
+
+            srcFragment = trgFragment;
         }
 
-        GraphConcatenator con = new GraphConcatenator(type, fragment1, fragment2, depth);
-        return con.generate(context);
+        return fragments.meld();
+    }
+
+    private SingleGraphFragment createLayer(GenerationContext context, SingleGraphFragment srcFragment, SingleGraphFragment trgFragment) {
+        List<Edge> srcEdges = srcFragment.edges();
+        List<Edge> trgEdges = trgFragment.edges();
+
+        SingleGraphFragment connection = SingleGraphFragmentImpl.create();
+
+        for (int j = 0; j < srcEdges.size(); j++) {
+            Edge srcEdge = srcEdges.get(j);
+            Edge trgEdge = trgEdges.get(j % trgEdges.size());
+            context.markEdge(srcEdge.edgeId());
+
+            int srcNode = srcEdge.nodeToId();
+            int trgNode = trgEdge.nodeFromId();
+
+            Edge newEdge = context.createEdge(srcNode, trgNode);
+            context.markEdge(newEdge.edgeId());
+            connection.addEdge(newEdge);
+        }
+
+        return connection;
     }
 }
