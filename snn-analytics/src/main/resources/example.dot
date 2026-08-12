@@ -1,0 +1,18 @@
+digraph SNN {
+// Pythagoras graph test
+node [shape=none];
+layout = neato;
+edge [arrowhead=empty color=red];
+  1->2
+  2->3
+
+  4->5
+
+  2->6
+  3->7
+  8->4
+
+  6->7
+  7->8
+  8->6
+}
