@@ -140,7 +140,7 @@ public class GraphGeneratorsTest {
     }
 
     @Test
-    @DisplayName("Pythagoras graph test")
+    @DisplayName("Pythagoras graph test closed")
     public void testPythagoras1() {
         PythagorasGraphGenerator generator = new PythagorasGraphGenerator(NeuronFieldType.UNDEFINED, 5, 3, 4);
         SingleGraphFragment singleFrgm = generator.generate(context);
@@ -149,7 +149,7 @@ public class GraphGeneratorsTest {
     }
 
     @Test
-    @DisplayName("Pythagoras graph test")
+    @DisplayName("Pythagoras graph test open")
     public void testPythagoras2() {
         RingGraphGenerator rgg = new RingGraphGenerator(NeuronFieldType.UNDEFINED, 10);
         SingleGraphFragment gen = rgg.generate(context);
@@ -180,12 +180,26 @@ public class GraphGeneratorsTest {
     }
 
     @Test
-    @DisplayName("Tube graph test")
-    public void testTubeGraph() {
+    @DisplayName("Tube graph test closed")
+    public void testTubeGraph1() {
         TubeGraphGenerator tubeGen = new TubeGraphGenerator(NeuronFieldType.UNDEFINED, 4, 10);
         SingleGraphFragment result = tubeGen.generate(context);
         assertNotNull(result);
-        GraphvizPrinter.printGraph(context, "Concatenator graph test", completeGraph);
+        GraphvizPrinter.rewriteGraphFile("tube.dot", context, "Concatenator graph test", completeGraph);
+    }
+    @Test
+
+    @DisplayName("Tube graph test open")
+    public void testTubeGraph2() {
+        RingGraphGenerator rgg4 = new RingGraphGenerator(NeuronFieldType.UNDEFINED, 8);
+        SingleGraphFragment ring4 = rgg4.generate(context);
+
+        TubeGraphGenerator tubeGen = new TubeGraphGenerator(NeuronFieldType.UNDEFINED, 4, 8);
+        GraphFragments result = tubeGen.generate(context, ring4);
+
+        assertNotNull(result);
+        GraphvizPrinter.rewriteGraphFile("tube_open.dot", context, "Concatenator graph test", completeGraph);
+        GraphvizPrinter.printGraph(context, "Tube graph test open", completeGraph);
     }
 
     @BeforeEach

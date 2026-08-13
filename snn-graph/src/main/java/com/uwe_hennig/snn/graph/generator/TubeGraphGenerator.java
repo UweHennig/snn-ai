@@ -35,6 +35,7 @@ public class TubeGraphGenerator implements GraphGenerator {
 
     @Override
     public GraphFragments generate(GenerationContext context, SingleGraphFragment graph) {
+        ringGen = new RingGraphGenerator(type, ringSize);
         return generateIntern(context, graph);
     }
 
