@@ -16,4 +16,7 @@ public interface SingleGraphFragment {
     List<Edge> edges();
     SingleGraphFragment addEdge(Edge edge);
     SingleGraphFragment addAllEdges(List<Edge> edge);
+
+    int sizeEdges();
+    int sizeNodes();
 }

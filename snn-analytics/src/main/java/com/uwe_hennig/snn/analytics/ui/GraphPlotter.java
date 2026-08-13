@@ -25,7 +25,8 @@ import javax.swing.SwingUtilities;
  * @author Uwe Hennig
  */
 public class GraphPlotter extends JFrame {
-    GraphCanvas drawArea = new GraphCanvas();
+    private static final long serialVersionUID = 1L;
+    GraphCanvas               drawArea         = new GraphCanvas();
 
     public GraphPlotter() {
         setTitle("Graph Plotter");
@@ -56,6 +57,17 @@ public class GraphPlotter extends JFrame {
                 }
             }
         });
+
+        //        JButton resetBtn = new JButton("Reset Layout");
+        //        resetBtn.addActionListener(e -> {
+        //            for(DotFileParser.Node n : drawArea.getNodes()) {
+        //                n.x = (Math.random() - 0.5) * 50;
+        //                n.y = (Math.random() - 0.5) * 50;
+        //                n.vx = 0; n.vy = 0;
+        //            }
+        //            drawArea.startSimulation();
+        //        });
+        //        controlPanel.add(resetBtn);
 
         controlPanel.add(fileBtn);
         controlPanel.add(fileLabel);

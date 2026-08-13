@@ -20,6 +20,7 @@ import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
+import javax.swing.Timer;
 
 /**
  * DrawingPanel
@@ -28,22 +29,114 @@ import javax.swing.JPanel;
  */
 public class GraphCanvas extends JPanel {
     private static final long serialVersionUID = 1L;
-    private final int         NODE_RADIUS      = 15; // Etwas größer für bessere Sichtbarkeit
-    private final int         PADDING          = 50; // Abstand zum Rand
+    private final int         NODE_RADIUS      = 15;
+    private final int         PADDING          = 50;
+
+    private Timer simulationTimer;
 
     private List<DotFileParser.Node> nodes = new ArrayList<>();
 
     public GraphCanvas() {
         setBackground(Color.WHITE);
         setBorder(BorderFactory.createTitledBorder("Painting area"));
+
+        simulationTimer = new Timer(30, _ -> {
+            simulateForces();
+            repaint();
+        });
     }
 
     public void setFile(File file) {
         try {
             nodes = DotFileParser.parse(file.getAbsolutePath());
-            repaint();
+            simulationTimer.start();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void simulateForces() {
+        if (nodes == null || nodes.isEmpty()) {
+            return;
+        }
+
+        // Stability parameters
+        double repulsionConstant = 1500.0;
+        double springConstant = 0.05;
+        double damping = 0.7;
+        double centerGravity = 0.02;
+        double maxVelocity = 10.0;
+
+        double totalMovement = 0;
+
+        // 1. Repulsion
+        for (int i = 0; i < nodes.size(); i++) {
+            DotFileParser.Node v = nodes.get(i);
+            for (int j = i + 1; j < nodes.size(); j++) {
+                DotFileParser.Node u = nodes.get(j);
+
+                double dx = v.x - u.x;
+                double dy = v.y - u.y;
+                double distSq = dx * dx + dy * dy + 1.0;
+                double dist = Math.sqrt(distSq);
+
+                double force = repulsionConstant / distSq;
+                double fx = (dx / dist) * force;
+                double fy = (dy / dist) * force;
+
+                // Aktion = Reaktion (Symmetrie!)
+                v.vx += fx;
+                v.vy += fy;
+                u.vx -= fx;
+                u.vy -= fy;
+            }
+        }
+
+        // 2.Attraction
+        for (DotFileParser.Node v : nodes) {
+            for (DotFileParser.Node neighbor : v.neighbors) {
+                double dx = neighbor.x - v.x;
+                double dy = neighbor.y - v.y;
+                double dist = Math.sqrt(dx * dx + dy * dy) + 0.1;
+
+                double force = springConstant * dist;
+                double fx = (dx / dist) * force;
+                double fy = (dy / dist) * force;
+
+                v.vx += fx;
+                v.vy += fy;
+                neighbor.vx -= fx;
+                neighbor.vy -= fy;
+            }
+        }
+
+        // 3. Gravitation
+        for (DotFileParser.Node n : nodes) {
+            n.vx -= n.x * centerGravity;
+            n.vy -= n.y * centerGravity;
+
+            n.vx *= damping;
+            n.vy *= damping;
+
+            // Speed Limit
+            double speed = Math.sqrt(n.vx * n.vx + n.vy * n.vy);
+            if (speed > maxVelocity) {
+                n.vx = (n.vx / speed) * maxVelocity;
+                n.vy = (n.vy / speed) * maxVelocity;
+            }
+
+            n.x += n.vx;
+            n.y += n.vy;
+            totalMovement += speed;
+        }
+
+        // 4. Stop condition
+        if (totalMovement < nodes.size() * 0.01) {
+            simulationTimer.stop();
+            for (DotFileParser.Node n : nodes) {
+                n.vx = 0;
+                n.vy = 0;
+            }
         }
     }
 
@@ -57,7 +150,7 @@ public class GraphCanvas extends JPanel {
         Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        // 1. Extremwerte finden (Bounding Box)
+        // 1. Bounding Box
         double minX = Double.MAX_VALUE, maxX = -Double.MAX_VALUE;
         double minY = Double.MAX_VALUE, maxY = -Double.MAX_VALUE;
 
@@ -68,31 +161,29 @@ public class GraphCanvas extends JPanel {
             maxY = Math.max(maxY, n.y);
         }
 
-        // Breite und Höhe des Graphen berechnen
         double graphWidth = maxX - minX;
         double graphHeight = maxY - minY;
         if (graphWidth == 0) {
-            graphWidth = 1; // Division durch Null verhindern
+            graphWidth = 1;
         }
         if (graphHeight == 0) {
             graphHeight = 1;
         }
 
-        // 2. Skalierung berechnen (Fit to Screen)
+        // 2. Fit to Screen
         double scaleX = (getWidth() - 2 * PADDING) / graphWidth;
         double scaleY = (getHeight() - 2 * PADDING) / graphHeight;
-        double scale = Math.min(scaleX, scaleY); // Proportionen erhalten
+        double scale = Math.min(scaleX, scaleY);
 
-        // 3. Offsets für die Zentrierung berechnen
+        // 3. Offsets
         double offsetX = (getWidth() - graphWidth * scale) / 2 - minX * scale;
         double offsetY = (getHeight() - graphHeight * scale) / 2 - minY * scale;
 
-        // Hilfsfunktion zur Koordinatenumrechnung
-        // Wir transformieren die "Welt-Koordinaten" (0-100) in "Screen-Koordinaten"
+        // Convert screen coordinates
         java.util.function.IntUnaryOperator tx = (x) -> (int) (x * scale + offsetX);
         java.util.function.IntUnaryOperator ty = (y) -> (int) (y * scale + offsetY);
 
-        // 4. Kanten zeichnen
+        // 4. Paint edges
         g2d.setColor(Color.BLACK);
         g2d.setStroke(new BasicStroke(1.5f));
         for (DotFileParser.Node source : nodes) {
@@ -101,18 +192,16 @@ public class GraphCanvas extends JPanel {
             }
         }
 
-        // 5. Knoten zeichnen
+        // 5. Paint Nodes
         for (DotFileParser.Node node : nodes) {
             int x = tx.applyAsInt((int) node.x);
             int y = ty.applyAsInt((int) node.y);
 
-            // Kreis
             g2d.setColor(Color.WHITE);
             g2d.fillOval(x - NODE_RADIUS, y - NODE_RADIUS, 2 * NODE_RADIUS, 2 * NODE_RADIUS);
             g2d.setColor(Color.BLUE);
             g2d.drawOval(x - NODE_RADIUS, y - NODE_RADIUS, 2 * NODE_RADIUS, 2 * NODE_RADIUS);
 
-            // Label
             g2d.setColor(Color.BLACK);
             String label = String.valueOf(node.id);
             FontMetrics fm = g2d.getFontMetrics();
@@ -130,7 +219,6 @@ public class GraphCanvas extends JPanel {
 
         g2.drawLine(x1, y1, x2, y2);
 
-        // Pfeilspitze am Rand des Kreises stoppen lassen
         double offset = NODE_RADIUS + 1;
         int ox = (int) (x2 - offset * Math.cos(angle));
         int oy = (int) (y2 - offset * Math.sin(angle));

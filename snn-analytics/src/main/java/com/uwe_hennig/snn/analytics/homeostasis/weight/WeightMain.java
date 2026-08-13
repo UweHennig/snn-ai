@@ -8,7 +8,7 @@ package com.uwe_hennig.snn.analytics.homeostasis.weight;
 import java.awt.Color;
 import java.util.concurrent.ThreadLocalRandom;
 
-import com.uwe_hennig.snn.analytics.ui.GraphPlotter;
+import com.uwe_hennig.snn.analytics.ui.FunctionPlotter;
 import com.uwe_hennig.snn.anatomy.allocator.WeightModelManager;
 import com.uwe_hennig.snn.anatomy.neuron.WeightModel;
 import com.uwe_hennig.snn.anatomy.neuron.WeightView;
@@ -26,7 +26,7 @@ public class WeightMain {
 
     private static float TIMER_TICK = 0.1f;
 
-    private GraphPlotter plotter;
+    private FunctionPlotter plotter;
     private WeightModel  model;
 
     private int     index;
@@ -82,7 +82,7 @@ public class WeightMain {
     }
 
     private void initUi() {
-        this.plotter = GraphPlotter.frame(0.75, 0.5, () -> close())
+        this.plotter = FunctionPlotter.frame(0.75, 0.5, () -> close())
             .withXRange(0.0, 20.0, 20)
             .withYRange(-5, 5, 10)
             .withLegend(true)

@@ -142,7 +142,7 @@ public class GraphGeneratorsTest {
     @Test
     @DisplayName("Pythagoras graph test")
     public void testPythagoras1() {
-        PythagorasGraphGenerator generator = new PythagorasGraphGenerator(NeuronFieldType.UNDEFINED, 17, 3, 4);
+        PythagorasGraphGenerator generator = new PythagorasGraphGenerator(NeuronFieldType.UNDEFINED, 15, 3, 4);
         SingleGraphFragment singleFrgm = generator.generate(context);
         assertNotNull(singleFrgm);
         GraphvizConsolePrinter.printGraph(context, "Pythagoras graph test", completeGraph);
@@ -182,8 +182,8 @@ public class GraphGeneratorsTest {
     @Test
     @DisplayName("Tube graph test")
     public void testTubeGraph() {
-        TubeGraphGenerator gen = new TubeGraphGenerator(NeuronFieldType.UNDEFINED, 4, 10);
-        SingleGraphFragment result = gen.generate(context);
+        TubeGraphGenerator tubeGen = new TubeGraphGenerator(NeuronFieldType.UNDEFINED, 4, 10);
+        SingleGraphFragment result = tubeGen.generate(context);
         assertNotNull(result);
         GraphvizConsolePrinter.printGraph(context, "Concatenator graph test", completeGraph);
     }

@@ -19,9 +19,12 @@ import java.util.List;
  */
 public class DotFileParser {
     public static final class Node {
-        int        id;
-        double     x;
-        double     y;
+        int    id;
+        double x;
+        double y;
+        double vx;
+        double vy;
+
         List<Node> neighbors;
 
         private Node(int id, double x, double y, List<Node> neighbors) {
@@ -48,7 +51,7 @@ public class DotFileParser {
         }
 
         private static double randPos() {
-            return Math.random() * 100.0;
+            return Math.random() * 10.0;
         }
 
         @Override
@@ -102,7 +105,7 @@ public class DotFileParser {
                 return nn;
             });
 
-            Node toNode = result.stream().filter(n -> n.id ==toNodeId).findFirst().orElseGet(() -> {
+            Node toNode = result.stream().filter(n -> n.id == toNodeId).findFirst().orElseGet(() -> {
                 Node nn = Node.of(toNodeId);
                 result.add(nn);
                 return nn;

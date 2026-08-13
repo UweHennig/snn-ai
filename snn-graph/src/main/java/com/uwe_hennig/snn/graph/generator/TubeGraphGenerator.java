@@ -35,18 +35,21 @@ public class TubeGraphGenerator implements GraphGenerator {
 
     @Override
     public GraphFragments generate(GenerationContext context, SingleGraphFragment graph) {
-        // TODO
-        return GraphFragmentsImpl.create().addFragement(generate(context));
+        return generateIntern(context, graph);
     }
 
     @Override
     public SingleGraphFragment generate(GenerationContext context) {
         ringGen = new RingGraphGenerator(type, ringSize);
-        SingleGraphFragment srcFragment = null;
-        SingleGraphFragment trgFragment = null;
+        SingleGraphFragment srcFragment = ringGen.generate(context);
+        GraphFragments result = generateIntern(context, srcFragment);
 
+        return result.meld();
+    }
+
+    private GraphFragments generateIntern(GenerationContext context, SingleGraphFragment srcFragment) {
         GraphFragments fragments = GraphFragmentsImpl.create();
-        srcFragment =  ringGen.generate(context);
+        SingleGraphFragment trgFragment = null;
 
         for (int i = 0; i < depth - 1; i++) {
             trgFragment = ringGen.generate(context);
@@ -60,7 +63,7 @@ public class TubeGraphGenerator implements GraphGenerator {
             srcFragment = trgFragment;
         }
 
-        return fragments.meld();
+        return fragments;
     }
 
     private SingleGraphFragment createLayer(GenerationContext context, SingleGraphFragment srcFragment, SingleGraphFragment trgFragment) {
@@ -70,7 +73,7 @@ public class TubeGraphGenerator implements GraphGenerator {
         SingleGraphFragment connection = SingleGraphFragmentImpl.create();
 
         for (int j = 0; j < srcEdges.size(); j++) {
-            Edge srcEdge = srcEdges.get(j);
+            Edge srcEdge = srcEdges.get(j % srcEdges.size());
             Edge trgEdge = trgEdges.get(j % trgEdges.size());
             context.markEdge(srcEdge.edgeId());
 

@@ -7,10 +7,9 @@ package com.uwe_hennig.snn.graph;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.uwe_hennig.snn.contracts.graph.Edge;
 import com.uwe_hennig.snn.contracts.graph.SingleGraphFragment;
@@ -48,8 +47,8 @@ public class SingleGraphFragmentImpl implements SingleGraphFragment {
     @Override
     public String toString() {
         return edges.stream()
-                .map(e -> e.toString())
-                .collect(Collectors.joining(", ", "SingleGraphFragment[", "]"));
+            .map(e -> e.toString())
+            .collect(Collectors.joining(", ", "SingleGraphFragment[", "]"));
     }
 
     @Override
@@ -57,8 +56,20 @@ public class SingleGraphFragmentImpl implements SingleGraphFragment {
         for (Edge edge : newEdges) {
             addEdge(edge);
         }
-
         return this;
+    }
+
+    @Override
+    public int sizeEdges() {
+        return edges.size();
+    }
+
+    @Override
+    public int sizeNodes() {
+        return (int) edges.stream()
+            .flatMap(e -> Stream.of(e.nodeFromId(), e.nodeToId()))
+            .distinct()
+            .count();
     }
 
 }

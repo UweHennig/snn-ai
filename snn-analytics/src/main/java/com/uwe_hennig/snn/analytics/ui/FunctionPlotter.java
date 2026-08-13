@@ -29,7 +29,7 @@ import javax.swing.JPanel;
  *
  * @author Uwe Hennig
  */
-public class GraphPlotter extends JFrame {
+public class FunctionPlotter extends JFrame {
     private static final long serialVersionUID = -2738162466635626474L;
 
     private JPanel                placeholder = new JPanel();
@@ -63,20 +63,20 @@ public class GraphPlotter extends JFrame {
     private record Function(String name, Color color, List<Point> points) {
     }
 
-    private GraphPlotter(int width, int height) {
+    private FunctionPlotter(int width, int height) {
         setSize(width, height);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         getContentPane().add(placeholder);
         setTitle("GraphPlotter v. Uwe Hennig");
     }
 
-    public static GraphPlotter frame(double widthRatio, double heightRatio, CleanupCallback  cleanupCallback) {
-        assert widthRatio > 0 && widthRatio <=1 : "Invalid widthRatio";
-        assert heightRatio > 0 && heightRatio <=1 : "Invalid heightRatio";
+    public static FunctionPlotter frame(double widthRatio, double heightRatio, CleanupCallback cleanupCallback) {
+        assert widthRatio > 0 && widthRatio <= 1 : "Invalid widthRatio";
+        assert heightRatio > 0 && heightRatio <= 1 : "Invalid heightRatio";
 
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
-        GraphPlotter frame = new GraphPlotter((int)(screenSize.width * widthRatio), (int)(screenSize.height * heightRatio));
+        FunctionPlotter frame = new FunctionPlotter((int) (screenSize.width * widthRatio), (int) (screenSize.height * heightRatio));
         frame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
@@ -92,31 +92,31 @@ public class GraphPlotter extends JFrame {
         return frame;
     }
 
-    public GraphPlotter withXRange(double xFrom, double xUntil, int grids) {
+    public FunctionPlotter withXRange(double xFrom, double xUntil, int grids) {
         this.xFrom = xFrom;
         this.xUntil = xUntil;
         this.xGrids = grids;
         return this;
     }
 
-    public GraphPlotter withYRange(double yFrom, double yUntil, int grids) {
+    public FunctionPlotter withYRange(double yFrom, double yUntil, int grids) {
         this.yFrom = yFrom;
         this.yUntil = yUntil;
         this.yGrids = grids;
         return this;
     }
 
-    public GraphPlotter withTitle(String title) {
+    public FunctionPlotter withTitle(String title) {
         this.title = title;
         return this;
     }
 
-    public GraphPlotter withLegend(boolean show) {
+    public FunctionPlotter withLegend(boolean show) {
         this.showLegend = show;
         return this;
     }
 
-    public GraphPlotter addFunction(String name, Color color) {
+    public FunctionPlotter addFunction(String name, Color color) {
         functionMap.put(name, new Function(name, color, new CopyOnWriteArrayList<>()));
         return this;
     }
@@ -152,7 +152,7 @@ public class GraphPlotter extends JFrame {
         repaint();
     }
 
-    public GraphPlotter build() {
+    public FunctionPlotter build() {
         JPanel canvas = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -315,9 +315,10 @@ public class GraphPlotter extends JFrame {
     }
 
     public static void main(String[] args) {
-        CleanupCallback cb = () -> {System.out.println("closing");};
-        GraphPlotter plotter = GraphPlotter
-            .frame(0.75f, 0.5f, cb)
+        CleanupCallback cb = () -> {
+            System.out.println("closing");
+        };
+        FunctionPlotter plotter = FunctionPlotter.frame(0.75f, 0.5f, cb)
             .withTitle("Ein TEST")
             .withLegend(true)
             .withXRange(0.0f, 2.0 * Math.PI, 20)
