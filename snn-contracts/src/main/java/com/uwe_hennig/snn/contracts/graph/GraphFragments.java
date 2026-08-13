@@ -18,7 +18,4 @@ public interface GraphFragments {
 
     GraphFragments addFragement(SingleGraphFragment component);
     GraphFragments addEdge(int fragmentIdx, Edge edge);
-
-    int sizeEdges();
-    int sizeNodes();
 }

@@ -24,13 +24,13 @@ import com.uwe_hennig.snn.util.logging.SNNLogger;
 public class GraphvizPrinter {
     public static final SNNLogger log = new SNNLogger();
 
-    public static void printGraph(GenerationContext context, String comment, SingleGraphFragment graph) {
-        log.debug(() -> renderToString(context, comment, graph));
+    public static void printGraph(GenerationContext context, String comment) {
+        log.debug(() -> renderToString(context, comment));
     }
 
-    public static void rewriteGraphFile(String filename, GenerationContext context, String comment, SingleGraphFragment graph) {
+    public static void rewriteGraphFile(String filename, GenerationContext context, String comment) {
         try {
-            String result = renderToString(context, comment, graph);
+            String result = renderToString(context, comment);
             Path path = getPath(filename);
             Files.writeString(path, result, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException e) {
@@ -38,16 +38,14 @@ public class GraphvizPrinter {
         }
     }
 
-    private static String renderToString(GenerationContext context, String comment, SingleGraphFragment graph) {
+    private static String renderToString(GenerationContext context, String comment) {
         StringBuilder builder = new StringBuilder();
         builder.append("digraph SNN {\n");
         builder.append("// " + comment + "\n");
+        SingleGraphFragment graph = context.completeGraph();
 
         if (graph != null && graph.edges().size() < 350) {
-            builder
-                .append("node [shape=none];\n")
-                .append("layout = neato;\n")
-                .append("edge [arrowhead=empty color=red];\n");
+            builder.append("node [shape=none];\n").append("layout = neato;\n").append("edge [arrowhead=empty color=red];\n");
 
             for (Edge edge : graph.edges()) {
                 if (context.isEdgeMarked(edge.edgeId())) {
@@ -57,10 +55,7 @@ public class GraphvizPrinter {
                 }
             }
         } else {
-            builder
-                .append("node [label=\".\", shape=none];\n")
-                .append("layout = fdp;\n")
-                .append("edge [arrowhead=empty color=gray dir=none];\n");
+            builder.append("node [label=\".\", shape=none];\n").append("layout = fdp;\n").append("edge [arrowhead=empty color=gray dir=none];\n");
 
             for (Edge edge : graph.edges()) {
                 builder.append(edge).append("\n");

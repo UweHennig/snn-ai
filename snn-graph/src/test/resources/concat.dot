@@ -1,0 +1,41 @@
+digraph SNN {
+// Concatenator graph test
+node [shape=none];
+layout = neato;
+edge [arrowhead=empty color=red];
+  0 ->   1
+  2 ->   3
+  1 ->   2
+  3 ->   0
+  4 ->   5
+  6 ->   7
+  7 ->   8
+  8 ->   9
+  5 ->   6
+  9 ->   4
+  0 ->  10 [color=green]
+ 10 ->  11 [color=green]
+ 11 ->  12 [color=green]
+ 12 ->  13 [color=green]
+ 13 ->   9 [color=green]
+  3 ->  14 [color=green]
+ 14 ->  15 [color=green]
+ 15 ->  16 [color=green]
+ 16 ->  17 [color=green]
+ 17 ->   6 [color=green]
+  2 ->  18 [color=green]
+ 18 ->  19 [color=green]
+ 19 ->  20 [color=green]
+ 20 ->  21 [color=green]
+ 21 ->   7 [color=green]
+  0 ->  22 [color=green]
+ 22 ->  23 [color=green]
+ 23 ->  24 [color=green]
+ 24 ->  25 [color=green]
+ 25 ->   8 [color=green]
+  3 ->  26 [color=green]
+ 26 ->  27 [color=green]
+ 27 ->  28 [color=green]
+ 28 ->  29 [color=green]
+ 29 ->   5 [color=green]
+}

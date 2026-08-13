@@ -27,13 +27,11 @@ import com.uwe_hennig.snn.graph.SingleGraphFragmentImpl;
  * @author Uwe Hennig
  */
 public class DefaultGeneratorTest {
-    private SingleGraphFragment   completeGraph;
-    private GenerationContextTest context;
-
     public class GenerationContextTest implements GenerationContext {
-        private int          nextNode = 0;
-        private long         edgeId   = 0;
-        public HashSet<Long> bitSet   = new HashSet<>();
+        private SingleGraphFragment completeGraph = SingleGraphFragmentImpl.create();
+        private int                 nextNode      = 0;
+        private long                edgeId        = 0;
+        public HashSet<Long>        bitSet        = new HashSet<>();
 
         @Override
         public boolean isEdgeMarked(long edgeId) {
@@ -66,6 +64,16 @@ public class DefaultGeneratorTest {
         private long packEdge(int srcId, int trgId) {
             return edgeId++;
         }
+
+        @Override
+        public SingleGraphFragment completeGraph() {
+            return completeGraph;
+        }
+
+        @Override
+        public int nodeCount() {
+            return nextNode;
+        }
     }
 
     @Test
@@ -92,21 +100,15 @@ public class DefaultGeneratorTest {
         // TODO
     }
 
-
     @BeforeEach
     public void beforeEach(TestInfo info) {
         String title = "### " + info.getDisplayName() + " ###";
         System.out.println("\n" + title);
         System.out.println("-".repeat(title.length()));
-
-        completeGraph = SingleGraphFragmentImpl.create();
-        context = new GenerationContextTest();
     }
 
     @AfterEach
     public void afterEach() {
-        completeGraph = null;
-        context = null;
     }
 
     @BeforeAll

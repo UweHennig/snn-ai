@@ -40,14 +40,14 @@ import com.uwe_hennig.snn.graph.util.GraphvizPrinter;
  * @author Uwe Hennig
  */
 public class GraphGeneratorsTest {
-    private SingleGraphFragment   completeGraph;
     private GenerationContextTest context;
 
     // Initially without OffHeap
     public class GenerationContextTest implements GenerationContext {
-        private int          nextNode = 0;
-        private long         nextEdge = 0;
-        public HashSet<Long> bitSet   = new HashSet<>();
+        private SingleGraphFragment completeGraph = SingleGraphFragmentImpl.create();
+        private int                 nextNode      = 0;
+        private long                nextEdge      = 0;
+        public HashSet<Long>        bitSet        = new HashSet<>();
 
         @Override
         public boolean isEdgeMarked(long edgeId) {
@@ -80,6 +80,16 @@ public class GraphGeneratorsTest {
         private long packEdge(int srcId, int trgId) {
             return nextEdge++;
         }
+
+        @Override
+        public SingleGraphFragment completeGraph() {
+            return completeGraph;
+        }
+
+        @Override
+        public int nodeCount() {
+            return nextNode;
+        }
     }
 
     @Test
@@ -90,7 +100,7 @@ public class GraphGeneratorsTest {
         assertNotNull(fragment);
         assertEquals(3, fragment.edges().size());
 
-        GraphvizPrinter.printGraph(context, "Ring single graph test", completeGraph);
+        GraphvizPrinter.printGraph(context, "Ring single graph test");
     }
 
     @Test
@@ -108,7 +118,7 @@ public class GraphGeneratorsTest {
         // 4 -> 5 Edges * 2 input Edges
         assertEquals(10, fragements.meld().edges().size());
 
-        GraphvizPrinter.printGraph(context, "Ring graph test", completeGraph);
+        GraphvizPrinter.printGraph(context, "Ring graph test");
     }
 
     @Test
@@ -119,7 +129,7 @@ public class GraphGeneratorsTest {
         assertNotNull(singleFragment);
         assertTrue(!singleFragment.edges().isEmpty());
 
-        GraphvizPrinter.printGraph(context, "Bubble graph test", completeGraph);
+        GraphvizPrinter.printGraph(context, "Bubble graph test");
     }
 
     @Test
@@ -129,14 +139,14 @@ public class GraphGeneratorsTest {
         SingleGraphFragment gen3 = rgg3.generate(context);
         assertNotNull(gen3);
 
-        GraphvizPrinter.printGraph(context, "LeafRing graph test 1", completeGraph);
+        GraphvizPrinter.printGraph(context, "LeafRing graph test 1");
 
         LeafRingConnectorGenerator lrcg = new LeafRingConnectorGenerator(NeuronFieldType.UNDEFINED, 4, EdgeDirectionMode.FORWARD);
         GraphFragments fragments = lrcg.generate(context, gen3);
         assertNotNull(fragments);
         assertTrue(fragments.fragments().size() >= 1);
 
-        GraphvizPrinter.printGraph(context, "LeafRing graph test 2", completeGraph);
+        GraphvizPrinter.printGraph(context, "LeafRing graph test 2");
     }
 
     @Test
@@ -145,7 +155,7 @@ public class GraphGeneratorsTest {
         PythagorasGraphGenerator generator = new PythagorasGraphGenerator(NeuronFieldType.UNDEFINED, 5, 3, 4);
         SingleGraphFragment singleFrgm = generator.generate(context);
         assertNotNull(singleFrgm);
-        GraphvizPrinter.rewriteGraphFile("pythagoras.dot", context, "Pythagoras graph test", completeGraph);
+        GraphvizPrinter.rewriteGraphFile("pythagoras.dot", context, "Pythagoras graph test");
     }
 
     @Test
@@ -160,7 +170,7 @@ public class GraphGeneratorsTest {
         assertNotNull(fragments);
         assertEquals(99, fragments.meld().edges().size());
 
-        GraphvizPrinter.rewriteGraphFile("pythagoras.dot", context, "Pythagoras graph test", completeGraph);
+        GraphvizPrinter.rewriteGraphFile("pythagoras.dot", context, "Pythagoras graph test");
     }
 
     @Test
@@ -176,7 +186,7 @@ public class GraphGeneratorsTest {
         SingleGraphFragment result = concatGen.generate(context);
         assertNotNull(result);
 
-        GraphvizPrinter.printGraph(context, "Concatenator graph test", completeGraph);
+        GraphvizPrinter.rewriteGraphFile("concat.dot", context, "Concatenator graph test");
     }
 
     @Test
@@ -185,8 +195,9 @@ public class GraphGeneratorsTest {
         TubeGraphGenerator tubeGen = new TubeGraphGenerator(NeuronFieldType.UNDEFINED, 4, 10);
         SingleGraphFragment result = tubeGen.generate(context);
         assertNotNull(result);
-        GraphvizPrinter.rewriteGraphFile("tube.dot", context, "Concatenator graph test", completeGraph);
+        GraphvizPrinter.rewriteGraphFile("tube.dot", context, "Concatenator graph test");
     }
+
     @Test
 
     @DisplayName("Tube graph test open")
@@ -198,8 +209,8 @@ public class GraphGeneratorsTest {
         GraphFragments result = tubeGen.generate(context, ring4);
 
         assertNotNull(result);
-        GraphvizPrinter.rewriteGraphFile("tube_open.dot", context, "Concatenator graph test", completeGraph);
-        GraphvizPrinter.printGraph(context, "Tube graph test open", completeGraph);
+        GraphvizPrinter.rewriteGraphFile("tube_open.dot", context, "Concatenator graph test");
+        GraphvizPrinter.printGraph(context, "Tube graph test open");
     }
 
     @BeforeEach
@@ -208,13 +219,11 @@ public class GraphGeneratorsTest {
         System.out.println("\n" + title);
         System.out.println("-".repeat(title.length()));
 
-        completeGraph = SingleGraphFragmentImpl.create();
         context = new GenerationContextTest();
     }
 
     @AfterEach
     public void afterEach() {
-        completeGraph = null;
         context = null;
     }
 

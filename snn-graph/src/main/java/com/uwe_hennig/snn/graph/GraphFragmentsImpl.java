@@ -72,14 +72,4 @@ public class GraphFragmentsImpl implements GraphFragments {
         return components.stream().map(c -> c.toString())
             .collect(Collectors.joining(",\n", "GraphFragments{", "}"));
     }
-
-    @Override
-    public int sizeEdges() {
-        return meld().sizeEdges();
-    }
-
-    @Override
-    public int sizeNodes() {
-        return meld().sizeNodes();
-    }
 }

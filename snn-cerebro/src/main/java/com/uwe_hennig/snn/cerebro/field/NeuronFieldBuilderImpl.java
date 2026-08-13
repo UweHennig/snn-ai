@@ -159,4 +159,16 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, GenerationCon
         long edgeId = ((long) srcId << 32) | (trgId & 0xFFFFFFFFL);
         return edgeId;
     }
+
+    @Override
+    public SingleGraphFragment completeGraph() {
+        // TODO Auto-generated method stub class GenerationContext
+        return null;
+    }
+
+    @Override
+    public int nodeCount() {
+        // TODO Auto-generated method stub class GenerationContext
+        return 0;
+    }
 }

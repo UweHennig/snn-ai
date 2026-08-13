@@ -35,7 +35,7 @@ public class NeuronFieldBuilderTest {
             NeuronFieldBuilderImpl builder = new NeuronFieldBuilderImpl();
 
             builder.start()
-                .withAfferent(new DefaultAfferentGraphGenerator(2, 0))
+                .withAfferent(new DefaultAfferentGraphGenerator(2))
                 .withAssociative(new DefaultAssociativeGraphGenerator(3, 1, 2))
                 .withEfferent(new DefaultEfferentGraphGenerator(2, EdgeDirectionMode.FORWARD))
                 .withFeedback(null)

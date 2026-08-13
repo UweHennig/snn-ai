@@ -19,7 +19,7 @@ import com.uwe_hennig.snn.contracts.graph.SingleGraphFragment;
 public class DefaultAfferentGraphGenerator implements GraphGenerator {
     private int sizeNodes;
 
-    public DefaultAfferentGraphGenerator(int sizeNodes, int markUsedEdges) {
+    public DefaultAfferentGraphGenerator(int sizeNodes) {
         this.sizeNodes = Math.max(sizeNodes, 2);
     }
 
