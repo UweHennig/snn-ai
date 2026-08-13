@@ -62,7 +62,7 @@ public class GraphCanvas extends JPanel {
 
         // Stability parameters
         double repulsionConstant = 1500.0;
-        double springConstant = 0.05;
+        double springConstant = 0.1;
         double damping = 0.7;
         double centerGravity = 0.02;
         double maxVelocity = 10.0;

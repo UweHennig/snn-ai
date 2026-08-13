@@ -32,7 +32,7 @@ import com.uwe_hennig.snn.graph.generator.LeafRingConnectorGenerator;
 import com.uwe_hennig.snn.graph.generator.PythagorasGraphGenerator;
 import com.uwe_hennig.snn.graph.generator.RingGraphGenerator;
 import com.uwe_hennig.snn.graph.generator.TubeGraphGenerator;
-import com.uwe_hennig.snn.graph.util.GraphvizConsolePrinter;
+import com.uwe_hennig.snn.graph.util.GraphvizPrinter;
 
 /**
  * GraphGeneratorsTest
@@ -90,7 +90,7 @@ public class GraphGeneratorsTest {
         assertNotNull(fragment);
         assertEquals(3, fragment.edges().size());
 
-        GraphvizConsolePrinter.printGraph(context, "Ring single graph test", completeGraph);
+        GraphvizPrinter.printGraph(context, "Ring single graph test", completeGraph);
     }
 
     @Test
@@ -108,7 +108,7 @@ public class GraphGeneratorsTest {
         // 4 -> 5 Edges * 2 input Edges
         assertEquals(10, fragements.meld().edges().size());
 
-        GraphvizConsolePrinter.printGraph(context, "Ring graph test", completeGraph);
+        GraphvizPrinter.printGraph(context, "Ring graph test", completeGraph);
     }
 
     @Test
@@ -119,7 +119,7 @@ public class GraphGeneratorsTest {
         assertNotNull(singleFragment);
         assertTrue(!singleFragment.edges().isEmpty());
 
-        GraphvizConsolePrinter.printGraph(context, "Bubble graph test", completeGraph);
+        GraphvizPrinter.printGraph(context, "Bubble graph test", completeGraph);
     }
 
     @Test
@@ -129,23 +129,23 @@ public class GraphGeneratorsTest {
         SingleGraphFragment gen3 = rgg3.generate(context);
         assertNotNull(gen3);
 
-        GraphvizConsolePrinter.printGraph(context, "LeafRing graph test 1", completeGraph);
+        GraphvizPrinter.printGraph(context, "LeafRing graph test 1", completeGraph);
 
         LeafRingConnectorGenerator lrcg = new LeafRingConnectorGenerator(NeuronFieldType.UNDEFINED, 4, EdgeDirectionMode.FORWARD);
         GraphFragments fragments = lrcg.generate(context, gen3);
         assertNotNull(fragments);
         assertTrue(fragments.fragments().size() >= 1);
 
-        GraphvizConsolePrinter.printGraph(context, "LeafRing graph test 2", completeGraph);
+        GraphvizPrinter.printGraph(context, "LeafRing graph test 2", completeGraph);
     }
 
     @Test
     @DisplayName("Pythagoras graph test")
     public void testPythagoras1() {
-        PythagorasGraphGenerator generator = new PythagorasGraphGenerator(NeuronFieldType.UNDEFINED, 15, 3, 4);
+        PythagorasGraphGenerator generator = new PythagorasGraphGenerator(NeuronFieldType.UNDEFINED, 5, 3, 4);
         SingleGraphFragment singleFrgm = generator.generate(context);
         assertNotNull(singleFrgm);
-        GraphvizConsolePrinter.printGraph(context, "Pythagoras graph test", completeGraph);
+        GraphvizPrinter.rewriteGraphFile("pythagoras.dot", context, "Pythagoras graph test", completeGraph);
     }
 
     @Test
@@ -160,7 +160,7 @@ public class GraphGeneratorsTest {
         assertNotNull(fragments);
         assertEquals(99, fragments.meld().edges().size());
 
-        GraphvizConsolePrinter.printGraph(context, "Pythagoras graph test", completeGraph);
+        GraphvizPrinter.rewriteGraphFile("pythagoras.dot", context, "Pythagoras graph test", completeGraph);
     }
 
     @Test
@@ -176,7 +176,7 @@ public class GraphGeneratorsTest {
         SingleGraphFragment result = concatGen.generate(context);
         assertNotNull(result);
 
-        GraphvizConsolePrinter.printGraph(context, "Concatenator graph test", completeGraph);
+        GraphvizPrinter.printGraph(context, "Concatenator graph test", completeGraph);
     }
 
     @Test
@@ -185,7 +185,7 @@ public class GraphGeneratorsTest {
         TubeGraphGenerator tubeGen = new TubeGraphGenerator(NeuronFieldType.UNDEFINED, 4, 10);
         SingleGraphFragment result = tubeGen.generate(context);
         assertNotNull(result);
-        GraphvizConsolePrinter.printGraph(context, "Concatenator graph test", completeGraph);
+        GraphvizPrinter.printGraph(context, "Concatenator graph test", completeGraph);
     }
 
     @BeforeEach

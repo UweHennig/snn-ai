@@ -1,9 +1,15 @@
 /**
- * @(#)GraphvizConsolePrinter.java
+ * @(#)GraphvizPrinter.java
  * Copyright (c) 2026 Uwe Hennig
  * All rights reserved.
  */
 package com.uwe_hennig.snn.graph.util;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 
 import com.uwe_hennig.snn.contracts.graph.Edge;
 import com.uwe_hennig.snn.contracts.graph.GenerationContext;
@@ -11,15 +17,25 @@ import com.uwe_hennig.snn.contracts.graph.SingleGraphFragment;
 import com.uwe_hennig.snn.util.logging.SNNLogger;
 
 /**
- * GraphvizConsolePrinter
+ * GraphvizPrinter
  *
  * @author Uwe Hennig
  */
-public class GraphvizConsolePrinter {
+public class GraphvizPrinter {
     public static final SNNLogger log = new SNNLogger();
 
     public static void printGraph(GenerationContext context, String comment, SingleGraphFragment graph) {
         log.debug(() -> renderToString(context, comment, graph));
+    }
+
+    public static void rewriteGraphFile(String filename, GenerationContext context, String comment, SingleGraphFragment graph) {
+        try {
+            String result = renderToString(context, comment, graph);
+            Path path = getPath(filename);
+            Files.writeString(path, result, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private static String renderToString(GenerationContext context, String comment, SingleGraphFragment graph) {
@@ -53,5 +69,15 @@ public class GraphvizConsolePrinter {
 
         builder.append("}\n");
         return builder.toString();
+    }
+
+    private static Path getPath(String relativePath) {
+        String basisPfad = System.getProperty("snn.dir");
+
+        if (basisPfad == null) {
+            return Paths.get(System.getProperty("user.dir"), "src", "test", "resources", relativePath);
+        }
+
+        return Paths.get(basisPfad, "snn", "resources", relativePath);
     }
 }
