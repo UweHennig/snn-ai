@@ -1,9 +1,9 @@
 /**
- * @(#)EdgeModel.java
+ * @(#)ReceptorModel.java
  * Copyright (c) 2026 Uwe Hennig
  * All rights reserved.
  */
-package com.uwe_hennig.snn.anatomy.neuron;
+package com.uwe_hennig.snn.anatomy.peripheral;
 
 import static java.lang.foreign.ValueLayout.JAVA_INT;
 
@@ -14,16 +14,12 @@ import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SequenceLayout;
 import java.lang.invoke.VarHandle;
 import java.util.concurrent.locks.LockSupport;
-
 /**
- * EdgeModel
+ * ReceptorModel
  *
  * @author Uwe Hennig
  */
-public class EdgeModel {
-    private static final int WRITER_WAITING = 0x40000000; // Bit 30
-    private static final int WRITER_ACTIVE  = 0xFFFFFFFF; // -1
-
+public class ReceptorModel {
     public final int   capacity;
     public final Arena arena;
 
@@ -33,30 +29,25 @@ public class EdgeModel {
     // @formatter:off
     static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         JAVA_INT.withName("lock"),
-        JAVA_INT.withName("srcId"),
-        JAVA_INT.withName("srcType"),
-        JAVA_INT.withName("trgType"),
-        JAVA_INT.withName("trgRef"),
-        JAVA_INT.withName("trgId")
+        JAVA_INT.withName("temporalFilterIndex"),
+        JAVA_INT.withName("informationFilterIndex"),
+        JAVA_INT.withName("relatedDendritesRef")
     ).withByteAlignment(8);
 
     static final VarHandle VH_LOCK =
         LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("lock"));
-
-    static final VarHandle VH_SRC_ID =
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("srcId"));
-    static final VarHandle VH_SRC_TYPE =
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("srcType"));
-    static final VarHandle VH_TRG_TYPE =
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("trgType"));
-    static final VarHandle VH_TRG_REF=
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("trgRef"));
-    static final VarHandle VH_TRG_ID=
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("trgId"));
+    static final VarHandle VH_TEMPORAL_FILTER_INDEX =
+        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("temporalFilterIndex"));
+    static final VarHandle VH_INFORMATION_FILTER_INDEX =
+        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("informationFilterIndex"));
+    static final VarHandle VH_DENDRITES_REF =
+        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("relatedDendritesRef"));
     // @formatter:on
 
 
-    public EdgeModel(int capacity) {
+    // ----- public -----
+
+    public ReceptorModel(int capacity) {
         assert capacity > 0 : "invalid capacity";
 
         this.capacity = capacity;
@@ -74,56 +65,10 @@ public class EdgeModel {
         return capacity;
     }
 
-    // ----- getter/setter -----
-
-    int getSrcId(int index) {
-        return (int) VH_SRC_ID.get(segment, 0L, index);
-    }
-
-    void setSrcId(int index, int value) {
-        VH_SRC_ID.set(segment, 0L, index, value);
-    }
-
-    int getSrcType(int index) {
-        return (int) VH_SRC_TYPE.get(segment, 0L, index);
-    }
-
-    void setSrcType(int index, int value) {
-        VH_SRC_TYPE.set(segment, 0L, index, value);
-    }
-
-    int getTrgType(int index) {
-        return (int) VH_TRG_TYPE.get(segment, 0L, index);
-    }
-
-    void setTrgType(int index, int value) {
-        VH_TRG_TYPE.set(segment, 0L, index, value);
-    }
-
-    int getTrgRef(int index) {
-        int raw = (int) VH_TRG_REF.get(segment, 0L, index);
-        if (raw < 0) {
-            return (int) VH_TRG_ID.get(segment, 0L, index);
-        }
-        return (int) VH_TRG_REF.get(segment, 0L, index);
-    }
-
-    void setSingleTrgRef(int index, int value) {
-        VH_TRG_ID.set(segment, 0L, index, value);
-        VH_TRG_REF.set(segment, 0L, index, -1);
-    }
-
-    void setMultiTrgRef(int index, int value) {
-        VH_TRG_REF.set(segment, 0L, index, value);
-        VH_TRG_ID.set(segment, 0L, index, -1);
-    }
-
-    boolean isMultiTrgRef(int index) {
-        int raw = (int) VH_TRG_REF.get(segment, 0L, index);
-        return raw >= 0;
-    }
-
     // ----- lock/unlock -----
+
+    private static final int WRITER_WAITING = 0x40000000; // Bit 30
+    private static final int WRITER_ACTIVE  = 0xFFFFFFFF; // -1
 
     void writeLock(int index) {
         int spins = 0;
@@ -190,4 +135,32 @@ public class EdgeModel {
             LockSupport.parkNanos(1);
         }
     }
+
+    // ----- getter/setter -----
+    // RelatedDendritesRef
+
+    int getTemporalFilterIndex(int index) {
+        return (int) VH_TEMPORAL_FILTER_INDEX.get(segment, 0L, index);
+    }
+
+    void setTemporalFilterIndex(int index, int filterIndex) {
+        VH_TEMPORAL_FILTER_INDEX.set(segment, 0L, index, filterIndex);
+    }
+
+    int getInformationFilterIndex(int index) {
+        return (int) VH_INFORMATION_FILTER_INDEX.get(segment, 0L, index);
+    }
+
+    void setInformationFilterIndex(int index, int filterIndex) {
+        VH_INFORMATION_FILTER_INDEX.set(segment, 0L, index, filterIndex);
+    }
+
+    int getRelatedDendritesRef(int index) {
+        return (int) VH_DENDRITES_REF.get(segment, 0L, index);
+    }
+
+    void setRelatedDendritesRef(int index, int reference) {
+        VH_DENDRITES_REF.set(segment, 0L, index, reference);
+    }
+
 }

@@ -49,7 +49,7 @@ public final class SynapseModel {
         LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("targetType"));
     static final VarHandle VH_MODULATOR_ID =
         LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("modulatorId"));
-    // @formatter:off
+    // @formatter:on
 
     // ----- public -----
 

@@ -49,7 +49,7 @@ public final class PotentialModel {
     static final VarHandle VH_REPOLARIZATIN_TIME =
         LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("repolarizationTime"));
 
-    // @formatter:off
+    // @formatter:on
 
     // ----- public -----
 

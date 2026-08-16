@@ -1,10 +1,11 @@
 /**
- * @(#)EdgeModel.java
+ * @(#)FilterModel.java
  * Copyright (c) 2026 Uwe Hennig
  * All rights reserved.
  */
-package com.uwe_hennig.snn.anatomy.neuron;
+package com.uwe_hennig.snn.anatomy.peripheral;
 
+import static java.lang.foreign.ValueLayout.JAVA_FLOAT;
 import static java.lang.foreign.ValueLayout.JAVA_INT;
 
 import java.lang.foreign.Arena;
@@ -16,14 +17,11 @@ import java.lang.invoke.VarHandle;
 import java.util.concurrent.locks.LockSupport;
 
 /**
- * EdgeModel
+ * FilterModel
  *
  * @author Uwe Hennig
  */
-public class EdgeModel {
-    private static final int WRITER_WAITING = 0x40000000; // Bit 30
-    private static final int WRITER_ACTIVE  = 0xFFFFFFFF; // -1
-
+public class FilterModel {
     public final int   capacity;
     public final Arena arena;
 
@@ -33,30 +31,24 @@ public class EdgeModel {
     // @formatter:off
     static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         JAVA_INT.withName("lock"),
-        JAVA_INT.withName("srcId"),
-        JAVA_INT.withName("srcType"),
-        JAVA_INT.withName("trgType"),
-        JAVA_INT.withName("trgRef"),
-        JAVA_INT.withName("trgId")
+        MemoryLayout.paddingLayout(4),
+        JAVA_FLOAT.withName("minValue"),
+        JAVA_FLOAT.withName("maxValue")
     ).withByteAlignment(8);
 
     static final VarHandle VH_LOCK =
         LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("lock"));
 
-    static final VarHandle VH_SRC_ID =
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("srcId"));
-    static final VarHandle VH_SRC_TYPE =
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("srcType"));
-    static final VarHandle VH_TRG_TYPE =
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("trgType"));
-    static final VarHandle VH_TRG_REF=
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("trgRef"));
-    static final VarHandle VH_TRG_ID=
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("trgId"));
+    static final VarHandle VH_MIN_VALUE =
+        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("minValue"));
+
+    static final VarHandle VH_MAX_VALUE =
+        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("maxValue"));
     // @formatter:on
 
+    // ----- public -----
 
-    public EdgeModel(int capacity) {
+    public FilterModel(int capacity) {
         assert capacity > 0 : "invalid capacity";
 
         this.capacity = capacity;
@@ -74,56 +66,10 @@ public class EdgeModel {
         return capacity;
     }
 
-    // ----- getter/setter -----
-
-    int getSrcId(int index) {
-        return (int) VH_SRC_ID.get(segment, 0L, index);
-    }
-
-    void setSrcId(int index, int value) {
-        VH_SRC_ID.set(segment, 0L, index, value);
-    }
-
-    int getSrcType(int index) {
-        return (int) VH_SRC_TYPE.get(segment, 0L, index);
-    }
-
-    void setSrcType(int index, int value) {
-        VH_SRC_TYPE.set(segment, 0L, index, value);
-    }
-
-    int getTrgType(int index) {
-        return (int) VH_TRG_TYPE.get(segment, 0L, index);
-    }
-
-    void setTrgType(int index, int value) {
-        VH_TRG_TYPE.set(segment, 0L, index, value);
-    }
-
-    int getTrgRef(int index) {
-        int raw = (int) VH_TRG_REF.get(segment, 0L, index);
-        if (raw < 0) {
-            return (int) VH_TRG_ID.get(segment, 0L, index);
-        }
-        return (int) VH_TRG_REF.get(segment, 0L, index);
-    }
-
-    void setSingleTrgRef(int index, int value) {
-        VH_TRG_ID.set(segment, 0L, index, value);
-        VH_TRG_REF.set(segment, 0L, index, -1);
-    }
-
-    void setMultiTrgRef(int index, int value) {
-        VH_TRG_REF.set(segment, 0L, index, value);
-        VH_TRG_ID.set(segment, 0L, index, -1);
-    }
-
-    boolean isMultiTrgRef(int index) {
-        int raw = (int) VH_TRG_REF.get(segment, 0L, index);
-        return raw >= 0;
-    }
-
     // ----- lock/unlock -----
+
+    private static final int WRITER_WAITING = 0x40000000; // Bit 30
+    private static final int WRITER_ACTIVE  = 0xFFFFFFFF; // -1
 
     void writeLock(int index) {
         int spins = 0;
@@ -189,5 +135,23 @@ public class EdgeModel {
         } else {
             LockSupport.parkNanos(1);
         }
+    }
+
+    // ----- getter/setter -----
+
+    int getMinValue(int index) {
+        return (int) VH_MIN_VALUE.get(segment, 0L, index);
+    }
+
+    void setMinValue(int index, float minValue) {
+        VH_MIN_VALUE.set(segment, 0L, index, minValue);
+    }
+
+    int getMaxValue(int index) {
+        return (int) VH_MAX_VALUE.get(segment, 0L, index);
+    }
+
+    void setMaxValue(int index, float maxValue) {
+        VH_MAX_VALUE.set(segment, 0L, index, maxValue);
     }
 }

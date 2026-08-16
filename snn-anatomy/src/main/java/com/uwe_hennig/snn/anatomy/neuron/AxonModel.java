@@ -46,7 +46,7 @@ public final class AxonModel {
         LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("synapsesRef"));
     static final VarHandle VH_MODULATOR_ID =
         LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("modulatorId"));
-    // @formatter:off
+    // @formatter:on
 
     // ----- public -----
 
