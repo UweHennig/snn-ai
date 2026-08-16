@@ -36,6 +36,10 @@ public class MapModel {
         arena.close();
     }
 
+    public int getSize() {
+        return size;
+    }
+
     // --- PUT-Methoden ---
 
     public void put(int index, int value) {
