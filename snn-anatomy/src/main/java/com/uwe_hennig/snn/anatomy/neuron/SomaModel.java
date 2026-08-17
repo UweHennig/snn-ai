@@ -100,7 +100,7 @@ public final class SomaModel {
         while (true) {
             int current = (int) VH_LOCK.getVolatile(segment, 0L, index);
 
-            // no reader aktive and write flag is set or initial state.
+            // no reader active and write flag is set or initial state.
             if (current == WRITER_WAITING || current == 0) {
                 if (VH_LOCK.compareAndSet(segment, 0L, index, current, WRITER_ACTIVE)) {
                     return;

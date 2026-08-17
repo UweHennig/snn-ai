@@ -49,6 +49,8 @@ public class FeedbackModel {
         LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("relatedNeuronElementRef"));
     // @formatter:on
 
+    // ----- public -----
+
     public FeedbackModel(int capacity) {
         assert capacity > 0 : "invalid capacity";
 
@@ -92,7 +94,7 @@ public class FeedbackModel {
         while (true) {
             int current = (int) VH_LOCK.getVolatile(segment, 0L, index);
 
-            // no reader aktive and write flag is set or initial state.
+            // no reader active and write flag is set or initial state.
             if (current == WRITER_WAITING || current == 0) {
                 if (VH_LOCK.compareAndSet(segment, 0L, index, current, WRITER_ACTIVE)) {
                     return;
@@ -161,7 +163,7 @@ public class FeedbackModel {
     }
 
     void setRelatedNeuronElementRef(int index, int reference) {
-        VH_NEURON_ELEMENT_REF.set(segment, 0L, index, reference);;
+        VH_NEURON_ELEMENT_REF.set(segment, 0L, index, reference);
     }
 
     int getFeedbackType(int index) {
