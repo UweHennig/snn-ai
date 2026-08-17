@@ -78,7 +78,7 @@ public class EffectorModel {
         return (int)VH_RELATED_ELEMENT.get(segment, 0L, index);
     }
 
-    void setNeuronElement(int index, int value) {
+    void setRelatedElement(int index, int value) {
         VH_RELATED_ELEMENT.set(segment, 0L, index, value);
     }
 
