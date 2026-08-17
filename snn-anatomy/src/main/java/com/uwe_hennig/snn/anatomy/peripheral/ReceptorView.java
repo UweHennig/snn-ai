@@ -5,7 +5,6 @@
  */
 package com.uwe_hennig.snn.anatomy.peripheral;
 
-import com.uwe_hennig.snn.anatomy.allocator.EffectorModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.ReceptorModelManager;
 
 /**
