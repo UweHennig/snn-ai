@@ -59,7 +59,7 @@ public class ReceptorTest {
                 System.out.println("...");
             }
             System.out.println("...");
-            assertTrue(sum > bound * bound, "Values are not set!");
+            assertTrue(sum > 100, "Values are not set!");
 
             assertEquals(1234, model.getInformationFilterIndex());
 
