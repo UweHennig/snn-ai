@@ -16,17 +16,16 @@ public class ReceptorModelManager {
     private static ReceptorModelManager INSTANCE;
 
     private ReceptorModel model;
-    private int           nextOffset = 0;
 
-    private ReceptorModelManager(int capacity) {
-        this.model = new ReceptorModel(capacity);
+    private ReceptorModelManager(int rowDendrites, int colDendrites) {
+        this.model = new ReceptorModel(rowDendrites, colDendrites);
     }
 
-    public static ReceptorModelManager init(int capacity) {
+    public static ReceptorModelManager init(int rowDendrites, int colDendrites) {
         if (INSTANCE == null) {
             synchronized (ReceptorModelManager.class) {
                 if (INSTANCE == null) {
-                    INSTANCE = new ReceptorModelManager(capacity);
+                    INSTANCE = new ReceptorModelManager(rowDendrites, colDendrites);
                 }
             }
         }
@@ -37,17 +36,6 @@ public class ReceptorModelManager {
         return INSTANCE;
     }
 
-    public int nextId() {
-        if (model.getCapacity() <= nextOffset) {
-            throw new IllegalStateException("Out of off heap weight memory");
-        }
-        return nextOffset++;
-    }
-
-    public int capacity() {
-        return nextOffset;
-    }
-
     public ReceptorModel getModel() {
         return model;
     }
@@ -56,7 +44,6 @@ public class ReceptorModelManager {
         if (INSTANCE != null) {
             INSTANCE.model.close();
             INSTANCE.model = null;
-            INSTANCE.nextOffset = 0;
             INSTANCE = null;
         }
     }

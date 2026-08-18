@@ -20,49 +20,109 @@ import java.util.concurrent.locks.LockSupport;
  * @author Uwe Hennig
  */
 public class ReceptorModel {
-    public final int   capacity;
     public final Arena arena;
+    public final int rows;
+    public final int cols;
 
     SequenceLayout sequenceLayout;
     MemorySegment  segment;
 
-    // @formatter:off
-    static final GroupLayout LAYOUT = MemoryLayout.structLayout(
-        JAVA_INT.withName("lock"),
-        JAVA_INT.withName("temporalFilterIndex"),
-        JAVA_INT.withName("informationFilterIndex"),
-        JAVA_INT.withName("relatedDendritesRef")
-    ).withByteAlignment(8);
+    final VarHandle VH_TEMPORAL_FILTER_INDEX;
+    final VarHandle VH_INFORMATION_FILTER_INDEX;
+    final VarHandle VH_DENDRIT_MATRIX;
+    final VarHandle VH_LOCK;
 
-    static final VarHandle VH_LOCK =
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("lock"));
-    static final VarHandle VH_TEMPORAL_FILTER_INDEX =
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("temporalFilterIndex"));
-    static final VarHandle VH_INFORMATION_FILTER_INDEX =
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("informationFilterIndex"));
-    static final VarHandle VH_DENDRITES_REF =
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("relatedDendritesRef"));
-    // @formatter:on
-
+    final GroupLayout LAYOUT;
 
     // ----- public -----
 
-    public ReceptorModel(int capacity) {
-        assert capacity > 0 : "invalid capacity";
-
-        this.capacity = capacity;
+    public ReceptorModel(int rows, int cols) {
         this.arena = Arena.ofShared();
+        this.rows = rows;
+        this.cols = cols;
 
-        this.sequenceLayout = MemoryLayout.sequenceLayout(capacity, LAYOUT);
-        this.segment = arena.allocate(sequenceLayout);
+        this.LAYOUT = MemoryLayout.structLayout(
+            JAVA_INT.withName("lock"),
+            JAVA_INT.withName("temporalFilterIndex"),
+            JAVA_INT.withName("informationFilterIndex"),
+            MemoryLayout.sequenceLayout(rows, MemoryLayout.sequenceLayout(cols, JAVA_INT)).withName("dendritMatrix")
+        ).withByteAlignment(8);
+
+        this.segment = arena.allocate(LAYOUT);
+
+        this.VH_LOCK = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("lock"));
+        this.VH_TEMPORAL_FILTER_INDEX = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("temporalFilterIndex"));
+        this.VH_INFORMATION_FILTER_INDEX = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("informationFilterIndex"));
+        this.VH_DENDRIT_MATRIX = LAYOUT.varHandle(
+            MemoryLayout.PathElement.groupElement("dendritMatrix"),
+            MemoryLayout.PathElement.sequenceElement(), // Row
+            MemoryLayout.PathElement.sequenceElement()  // Col
+        );
     }
 
     public void close() {
         arena.close();
     }
 
-    public int getCapacity() {
-        return capacity;
+    public int rows() {
+        return rows;
+    }
+
+    public int columns() {
+        return cols;
+    }
+
+    // ----- getter/setter -----
+
+    int getTemporalFilterIndex() {
+        return (int) VH_TEMPORAL_FILTER_INDEX.get(segment, 0L);
+    }
+
+    void setTemporalFilterIndex(int filterIndex) {
+        VH_TEMPORAL_FILTER_INDEX.set(segment, 0L, filterIndex);
+    }
+
+    int getInformationFilterIndex() {
+        return (int) VH_INFORMATION_FILTER_INDEX.get(segment, 0L);
+    }
+
+    void setInformationFilterIndex(int filterIndex) {
+        VH_INFORMATION_FILTER_INDEX.set(segment, 0L, filterIndex);
+    }
+
+    void putDendritId(int row, int col, int dendritId) {
+        VH_DENDRIT_MATRIX.set(segment, 0L, (long) row, (long) col, dendritId);
+    }
+
+    public int getDendritId(int row, int col) {
+        return (int) VH_DENDRIT_MATRIX.get(segment, 0L, (long) row, (long) col);
+    }
+
+    public int[] getDendritIdRow(int row) {
+        if (row < 0 || row >= rows) {
+            throw new IndexOutOfBoundsException();
+        }
+
+        long offset = LAYOUT.byteOffset(
+            MemoryLayout.PathElement.groupElement("dendritMatrix"),
+            MemoryLayout.PathElement.sequenceElement(row)
+        );
+
+        long byteLength = cols * JAVA_INT.byteSize();
+
+        return segment.asSlice(offset, byteLength).toArray(JAVA_INT);
+    }
+
+    public int[] getDendritIdCol(int col) {
+        if (col < 0 || col >= cols) {
+            throw new IndexOutOfBoundsException();
+        }
+
+        int[] result = new int[rows];
+        for (int r = 0; r < rows; r++) {
+            result[r] = (int) VH_DENDRIT_MATRIX.get(segment, 0L, (long) r, (long) col);
+        }
+        return result;
     }
 
     // ----- lock/unlock -----
@@ -134,32 +194,6 @@ public class ReceptorModel {
         } else {
             LockSupport.parkNanos(1);
         }
-    }
-
-    // ----- getter/setter -----
-
-    int getTemporalFilterIndex(int index) {
-        return (int) VH_TEMPORAL_FILTER_INDEX.get(segment, 0L, index);
-    }
-
-    void setTemporalFilterIndex(int index, int filterIndex) {
-        VH_TEMPORAL_FILTER_INDEX.set(segment, 0L, index, filterIndex);
-    }
-
-    int getInformationFilterIndex(int index) {
-        return (int) VH_INFORMATION_FILTER_INDEX.get(segment, 0L, index);
-    }
-
-    void setInformationFilterIndex(int index, int filterIndex) {
-        VH_INFORMATION_FILTER_INDEX.set(segment, 0L, index, filterIndex);
-    }
-
-    int getRelatedDendritesRef(int index) {
-        return (int) VH_DENDRITES_REF.get(segment, 0L, index);
-    }
-
-    void setRelatedDendritesRef(int index, int reference) {
-        VH_DENDRITES_REF.set(segment, 0L, index, reference);
     }
 
 }

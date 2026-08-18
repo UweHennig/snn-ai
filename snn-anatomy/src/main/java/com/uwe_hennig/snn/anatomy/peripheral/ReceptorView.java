@@ -37,34 +37,33 @@ public class ReceptorView {
 
     // ----- getter/setter -----
 
-    public static int getTemporalFilterIndex(int index) {
+    public static int getTemporalFilterIndex() {
         ReceptorModel model = ReceptorModelManager.instance().getModel();
-        return model.getTemporalFilterIndex(index);
+        return model.getTemporalFilterIndex();
     }
 
-    public static void setTemporalFilterIndex(int index, int value) {
+    public static void setTemporalFilterIndex(int value) {
         ReceptorModel model = ReceptorModelManager.instance().getModel();
-        model.setTemporalFilterIndex(index, value);
+        model.setTemporalFilterIndex(value);
     }
 
-    public static int getInformationFilterIndex(int index) {
+    public static int getInformationFilterIndex() {
         ReceptorModel model = ReceptorModelManager.instance().getModel();
-        return model.getInformationFilterIndex(index);
+        return model.getInformationFilterIndex();
     }
 
-    public static void setInformationFilterIndex(int index, int value) {
+    public static void setInformationFilterIndex(int value) {
         ReceptorModel model = ReceptorModelManager.instance().getModel();
-        model.setInformationFilterIndex(index, value);
+        model.setInformationFilterIndex(value);
     }
 
-    public static int getRelatedDendritesRef(int index) {
+    public static int getDendritId(int row, int col) {
         ReceptorModel model = ReceptorModelManager.instance().getModel();
-        return model.getRelatedDendritesRef(index);
+        return model.getDendritId(row, col);
     }
 
-    public static void setRelatedDendritesRef(int index, int value) {
+    public static void setDendritId(int row, int col, int id) {
         ReceptorModel model = ReceptorModelManager.instance().getModel();
-        model.setRelatedDendritesRef(index, value);
+        model.putDendritId(row, col, id);
     }
-
 }
