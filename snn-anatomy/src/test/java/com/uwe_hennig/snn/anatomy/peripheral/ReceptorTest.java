@@ -25,32 +25,41 @@ public class ReceptorTest {
     @Test
     @DisplayName("Receptor Matrix Test")
     public void testMatrix() {
-        final int bound = 10;
+        final int bound = 1000;
         ReceptorModel model = new ReceptorModel(bound, bound);
         ThreadLocalRandom rand = ThreadLocalRandom.current();
         try {
             model.setInformationFilterIndex(1234);
             model.setTemporalFilterIndex(56789);
 
-            for (int i = 0; i < 1000; i++) {
+            long start = System.nanoTime();
+            for (int i = 0; i < 100_000_000; i++) {
                 int row = rand.nextInt(bound);
                 int col = rand.nextInt(bound);
-                int val = rand.nextInt(bound);
+                int val = rand.nextInt(9) + 1;
                 model.putDendritId(row, col, val);
             }
+            long end = System.nanoTime();
+            double sec = (end - start) / 1_000_000_000.0;
+            double avgOpsPerSec = 100_000_000.0 / sec;
+
+            System.out.printf("Throughput : %,6.2f ops/sec%n", avgOpsPerSec);
+            System.out.printf("Latency    : %,13.2f ns/op%n", 1_000_000_000.0 / avgOpsPerSec);
+
             System.out.println();
 
             int sum = 0;
-            for (int row = 0; row < bound; row++) {
-                for (int col = 0; col < bound; col++) {
+            int views = Math.min(bound, 10);
+            for (int row = 0; row < views; row++) {
+                for (int col = 0; col < views; col++) {
                     int val = model.getDendritId(row, col);
                     sum += val;
                     System.out.print(val + " ");
                 }
-                System.out.println();
+                System.out.println("...");
             }
-            System.out.println();
-            assertTrue(sum > 0, "Values are not set!");
+            System.out.println("...");
+            assertTrue(sum > bound * bound, "Values are not set!");
 
             assertEquals(1234, model.getInformationFilterIndex());
 
