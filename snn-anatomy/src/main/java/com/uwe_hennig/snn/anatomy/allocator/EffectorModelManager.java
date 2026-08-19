@@ -16,7 +16,6 @@ public class EffectorModelManager {
     private static EffectorModelManager INSTANCE;
 
     private EffectorModel model;
-    private int           nextOffset = 0;
 
     private EffectorModelManager(int capacity) {
         this.model = new EffectorModel(capacity);
@@ -37,26 +36,18 @@ public class EffectorModelManager {
         return INSTANCE;
     }
 
-    public int nextId() {
-        if (model.getCapacity() <= nextOffset) {
-            throw new IllegalStateException("Out of off heap weight memory");
-        }
-        return nextOffset++;
-    }
-
-    public int capacity() {
-        return nextOffset;
-    }
-
     public EffectorModel getModel() {
         return model;
+    }
+
+    public int getCapacity() {
+        return model.getCapacity();
     }
 
     public static void close() {
         if (INSTANCE != null) {
             INSTANCE.model.close();
             INSTANCE.model = null;
-            INSTANCE.nextOffset = 0;
             INSTANCE = null;
         }
     }

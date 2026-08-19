@@ -13,6 +13,28 @@ import com.uwe_hennig.snn.anatomy.allocator.EffectorModelManager;
  * @author Uwe Hennig
  */
 public class EffectorView {
+    // ----- getter/setter -----
+
+    public static int getTemporalFilterIndex(int index) {
+        EffectorModel model = EffectorModelManager.instance().getModel();
+        return model.getTemporalFilterIndex();
+    }
+
+    public static void setTemporalFilterIndex(int index, int value) {
+        EffectorModel model = EffectorModelManager.instance().getModel();
+        model.setTemporalFilterIndex(value);
+    }
+
+    public static int getRelatedElement(int index) {
+        EffectorModel model = EffectorModelManager.instance().getModel();
+        return model.getRelatedId(index);
+    }
+
+    public static void setRelatedElement(int index, int value) {
+        EffectorModel model = EffectorModelManager.instance().getModel();
+        model.setRelatedId(index, value);
+    }
+
     // ----- lock/unlock -----
 
     public static void readLock(int index) {
@@ -34,27 +56,4 @@ public class EffectorView {
         EffectorModel model = EffectorModelManager.instance().getModel();
         model.writeUnlock(index);
     }
-
-    // ----- getter/setter -----
-
-    public static int getTemporalFilterIndex(int index) {
-        EffectorModel model = EffectorModelManager.instance().getModel();
-        return model.getTemporalFilterIndex(index);
-    }
-
-    public static void setTemporalFilterIndex(int index, int value) {
-        EffectorModel model = EffectorModelManager.instance().getModel();
-        model.setTemporalFilterIndex(index, value);
-    }
-
-    public static int getRelatedElement(int index) {
-        EffectorModel model = EffectorModelManager.instance().getModel();
-        return model.getRelatedElement(index);
-    }
-
-    public static void setRelatedElement(int index, int value) {
-        EffectorModel model = EffectorModelManager.instance().getModel();
-        model.setRelatedElement(index, value);
-    }
-
 }

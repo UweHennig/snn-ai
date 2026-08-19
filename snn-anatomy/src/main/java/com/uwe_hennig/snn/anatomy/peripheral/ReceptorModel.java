@@ -24,7 +24,6 @@ public class ReceptorModel {
     public final int rows;
     public final int cols;
 
-    SequenceLayout sequenceLayout;
     MemorySegment  segment;
 
     final VarHandle VH_TEMPORAL_FILTER_INDEX;
@@ -61,7 +60,9 @@ public class ReceptorModel {
     }
 
     public void close() {
-        arena.close();
+        if (arena != null) {
+            arena.close();
+        }
     }
 
     public int rows() {

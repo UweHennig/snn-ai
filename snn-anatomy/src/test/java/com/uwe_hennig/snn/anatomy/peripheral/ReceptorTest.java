@@ -15,18 +15,19 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
+import com.uwe_hennig.snn.anatomy.allocator.ReceptorModelManager;
+
 /**
  * ReceptorTest
  *
  * @author Uwe Hennig
  */
 public class ReceptorTest {
-
     @Test
     @DisplayName("Receptor Matrix Test")
     public void testMatrix() {
         final int bound = 1000;
-        ReceptorModel model = new ReceptorModel(bound, bound);
+        ReceptorModel model = ReceptorModelManager.init(bound, bound).getModel();
         ThreadLocalRandom rand = ThreadLocalRandom.current();
         try {
             model.setInformationFilterIndex(1234);
@@ -67,7 +68,7 @@ public class ReceptorTest {
             assertEquals(bound, model.columns());
 
         } finally {
-            model.close();
+            ReceptorModelManager.close();
         }
     }
 
