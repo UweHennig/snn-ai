@@ -16,10 +16,11 @@ import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SequenceLayout;
 import java.lang.invoke.VarHandle;
 import java.util.concurrent.locks.LockSupport;
+import java.util.logging.MemoryHandler;
 
 /**
  * StimulusModel
- * TODO expiry float or long
+ *
  * @author Uwe Hennig
  */
 public class StimulusModel {
@@ -32,17 +33,24 @@ public class StimulusModel {
     // @formatter:off
     public static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         JAVA_INT.withName("lock"),
+        MemoryLayout.paddingLayout(4),
         JAVA_INT.withName("stimulusType"),
-        JAVA_INT.withName("edgeRef"),
+        JAVA_INT.withName("transferType"),
+        JAVA_INT.withName("targetRef"),
+        JAVA_INT.withName("targetSubRef"),
+        JAVA_INT.withName("targetType"),
         JAVA_FLOAT.withName("value"),
         JAVA_LONG.withName("expiry")
     ).withByteAlignment(8);
 
-    static final VarHandle VH_LOCK       = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("lock"));
-    static final VarHandle VH_EVENT_TYPE = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("stimulusType"));
-    static final VarHandle VH_EDGE_REF   = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("edgeRef"));
-    static final VarHandle VH_EXPIRY     = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("expiry"));
-    static final VarHandle VH_VALUE      = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("value"));
+    static final VarHandle VH_LOCK           = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("lock"));
+    static final VarHandle VH_STIMULUS_TYPE  = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("stimulusType"));
+    static final VarHandle VH_TRANSFER_TYPE  = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("transferType"));
+    static final VarHandle VH_TARGET_REF     = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("targetRef"));
+    static final VarHandle VH_TARGET_SUB_REF = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("targetSubRef"));
+    static final VarHandle VH_TARGET_TYPE    = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("targetType"));
+    static final VarHandle VH_VALUE          = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("value"));
+    static final VarHandle VH_EXPIRY         = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("expiry"));
     // @formatter:on
 
     public StimulusModel(int capacity) {
@@ -142,20 +150,44 @@ public class StimulusModel {
 
     // ----- getter/setter -----
 
-    int getEventType(int index) {
-        return (int) VH_EVENT_TYPE.get(segment, 0L, index);
+    int getStimulusType(int index) {
+        return (int) VH_STIMULUS_TYPE.get(segment, 0L, index);
     }
 
-    void setEventType(int index, int value) {
-        VH_EVENT_TYPE.set(segment, 0L, index, value);
+    void setStimulusType(int index, int value) {
+        VH_STIMULUS_TYPE.set(segment, 0L, index, value);
     }
 
-    int getEdgeRef(int index) {
-        return (int) VH_EDGE_REF.get(segment, 0L, index);
+    int getTransferType(int index) {
+        return (int) VH_TRANSFER_TYPE.get(segment, 0L, index);
     }
 
-    void setEdgeRef(int index, int value) {
-        VH_EDGE_REF.set(segment, 0L, index, value);
+    void setTransferType(int index, int value) {
+        VH_TRANSFER_TYPE.set(segment, 0L, index, value);
+    }
+
+    int getTargetRef(int index) {
+        return (int) VH_TARGET_REF.get(segment, 0L, index);
+    }
+
+    void setTargetRef(int index, int value) {
+        VH_TARGET_REF.set(segment, 0L, index, value);
+    }
+
+    int getTargetSubRef(int index) {
+        return (int) VH_TARGET_SUB_REF.get(segment, 0L, index);
+    }
+
+    void setTargetSubRef(int index, int value) {
+        VH_TARGET_SUB_REF.set(segment, 0L, index, value);
+    }
+
+    int getTargetType(int index) {
+        return (int) VH_TARGET_TYPE.get(segment, 0L, index);
+    }
+
+    void setTargetType(int index, int value) {
+        VH_TARGET_TYPE.set(segment, 0L, index, value);
     }
 
     float getValue(int index) {

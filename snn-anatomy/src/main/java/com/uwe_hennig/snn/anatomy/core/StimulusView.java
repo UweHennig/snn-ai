@@ -34,7 +34,7 @@ public class StimulusView {
         return model;
     }
 
-    public int claimStimulus(int eventType, float value, int edgeRef) {
+    public int claimStimulus(int eventType, float value, int targetRef) {
         long now = System.nanoTime(); // TODO check
         int start = nextSearchStart.getAndAdd(32) & MASK;
 
@@ -46,8 +46,8 @@ public class StimulusView {
                     try {
                         if (model.getExpiry(index) < now) {
 
-                            model.setEventType(index, eventType);
-                            model.setEdgeRef(index, edgeRef);
+                            model.setStimulusType(index, eventType);
+                            model.setTargetRef(index, targetRef);
                             model.setValue(index, value);
                             model.setExpiry(index, now + TTL_NANO);
 
@@ -63,7 +63,7 @@ public class StimulusView {
         return -1;
     }
 
-    public boolean updateStimulus(int index, int eventType, float value, int edgeRef) {
+    public boolean updateStimulus(int index, int eventType, float value, int targetRef) {
         long now = System.nanoTime(); // TODO check
         if (model.getExpiry(index) >= now) {
             if (model.tryWriteLock(index)) {
@@ -74,8 +74,8 @@ public class StimulusView {
                             return false;
                         }
 
-                        model.setEventType(index, eventType);
-                        model.setEdgeRef(index, edgeRef);
+                        model.setStimulusType(index, eventType);
+                        model.setTargetRef(index, targetRef);
                         model.setValue(index, value);
 
                         return true;
@@ -103,15 +103,23 @@ public class StimulusView {
         return model.getValue(index);
     }
 
-    public int getEventType(int index) {
-        return model.getEventType(index);
+    public int getTargetType(int index) {
+        return model.getTargetType(index);
+    }
+
+    public int getStimulusType(int index) {
+        return model.getStimulusType(index);
+    }
+
+    public int getTransferType(int index) {
+        return model.getTransferType(index);
     }
 
     public long getExpiry(int index) {
         return model.getExpiry(index);
     }
 
-    public int getEdgeRef(int index) {
-        return model.getEdgeRef(index);
+    public int getTargetRef(int index) {
+        return model.getTargetRef(index);
     }
 }

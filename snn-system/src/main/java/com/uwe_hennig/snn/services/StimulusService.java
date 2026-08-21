@@ -51,29 +51,36 @@ public class StimulusService {
         return INSTANCE.view.getValue(index);
     }
 
-    public static int getEventType(int index) {
-        return INSTANCE.view.getEventType(index);
+    public static int getTargetType(int index) {
+        return INSTANCE.view.getTargetType(index);
+    }
+
+    public static int getStimulusType(int index) {
+        return INSTANCE.view.getStimulusType(index);
+    }
+
+    public static int getTransferType(int index) {
+        return INSTANCE.view.getTransferType(index);
     }
 
     public static long getExpiry(int index) {
         return INSTANCE.view.getExpiry(index);
     }
 
-    public static int getEdgeRef(int index) {
-        return INSTANCE.view.getEdgeRef(index);
+    public static int getTargetRef(int index) {
+        return INSTANCE.view.getTargetRef(index);
     }
 
-
     public static boolean isTimeFeedback(int index) {
-        return StimulusType.TIME_FEEDBACK.code() == INSTANCE.view.getEventType(index);
+        return StimulusType.TIME_FEEDBACK.code() == INSTANCE.view.getStimulusType(index);
     }
 
     public static boolean isValueFeedback(int index) {
-        return StimulusType.VALUE_FEEDBACK.code() == INSTANCE.view.getEventType(index);
+        return StimulusType.VALUE_FEEDBACK.code() == INSTANCE.view.getStimulusType(index);
     }
 
     public static boolean isStimulus(int index) {
-        return StimulusType.STIMULUS.code() == INSTANCE.view.getEventType(index);
+        return StimulusType.STIMULUS.code() == INSTANCE.view.getStimulusType(index);
     }
 }
 

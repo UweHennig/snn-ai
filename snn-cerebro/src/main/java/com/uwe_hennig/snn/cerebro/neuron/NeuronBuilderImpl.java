@@ -11,7 +11,6 @@ import java.util.List;
 import com.uwe_hennig.snn.anatomy.allocator.AxonModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.DendritListManager;
 import com.uwe_hennig.snn.anatomy.allocator.DendritModelManager;
-import com.uwe_hennig.snn.anatomy.allocator.EdgeModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.ModulatorModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.NeuronModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.PlasticityModelManager;
@@ -23,7 +22,6 @@ import com.uwe_hennig.snn.anatomy.allocator.ThresholdModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.WeightModelManager;
 import com.uwe_hennig.snn.anatomy.neuron.AxonView;
 import com.uwe_hennig.snn.anatomy.neuron.DendritView;
-import com.uwe_hennig.snn.anatomy.neuron.EdgeView;
 import com.uwe_hennig.snn.anatomy.neuron.NeuronView;
 import com.uwe_hennig.snn.anatomy.neuron.PotentialView;
 import com.uwe_hennig.snn.anatomy.neuron.SomaView;
@@ -31,10 +29,11 @@ import com.uwe_hennig.snn.anatomy.neuron.SynapseView;
 import com.uwe_hennig.snn.anatomy.neuron.WeightView;
 import com.uwe_hennig.snn.cerebro.contracts.NeuronBuilder;
 import com.uwe_hennig.snn.cerebro.contracts.NeuronGraph;
-import com.uwe_hennig.snn.contracts.core.NeuronElementType;
 
 /**
- * NeuronBuilderImpl TODO NeuronAllocator, NeuronGraph, DomainObjects, WeightAllocator, EdgeModel
+ * NeuronBuilderImpl
+ *
+ * TODO NeuronAllocator, NeuronGraph, DomainObjects, WeightAllocator, EdgeModel
  *
  * @author Uwe Hennig
  */
@@ -110,27 +109,6 @@ public class NeuronBuilderImpl implements NeuronBuilder {
         // neuron
         this.neuronId = NeuronModelManager.instance().nextId();
         NeuronView.setRefs(neuronId, fieldId, dendritRef, somaId, axonId, synapsesRef);
-
-        // edge
-        int edgeId = -1;
-
-        for (int i = 0; i < dendrites; i++) {
-            edgeId = EdgeModelManager.instance().nextId();
-            Dendrit dendrit = dendritList.get(i);
-            EdgeView.setSingleEdge(edgeId, dendrit.getViewId(), NeuronElementType.DENDRIT.code(), dendrit.getTargetId(), NeuronElementType.SOMA.code());
-        }
-
-        edgeId = EdgeModelManager.instance().nextId();
-        EdgeView.setSingleEdge(edgeId, soma.getViewId(), NeuronElementType.SOMA.code(), soma.getTargetId(), NeuronElementType.AXON.code());
-
-        edgeId = EdgeModelManager.instance().nextId();
-        EdgeView.setMultiEdge(edgeId, axonId, NeuronElementType.AXON.code(), synapsesRef, NeuronElementType.SYNAPSE.code());
-
-        for (int i = 0; i < synapses; i++) {
-            edgeId = EdgeModelManager.instance().nextId();
-            Synapse synapse = synapseList.get(i);
-            EdgeView.setSingleEdge(edgeId, synapse.getViewId(), NeuronElementType.SYNAPSE.code(), 0, -1);
-        }
 
         return new NeuronGraph(fieldId, neuronId, soma, axon, dendritList, synapseList);
     }
@@ -268,13 +246,6 @@ public class NeuronBuilderImpl implements NeuronBuilder {
         SynapseListManager asmm = SynapseListManager.instance();
         if (asmm == null) {
             System.err.println("SynapseListManager not instantiated!");
-            result = false;
-        }
-
-        // Edges
-        EdgeModelManager emm = EdgeModelManager.instance();
-        if (emm == null) {
-            System.err.println("EdgeModelManager not instantiated!");
             result = false;
         }
 

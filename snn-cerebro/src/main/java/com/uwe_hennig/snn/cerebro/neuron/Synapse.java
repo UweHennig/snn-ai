@@ -39,7 +39,7 @@ public final class Synapse extends ViewIdentity implements NeuronElement {
             float currentTime = 1000; // TODO
 
             float stimulusValue = StimulusService.getValue(stimulusIdentifier);
-            int stimulusType = StimulusService.getEventType(stimulusIdentifier);
+            int stimulusType = StimulusService.getStimulusType(stimulusIdentifier);
 
             if (StimulusService.isStimulus(stimulusIdentifier) && isExternalStimulus(stimulusIdentifier)) {
                 stimulusValue = ModulatorView.applyStimulus(modulatorViewId, stimulusValue, currentTime);

@@ -33,11 +33,11 @@ public class StimulusTest {
         model.setExpiry(0, time);
         assertEquals(time, model.getExpiry(0));
 
-        model.setEdgeRef(0, 1);
-        assertEquals(1, model.getEdgeRef(0));
+        model.setTargetRef(0, 1);
+        assertEquals(1, model.getTargetRef(0));
 
-        model.setEventType(0, 2);
-        assertEquals(2, model.getEventType(0));
+        model.setStimulusType(0, 2);
+        assertEquals(2, model.getStimulusType(0));
 
         model.setExpiry(0, 3L);
         assertEquals(3L, model.getExpiry(0));
@@ -68,17 +68,17 @@ public class StimulusTest {
         long expiry = model.getExpiry(idx);
         assertTrue(expiry > now, "Expiry must be set to now + TTL");
 
-        assertEquals(1, model.getEventType(idx));
+        assertEquals(1, model.getStimulusType(idx));
         assertEquals(2f, model.getValue(idx));
-        assertEquals(3, model.getEdgeRef(idx));
+        assertEquals(3, model.getTargetRef(idx));
 
         // ---- Update within TTL ----
         boolean ok = view.updateStimulus(idx, 4, 5f, 6);
         assertTrue(ok, "Update must succeed while TTL is valid");
 
-        assertEquals(4, model.getEventType(idx));
+        assertEquals(4, model.getStimulusType(idx));
         assertEquals(5f, model.getValue(idx));
-        assertEquals(6, model.getEdgeRef(idx));
+        assertEquals(6, model.getTargetRef(idx));
 
         // ---- TTL to drain artificially ----
         model.setExpiry(idx, System.nanoTime() - 1);

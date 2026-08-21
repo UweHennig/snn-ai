@@ -16,22 +16,19 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
 import com.uwe_hennig.snn.anatomy.allocator.AxonModelManager;
-import com.uwe_hennig.snn.anatomy.allocator.SynapseListManager;
 import com.uwe_hennig.snn.anatomy.allocator.DendritListManager;
 import com.uwe_hennig.snn.anatomy.allocator.DendritModelManager;
-import com.uwe_hennig.snn.anatomy.allocator.EdgeModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.ModulatorModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.NeuronListManager;
 import com.uwe_hennig.snn.anatomy.allocator.NeuronModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.PlasticityModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.PotentialModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.SomaModelMangager;
+import com.uwe_hennig.snn.anatomy.allocator.SynapseListManager;
 import com.uwe_hennig.snn.anatomy.allocator.SynapseModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.ThresholdModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.WeightModelManager;
-import com.uwe_hennig.snn.anatomy.neuron.EdgeView;
 import com.uwe_hennig.snn.cerebro.contracts.NeuronGraph;
-import com.uwe_hennig.snn.contracts.core.NeuronElementType;
 
 /**
  * NeuronBuilderTest
@@ -58,21 +55,6 @@ public class NeuronBuilderTest {
         assertEquals(2, graph.synapses().size());
 
         checkStructure(graph);
-
-        int edges = EdgeModelManager.instance().capacity();
-        assertEquals(6, edges);
-        for (int i = 0; i < 6; i++) {
-            int srcType = EdgeView.getSrcType(i);
-            int trgType = EdgeView.getTrgType(i);
-            int srcId   = EdgeView.getSrcId(i);
-            int trgId   = EdgeView.getTrgRef(i);
-            boolean r = EdgeView.isMultiTargetRef(i);
-
-            System.out.println("Edge: "
-                + NeuronElementType.of(srcType)  + "(" + srcId + ")"
-                + " -> "
-                + NeuronElementType.of(trgType)  + "(" + (r? "Ref:" : "") + trgId + ")");
-        }
     }
 
     public void checkStructure(NeuronGraph graph) {
@@ -139,8 +121,6 @@ public class NeuronBuilderTest {
 
         SynapseListManager.init(10, 60);
 
-        EdgeModelManager.init(60);
-
         NeuronModelManager.init(10);
 
         NeuronListManager.init(10, 40);
@@ -165,8 +145,6 @@ public class NeuronBuilderTest {
         ModulatorModelManager.close();
 
         SynapseListManager.close();
-
-        EdgeModelManager.close();
 
         NeuronModelManager.close();
 

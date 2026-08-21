@@ -5,11 +5,7 @@
  */
 package com.uwe_hennig.snn.util;
 
-import com.uwe_hennig.snn.anatomy.allocator.SynapseListManager;
-import com.uwe_hennig.snn.anatomy.neuron.EdgeView;
-import com.uwe_hennig.snn.contracts.core.NeuronElement;
-import com.uwe_hennig.snn.contracts.core.NeuronElementType;
-import com.uwe_hennig.snn.services.NeuronElementRegistry;
+import com.uwe_hennig.snn.contracts.core.TransferType;
 import com.uwe_hennig.snn.services.StimulusService;
 
 /**
@@ -167,19 +163,13 @@ public class SnnDispatcher {
     }
 
     protected void doIt(int stimulusId) {
-        int trgRef = StimulusService.getEdgeRef(stimulusId);
-        int trgType = EdgeView.getTrgType(trgRef);
+        int trgRef = StimulusService.getTargetRef(stimulusId);
+        int trgType = StimulusService.getTargetType(stimulusId);
+        int transferType = StimulusService.getTransferType(stimulusId);
 
-        if (EdgeView.isMultiTargetRef(trgRef)) {
-            StimulusService.invalidate(trgType);
-            int[] synapseIds = SynapseListManager.instance().getModel().getInts(trgRef);
-            for (int i = 0; i < synapseIds.length; i++) {
-                NeuronElement neuronElement = NeuronElementRegistry.instance().getNeuronElement(trgRef, NeuronElementType.of(trgType));
-                neuronElement.stimulate(stimulusId);
-            }
-        } else {
-            NeuronElement neuronElement = NeuronElementRegistry.instance().getNeuronElement(trgRef, NeuronElementType.of(trgType));
-            neuronElement.stimulate(stimulusId);
+        // TODO more cases!
+        if (TransferType.DIRECT == TransferType.fromCode(transferType)) {
+            // TODO check
         }
     }
 
