@@ -15,34 +15,34 @@ import com.uwe_hennig.snn.anatomy.allocator.ReceptorModelManager;
 public class ReceptorView {
     // ----- getter/setter -----
 
-    public static int getTemporalFilterIndex() {
+    public static int getTemporalFilterIndex(int index) {
         ReceptorModel model = ReceptorModelManager.instance().getModel();
-        return model.getTemporalFilterIndex();
+        return model.getTemporalFilterIndex(index);
     }
 
-    public static void setTemporalFilterIndex(int value) {
+    public static void setTemporalFilterIndex(int index, int value) {
         ReceptorModel model = ReceptorModelManager.instance().getModel();
-        model.setTemporalFilterIndex(value);
+        model.setTemporalFilterIndex(index, value);
     }
 
-    public static int getInformationFilterIndex() {
+    public static int getInformationFilterIndex(int index) {
         ReceptorModel model = ReceptorModelManager.instance().getModel();
-        return model.getInformationFilterIndex();
+        return model.getInformationFilterIndex(index);
     }
 
-    public static void setInformationFilterIndex(int value) {
+    public static void setInformationFilterIndex(int index, int value) {
         ReceptorModel model = ReceptorModelManager.instance().getModel();
-        model.setInformationFilterIndex(value);
+        model.setInformationFilterIndex(index, value);
     }
 
-    public static int getDendritId(int row, int col) {
+    public static int getDendritId(int index, int row, int col) {
         ReceptorModel model = ReceptorModelManager.instance().getModel();
-        return model.getDendritId(row, col);
+        return model.getDendriteId(index, row, col);
     }
 
-    public static void setDendritId(int row, int col, int id) {
+    public static void setDendriteId(int index, int row, int col, int id) {
         ReceptorModel model = ReceptorModelManager.instance().getModel();
-        model.putDendritId(row, col, id);
+        model.setDendriteId(index, row, col, id);
     }
 
     // ----- lock/unlock -----

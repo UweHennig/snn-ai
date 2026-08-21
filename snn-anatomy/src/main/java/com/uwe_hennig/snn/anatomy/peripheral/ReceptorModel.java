@@ -5,14 +5,18 @@
  */
 package com.uwe_hennig.snn.anatomy.peripheral;
 
+import static java.lang.foreign.MemoryLayout.PathElement.groupElement;
+import static java.lang.foreign.MemoryLayout.PathElement.sequenceElement;
 import static java.lang.foreign.ValueLayout.JAVA_INT;
 
 import java.lang.foreign.Arena;
 import java.lang.foreign.GroupLayout;
 import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
+import java.lang.foreign.SequenceLayout;
 import java.lang.invoke.VarHandle;
 import java.util.concurrent.locks.LockSupport;
+
 /**
  * ReceptorModel
  *
@@ -20,10 +24,10 @@ import java.util.concurrent.locks.LockSupport;
  */
 public class ReceptorModel {
     public final Arena arena;
-    public final int rows;
-    public final int cols;
+    public final int   rows;
+    public final int   cols;
 
-    MemorySegment  segment;
+    MemorySegment segment;
 
     final VarHandle VH_TEMPORAL_FILTER_INDEX;
     final VarHandle VH_INFORMATION_FILTER_INDEX;
@@ -34,27 +38,31 @@ public class ReceptorModel {
 
     // ----- public -----
 
-    public ReceptorModel(int rows, int cols) {
+    public ReceptorModel(int numReceptors, int rows, int cols) {
         this.arena = Arena.ofShared();
         this.rows = rows;
         this.cols = cols;
 
         this.LAYOUT = MemoryLayout.structLayout(
             JAVA_INT.withName("lock"),
+            MemoryLayout.paddingLayout(4),
             JAVA_INT.withName("temporalFilterIndex"),
             JAVA_INT.withName("informationFilterIndex"),
             MemoryLayout.sequenceLayout(rows, MemoryLayout.sequenceLayout(cols, JAVA_INT)).withName("dendritMatrix")
         ).withByteAlignment(8);
 
-        this.segment = arena.allocate(LAYOUT);
+        SequenceLayout poolLayout = MemoryLayout.sequenceLayout(numReceptors, LAYOUT);
+        this.segment = arena.allocate(poolLayout);
 
-        this.VH_LOCK = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("lock"));
-        this.VH_TEMPORAL_FILTER_INDEX = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("temporalFilterIndex"));
-        this.VH_INFORMATION_FILTER_INDEX = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("informationFilterIndex"));
-        this.VH_DENDRIT_MATRIX = LAYOUT.varHandle(
-            MemoryLayout.PathElement.groupElement("dendritMatrix"),
-            MemoryLayout.PathElement.sequenceElement(), // Row
-            MemoryLayout.PathElement.sequenceElement()  // Col
+        this.VH_LOCK = poolLayout.varHandle(sequenceElement(), MemoryLayout.PathElement.groupElement("lock"));
+        this.VH_TEMPORAL_FILTER_INDEX = poolLayout.varHandle(sequenceElement(), groupElement("temporalFilterIndex"));
+        this.VH_INFORMATION_FILTER_INDEX = poolLayout.varHandle(sequenceElement(), groupElement("informationFilterIndex"));
+
+        this.VH_DENDRIT_MATRIX = poolLayout.varHandle(
+            sequenceElement(),              // 1. Dimension: Receptor with pool
+            groupElement("dendritMatrix"),  // 2. use matrix
+            sequenceElement(),              // 3. Dimension: rows
+            sequenceElement()               // 4. Dimension: cols
         );
     }
 
@@ -74,55 +82,28 @@ public class ReceptorModel {
 
     // ----- getter/setter -----
 
-    int getTemporalFilterIndex() {
-        return (int) VH_TEMPORAL_FILTER_INDEX.get(segment, 0L);
+    int getTemporalFilterIndex(int index) {
+        return (int) VH_TEMPORAL_FILTER_INDEX.get(segment, 0L, (long) index);
     }
 
-    void setTemporalFilterIndex(int filterIndex) {
-        VH_TEMPORAL_FILTER_INDEX.set(segment, 0L, filterIndex);
+    void setTemporalFilterIndex(int index, int value) {
+        VH_TEMPORAL_FILTER_INDEX.set(segment, 0L, (long) index, value);
     }
 
-    int getInformationFilterIndex() {
-        return (int) VH_INFORMATION_FILTER_INDEX.get(segment, 0L);
+    int getInformationFilterIndex(int index) {
+        return (int) VH_INFORMATION_FILTER_INDEX.get(segment, 0L, (long)index);
     }
 
-    void setInformationFilterIndex(int filterIndex) {
-        VH_INFORMATION_FILTER_INDEX.set(segment, 0L, filterIndex);
+    void setInformationFilterIndex(int index, int value) {
+        VH_INFORMATION_FILTER_INDEX.set(segment, 0L, (long)index, value);
     }
 
-    void putDendritId(int row, int col, int dendritId) {
-        VH_DENDRIT_MATRIX.set(segment, 0L, (long) row, (long) col, dendritId);
+    public void setDendriteId(int index, int row, int col, int dendriteId) {
+        VH_DENDRIT_MATRIX.set(segment, 0L, (long) index, (long) row, (long) col, dendriteId);
     }
 
-    public int getDendritId(int row, int col) {
-        return (int) VH_DENDRIT_MATRIX.get(segment, 0L, (long) row, (long) col);
-    }
-
-    public int[] getDendritIdRow(int row) {
-        if (row < 0 || row >= rows) {
-            throw new IndexOutOfBoundsException();
-        }
-
-        long offset = LAYOUT.byteOffset(
-            MemoryLayout.PathElement.groupElement("dendritMatrix"),
-            MemoryLayout.PathElement.sequenceElement(row)
-        );
-
-        long byteLength = cols * JAVA_INT.byteSize();
-
-        return segment.asSlice(offset, byteLength).toArray(JAVA_INT);
-    }
-
-    public int[] getDendritIdCol(int col) {
-        if (col < 0 || col >= cols) {
-            throw new IndexOutOfBoundsException();
-        }
-
-        int[] result = new int[rows];
-        for (int r = 0; r < rows; r++) {
-            result[r] = (int) VH_DENDRIT_MATRIX.get(segment, 0L, (long) r, (long) col);
-        }
-        return result;
+    public int getDendriteId(int index, int row, int col) {
+        return (int) VH_DENDRIT_MATRIX.get(segment, 0L, (long) index, (long) row, (long) col);
     }
 
     // ----- lock/unlock -----
@@ -184,8 +165,8 @@ public class ReceptorModel {
     }
 
     void readUnlock(int index) {
-       // decrement reader counter
-       VH_LOCK.getAndAdd(segment, 0L, index, -1);
+        // decrement reader counter
+        VH_LOCK.getAndAdd(segment, 0L, index, -1);
     }
 
     void backoff(int spins) {

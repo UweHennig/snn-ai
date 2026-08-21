@@ -16,16 +16,18 @@ public class ReceptorModelManager {
     private static ReceptorModelManager INSTANCE;
 
     private ReceptorModel model;
+    private int capacity;
 
-    private ReceptorModelManager(int rowDendrites, int colDendrites) {
-        this.model = new ReceptorModel(rowDendrites, colDendrites);
+    private ReceptorModelManager(int capacity, int rows, int columns) {
+        this.model = new ReceptorModel(capacity, rows, columns);
+        this.capacity = capacity;
     }
 
-    public static ReceptorModelManager init(int rowDendrites, int colDendrites) {
+    public static ReceptorModelManager init(int capacity, int rows, int columns) {
         if (INSTANCE == null) {
             synchronized (ReceptorModelManager.class) {
                 if (INSTANCE == null) {
-                    INSTANCE = new ReceptorModelManager(rowDendrites, colDendrites);
+                    INSTANCE = new ReceptorModelManager(capacity, rows, columns);
                 }
             }
         }
@@ -38,6 +40,10 @@ public class ReceptorModelManager {
 
     public ReceptorModel getModel() {
         return model;
+    }
+
+    public int getCapacity() {
+        return capacity;
     }
 
     public static void close() {

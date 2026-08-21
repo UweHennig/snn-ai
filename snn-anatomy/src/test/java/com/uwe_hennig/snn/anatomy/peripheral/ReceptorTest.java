@@ -26,19 +26,19 @@ public class ReceptorTest {
     @Test
     @DisplayName("Receptor Matrix Test")
     public void testMatrix() {
-        final int bound = 1000;
-        ReceptorModel model = ReceptorModelManager.init(bound, bound).getModel();
-        ThreadLocalRandom rand = ThreadLocalRandom.current();
         try {
-            model.setInformationFilterIndex(1234);
-            model.setTemporalFilterIndex(56789);
+            final int bound = 1000;
+            ReceptorModel model = ReceptorModelManager.init(1, bound, bound).getModel();
+            ThreadLocalRandom rand = ThreadLocalRandom.current();
+            model.setInformationFilterIndex(0, 1234);
+            model.setTemporalFilterIndex(0, 56789);
 
             long start = System.nanoTime();
             for (int i = 0; i < 100_000_000; i++) {
                 int row = rand.nextInt(bound);
                 int col = rand.nextInt(bound);
                 int val = rand.nextInt(9) + 1;
-                model.putDendritId(row, col, val);
+                model.setDendriteId(0, row, col, val);
             }
             long end = System.nanoTime();
             double sec = (end - start) / 1_000_000_000.0;
@@ -53,7 +53,7 @@ public class ReceptorTest {
             int views = Math.min(bound, 10);
             for (int row = 0; row < views; row++) {
                 for (int col = 0; col < views; col++) {
-                    int val = model.getDendritId(row, col);
+                    int val = model.getDendriteId(0, row, col);
                     sum += val;
                     System.out.print(val + " ");
                 }
@@ -62,11 +62,13 @@ public class ReceptorTest {
             System.out.println("...");
             assertTrue(sum > 100, "Values are not set!");
 
-            assertEquals(1234, model.getInformationFilterIndex());
+            assertEquals(1234, model.getInformationFilterIndex(0));
 
             assertEquals(bound, model.rows());
             assertEquals(bound, model.columns());
 
+        } catch (Exception e) {
+            e.printStackTrace();
         } finally {
             ReceptorModelManager.close();
         }
