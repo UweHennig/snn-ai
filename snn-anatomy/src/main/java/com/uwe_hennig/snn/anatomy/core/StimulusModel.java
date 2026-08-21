@@ -32,14 +32,14 @@ public class StimulusModel {
     // @formatter:off
     public static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         JAVA_INT.withName("lock"),
-        JAVA_INT.withName("eventType"),
+        JAVA_INT.withName("stimulusType"),
         JAVA_INT.withName("edgeRef"),
         JAVA_FLOAT.withName("value"),
         JAVA_LONG.withName("expiry")
     ).withByteAlignment(8);
 
     static final VarHandle VH_LOCK       = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("lock"));
-    static final VarHandle VH_EVENT_TYPE = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("eventType"));
+    static final VarHandle VH_EVENT_TYPE = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("stimulusType"));
     static final VarHandle VH_EDGE_REF   = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("edgeRef"));
     static final VarHandle VH_EXPIRY     = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("expiry"));
     static final VarHandle VH_VALUE      = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("value"));

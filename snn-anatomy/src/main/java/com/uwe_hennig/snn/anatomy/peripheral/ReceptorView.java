@@ -13,28 +13,6 @@ import com.uwe_hennig.snn.anatomy.allocator.ReceptorModelManager;
  * @author Uwe Hennig
  */
 public class ReceptorView {
-    // ----- lock/unlock -----
-
-    public static void readLock(int index) {
-        ReceptorModel model = ReceptorModelManager.instance().getModel();
-        model.readLock(index);
-    }
-
-    public static void readUnlock(int index) {
-        ReceptorModel model = ReceptorModelManager.instance().getModel();
-        model.readUnlock(index);
-    }
-
-    public static void writeLock(int index) {
-        ReceptorModel model = ReceptorModelManager.instance().getModel();
-        model.writeLock(index);
-    }
-
-    public static void writeUnlock(int index) {
-        ReceptorModel model = ReceptorModelManager.instance().getModel();
-        model.writeUnlock(index);
-    }
-
     // ----- getter/setter -----
 
     public static int getTemporalFilterIndex() {
@@ -66,4 +44,27 @@ public class ReceptorView {
         ReceptorModel model = ReceptorModelManager.instance().getModel();
         model.putDendritId(row, col, id);
     }
+
+    // ----- lock/unlock -----
+
+    public static void readLock(int index) {
+        ReceptorModel model = ReceptorModelManager.instance().getModel();
+        model.readLock(index);
+    }
+
+    public static void readUnlock(int index) {
+        ReceptorModel model = ReceptorModelManager.instance().getModel();
+        model.readUnlock(index);
+    }
+
+    public static void writeLock(int index) {
+        ReceptorModel model = ReceptorModelManager.instance().getModel();
+        model.writeLock(index);
+    }
+
+    public static void writeUnlock(int index) {
+        ReceptorModel model = ReceptorModelManager.instance().getModel();
+        model.writeUnlock(index);
+    }
+
 }

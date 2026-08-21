@@ -11,7 +11,6 @@ import java.lang.foreign.Arena;
 import java.lang.foreign.GroupLayout;
 import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
-import java.lang.foreign.SequenceLayout;
 import java.lang.invoke.VarHandle;
 import java.util.concurrent.locks.LockSupport;
 /**

@@ -7,17 +7,18 @@ package com.uwe_hennig.snn.contracts.core;
 
 /**
  * NeuronElementType
- * @formatter:off
- * @formatter:on
+ *
  * @author Uwe Hennig
  */
 public enum NeuronElementType {
-    DENDRIT(0x00), SOMA(0x01), AXON(0x02), SYNAPSE(0x03);
+    DENDRIT(0), SOMA(1), AXON(2), SYNAPSE(3), RECEPTOR(4), EFFECTOR(5);
 
-    private static final int DENDRID_CODE = 0x00;
-    private static final int SOMA_CODE    = 0x01;
-    private static final int AXON_CODE    = 0x02;
-    private static final int SYNAPSE_CODE = 0x03;
+    private static final int DENDRID_CODE  = 0;
+    private static final int SOMA_CODE     = 1;
+    private static final int AXON_CODE     = 2;
+    private static final int SYNAPSE_CODE  = 3;
+    private static final int RECPTOR_CODE  = 4;
+    private static final int EFFECTOR_CODE = 5;
 
     private final int code;
 
@@ -35,6 +36,8 @@ public enum NeuronElementType {
             case SOMA_CODE -> SOMA;
             case AXON_CODE -> AXON;
             case SYNAPSE_CODE -> SYNAPSE;
+            case RECPTOR_CODE -> RECEPTOR;
+            case EFFECTOR_CODE -> EFFECTOR;
             default -> null;
         };
     }

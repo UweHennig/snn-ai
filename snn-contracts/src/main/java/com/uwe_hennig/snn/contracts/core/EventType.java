@@ -1,21 +1,21 @@
 /**
- * @(#)StimulusType.java
+ * @(#)EventType.java
  * Copyright (c) 2026 Uwe Hennig
  * All rights reserved.
  */
 package com.uwe_hennig.snn.contracts.core;
 
 /**
- * StimulusType
+ * EventType
  *
  * @author Uwe Hennig
  */
-public enum StimulusType {
-    STIMULUS(0), TIME_FEEDBACK(1), VALUE_FEEDBACK(2);
+public enum EventType {
+    DIRECT(0), LIST(1), MATRIX(2);
 
     private final int code;
 
-    StimulusType(int code) {
+    EventType(int code) {
         this.code = code;
     }
 

@@ -66,6 +66,10 @@ public final class NeuronElementRegistry {
             case SOMA -> somaArray[idx];
             case AXON -> axonArray[idx];
             case SYNAPSE -> synapseArray[idx];
+// TOOD
+//            case RECEPTOR -> receptorArray[idx];
+//            case EFFECTOR -> effectorArray[idx];
+            default -> null;
         };
     }
 }
