@@ -34,8 +34,6 @@ public class ReceptorModel {
     final VarHandle VH_DENDRIT_MATRIX;
     final VarHandle VH_LOCK;
 
-    final GroupLayout LAYOUT;
-
     // ----- public -----
 
     public ReceptorModel(int numReceptors, int rows, int cols) {
@@ -43,13 +41,13 @@ public class ReceptorModel {
         this.rows = rows;
         this.cols = cols;
 
-        this.LAYOUT = MemoryLayout.structLayout(
-            JAVA_INT.withName("lock"),
-            MemoryLayout.paddingLayout(4),
-            JAVA_INT.withName("temporalFilterIndex"),
-            JAVA_INT.withName("informationFilterIndex"),
-            MemoryLayout.sequenceLayout(rows, MemoryLayout.sequenceLayout(cols, JAVA_INT)).withName("dendritMatrix")
-        ).withByteAlignment(8);
+        GroupLayout LAYOUT = MemoryLayout.structLayout(
+                JAVA_INT.withName("lock"),
+                MemoryLayout.paddingLayout(4),
+                JAVA_INT.withName("temporalFilterIndex"),
+                JAVA_INT.withName("informationFilterIndex"),
+                MemoryLayout.sequenceLayout(rows, MemoryLayout.sequenceLayout(cols, JAVA_INT)).withName("dendritMatrix"))
+            .withByteAlignment(8);
 
         SequenceLayout poolLayout = MemoryLayout.sequenceLayout(numReceptors, LAYOUT);
         this.segment = arena.allocate(poolLayout);
@@ -59,10 +57,10 @@ public class ReceptorModel {
         this.VH_INFORMATION_FILTER_INDEX = poolLayout.varHandle(sequenceElement(), groupElement("informationFilterIndex"));
 
         this.VH_DENDRIT_MATRIX = poolLayout.varHandle(
-            sequenceElement(),              // 1. Dimension: Receptor with pool
-            groupElement("dendritMatrix"),  // 2. use matrix
-            sequenceElement(),              // 3. Dimension: rows
-            sequenceElement()               // 4. Dimension: cols
+            sequenceElement(),             // 1. Dimension: Receptor with pool
+            groupElement("dendritMatrix"), // 2. use matrix
+            sequenceElement(),             // 3. Dimension: rows
+            sequenceElement()              // 4. Dimension: columns
         );
     }
 
@@ -91,11 +89,11 @@ public class ReceptorModel {
     }
 
     int getInformationFilterIndex(int index) {
-        return (int) VH_INFORMATION_FILTER_INDEX.get(segment, 0L, (long)index);
+        return (int) VH_INFORMATION_FILTER_INDEX.get(segment, 0L, (long) index);
     }
 
     void setInformationFilterIndex(int index, int value) {
-        VH_INFORMATION_FILTER_INDEX.set(segment, 0L, (long)index, value);
+        VH_INFORMATION_FILTER_INDEX.set(segment, 0L, (long) index, value);
     }
 
     public void setDendriteId(int index, int row, int col, int dendriteId) {

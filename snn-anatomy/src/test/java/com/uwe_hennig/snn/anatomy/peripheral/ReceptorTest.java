@@ -7,6 +7,7 @@ package com.uwe_hennig.snn.anatomy.peripheral;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -69,6 +70,7 @@ public class ReceptorTest {
 
         } catch (Exception e) {
             e.printStackTrace();
+            fail("Exception in testMatrix: " + e.getLocalizedMessage());
         } finally {
             ReceptorModelManager.close();
         }

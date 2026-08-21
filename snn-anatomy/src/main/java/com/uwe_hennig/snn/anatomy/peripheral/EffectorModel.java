@@ -5,12 +5,14 @@
  */
 package com.uwe_hennig.snn.anatomy.peripheral;
 
+import static java.lang.foreign.MemoryLayout.PathElement.sequenceElement;
 import static java.lang.foreign.ValueLayout.JAVA_INT;
 
 import java.lang.foreign.Arena;
 import java.lang.foreign.GroupLayout;
 import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
+import java.lang.foreign.SequenceLayout;
 import java.lang.invoke.VarHandle;
 import java.util.concurrent.locks.LockSupport;
 
@@ -34,7 +36,7 @@ public class EffectorModel {
     // ----- public -----
 
     // @formatter:off
-    public EffectorModel(int capacity) {
+    public EffectorModel(int capacity, int dendritListSize) {
         assert capacity > 0 : "invalid capacity";
 
         this.capacity = capacity;
@@ -42,24 +44,23 @@ public class EffectorModel {
 
         this.LAYOUT = MemoryLayout.structLayout(
             JAVA_INT.withName("lock"),
+            MemoryLayout.paddingLayout(4),
             JAVA_INT.withName("temporalFilterIndex"),
-            MemoryLayout.sequenceLayout(capacity, JAVA_INT).withName("relatedIdList")
+            JAVA_INT.withName("relatedListSize"),
+            MemoryLayout.sequenceLayout(dendritListSize, JAVA_INT).withName("relatedIdList")
         ).withByteAlignment(8);
 
-        this.VH_LOCK = LAYOUT.varHandle(
-            MemoryLayout.PathElement.groupElement("lock")
-        );
+        SequenceLayout poolLayout = MemoryLayout.sequenceLayout(capacity, LAYOUT);
+        this.segment = arena.allocate(poolLayout);
 
-        this.VH_TEMPORAL_FILTER_INDEX = LAYOUT.varHandle(
-            MemoryLayout.PathElement.groupElement("temporalFilterIndex")
-        );
+        this.VH_LOCK = poolLayout.varHandle(sequenceElement(), MemoryLayout.PathElement.groupElement("lock"));
+        this.VH_TEMPORAL_FILTER_INDEX = poolLayout.varHandle(sequenceElement(), MemoryLayout.PathElement.groupElement("temporalFilterIndex"));
 
-        this.VH_RELATED_ID_LIST = LAYOUT.varHandle(
+        this.VH_RELATED_ID_LIST = poolLayout.varHandle(
+            sequenceElement(),
             MemoryLayout.PathElement.groupElement("relatedIdList"),
             MemoryLayout.PathElement.sequenceElement()
         );
-
-        this.segment = arena.allocate(LAYOUT);
     }
     // @formatter:on
 
@@ -73,20 +74,20 @@ public class EffectorModel {
 
     // ----- getter/setter -----
 
-    int getTemporalFilterIndex() {
-        return (int) VH_TEMPORAL_FILTER_INDEX.get(segment, 0L);
+    int getTemporalFilterIndex(int index) {
+        return (int) VH_TEMPORAL_FILTER_INDEX.get(segment, 0L, (long)index);
     }
 
-    void setTemporalFilterIndex(int filterIndex) {
-        VH_TEMPORAL_FILTER_INDEX.set(segment, 0L, filterIndex);
+    void setTemporalFilterIndex(int index, int filterIndex) {
+        VH_TEMPORAL_FILTER_INDEX.set(segment, 0L, (long)index, filterIndex);
     }
 
-    int getRelatedId(int index) {
-        return (int) VH_RELATED_ID_LIST.get(segment, 0L, index);
+    int getRelatedId(int index, int position) {
+        return (int) VH_RELATED_ID_LIST.get(segment, 0L, (long)index, position);
     }
 
-    void setRelatedId(int index, int identifier) {
-        VH_RELATED_ID_LIST.set(segment, 0L, index, identifier);
+    void setRelatedId(int index, int position,  int dendritId) {
+        VH_RELATED_ID_LIST.set(segment, 0L, (long)index, position, dendritId);
     }
 
     // ----- lock/unlock -----

@@ -17,15 +17,15 @@ public class EffectorModelManager {
 
     private EffectorModel model;
 
-    private EffectorModelManager(int capacity) {
-        this.model = new EffectorModel(capacity);
+    private EffectorModelManager(int capacity, int dendritListSize) {
+        this.model = new EffectorModel(capacity, dendritListSize);
     }
 
-    public static EffectorModelManager init(int capacity) {
+    public static EffectorModelManager init(int capacity, int dendritListSize) {
         if (INSTANCE == null) {
             synchronized (ReceptorModelManager.class) {
                 if (INSTANCE == null) {
-                    INSTANCE = new EffectorModelManager(capacity);
+                    INSTANCE = new EffectorModelManager(capacity, dendritListSize);
                 }
             }
         }

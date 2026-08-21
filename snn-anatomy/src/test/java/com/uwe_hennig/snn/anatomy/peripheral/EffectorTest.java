@@ -7,6 +7,7 @@ package com.uwe_hennig.snn.anatomy.peripheral;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -26,20 +27,21 @@ public class EffectorTest {
     @Test
     @DisplayName("Effector Test")
     public void testEffector() {
-        final int bound = 1000;
+        final int capacity = 1;
+        final int length = 1000;
         final int loops = 1_000_000_000;
 
-        EffectorModel model = EffectorModelManager.init(bound).getModel();
+        EffectorModel model = EffectorModelManager.init(capacity, length).getModel();
         ThreadLocalRandom rand = ThreadLocalRandom.current();
 
         try {
-            model.setTemporalFilterIndex(31415);
-            assertEquals(31415, model.getTemporalFilterIndex());
+            model.setTemporalFilterIndex(0, 31415);
+            assertEquals(31415, model.getTemporalFilterIndex(0));
 
             long start = System.nanoTime();
             for (int i = 0; i < loops; i++) {
-                int index = rand.nextInt(bound);
-                model.setRelatedId(index, rand.nextInt(9) + 1);
+                int dendritId = rand.nextInt(length);
+                model.setRelatedId(0, dendritId, rand.nextInt(9) + 1);
             }
             long end = System.nanoTime();
 
@@ -51,16 +53,19 @@ public class EffectorTest {
             System.out.println();
 
             int sum = 0;
-            for (int i = 0; i < bound; i++) {
-                sum += model.getRelatedId(i);
+            for (int i = 0; i < length; i++) {
+                sum += model.getRelatedId(0, i);
                 if (i % 10 == 0) {
                     System.out.println();
                 }
-                System.out.printf(model.getRelatedId(i) + " ");
+                System.out.printf(model.getRelatedId(0, i) + " ");
             }
             System.out.println();
-            assertTrue(sum > bound, "Values are not set!");
+            assertTrue(sum > length, "Values are not set!");
 
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("Exception in testEffector: " + e.getLocalizedMessage());
         } finally {
             EffectorModelManager.close();
         }
