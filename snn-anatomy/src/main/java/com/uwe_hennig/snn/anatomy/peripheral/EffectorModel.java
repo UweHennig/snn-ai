@@ -5,7 +5,9 @@
  */
 package com.uwe_hennig.snn.anatomy.peripheral;
 
+import static java.lang.foreign.MemoryLayout.PathElement.groupElement;
 import static java.lang.foreign.MemoryLayout.PathElement.sequenceElement;
+import static java.lang.foreign.ValueLayout.JAVA_FLOAT;
 import static java.lang.foreign.ValueLayout.JAVA_INT;
 
 import java.lang.foreign.Arena;
@@ -22,72 +24,85 @@ import java.util.concurrent.locks.LockSupport;
  * @author Uwe Hennig
  */
 public class EffectorModel {
-    public final int   capacity;
     public final Arena arena;
+    public final int   capacity;
+    public final int   rows;
+    public final int   cols;
 
-    MemorySegment  segment;
-
-    final GroupLayout LAYOUT;
+    MemorySegment segment;
 
     final VarHandle VH_LOCK;
-    final VarHandle VH_TEMPORAL_FILTER_INDEX;
-    final VarHandle VH_RELATED_ID_LIST;
+    final VarHandle VH_TIME_WINDOw;
+    final VarHandle VH_MATRIX;
 
     // ----- public -----
 
     // @formatter:off
-    public EffectorModel(int capacity, int dendritListSize) {
-        assert capacity > 0 : "invalid capacity";
+    public EffectorModel(int numEffectors, int rows, int cols) {
+        assert numEffectors > 0 : "invalid effector number";
+        assert rows > 0 : "invalid rows in EffectorModel";
+        assert cols >= 0 : "invalid columns in EffectorModel";
 
-        this.capacity = capacity;
         this.arena = Arena.ofShared();
+        this.capacity = numEffectors;
+        this.rows = rows;
+        this.cols = cols;
 
-        this.LAYOUT = MemoryLayout.structLayout(
-            JAVA_INT.withName("lock"),
-            MemoryLayout.paddingLayout(4),
-            JAVA_INT.withName("temporalFilterIndex"),
-            JAVA_INT.withName("relatedListSize"),
-            MemoryLayout.sequenceLayout(dendritListSize, JAVA_INT).withName("relatedIdList")
-        ).withByteAlignment(8);
+        GroupLayout LAYOUT = MemoryLayout
+            .structLayout(
+                JAVA_INT.withName("lock"),
+                JAVA_FLOAT.withName("timeWindow"),
+                MemoryLayout.sequenceLayout(rows, MemoryLayout.sequenceLayout(cols, JAVA_FLOAT)).withName("matrix"))
+            .withByteAlignment(8);
 
-        SequenceLayout poolLayout = MemoryLayout.sequenceLayout(capacity, LAYOUT);
+        SequenceLayout poolLayout = MemoryLayout.sequenceLayout(numEffectors, LAYOUT);
         this.segment = arena.allocate(poolLayout);
 
         this.VH_LOCK = poolLayout.varHandle(sequenceElement(), MemoryLayout.PathElement.groupElement("lock"));
-        this.VH_TEMPORAL_FILTER_INDEX = poolLayout.varHandle(sequenceElement(), MemoryLayout.PathElement.groupElement("temporalFilterIndex"));
+        this.VH_TIME_WINDOw = poolLayout.varHandle(sequenceElement(), groupElement("timeWindow"));
 
-        this.VH_RELATED_ID_LIST = poolLayout.varHandle(
-            sequenceElement(),
-            MemoryLayout.PathElement.groupElement("relatedIdList"),
-            MemoryLayout.PathElement.sequenceElement()
+        this.VH_MATRIX = poolLayout.varHandle(sequenceElement(), // 1. Dimension: Effector with pool
+            groupElement("matrix"), // 2. use matrix
+            sequenceElement(), // 3. Dimension: rows
+            sequenceElement() // 4. Dimension: columns
         );
     }
     // @formatter:on
 
     public void close() {
-        arena.close();
+        if (arena != null) {
+            arena.close();
+        }
     }
 
     public int getCapacity() {
         return capacity;
     }
 
+    public int rows() {
+        return rows;
+    }
+
+    public int columns() {
+        return cols;
+    }
+
     // ----- getter/setter -----
 
-    int getTemporalFilterIndex(int index) {
-        return (int) VH_TEMPORAL_FILTER_INDEX.get(segment, 0L, (long)index);
+    float getTimeWindow(int index) {
+        return (float) VH_TIME_WINDOw.get(segment, 0L, (long) index);
     }
 
-    void setTemporalFilterIndex(int index, int filterIndex) {
-        VH_TEMPORAL_FILTER_INDEX.set(segment, 0L, (long)index, filterIndex);
+    void setTimeWindow(int index, float value) {
+        VH_TIME_WINDOw.set(segment, 0L, (long) index, value);
     }
 
-    int getRelatedId(int index, int position) {
-        return (int) VH_RELATED_ID_LIST.get(segment, 0L, (long)index, position);
+    public void setValue(int index, int row, int col, float value) {
+        VH_MATRIX.set(segment, 0L, (long) index, (long) row, (long) col, value);
     }
 
-    void setRelatedId(int index, int position,  int dendritId) {
-        VH_RELATED_ID_LIST.set(segment, 0L, (long)index, position, dendritId);
+    public float getValue(int index, int row, int col) {
+        return (float) VH_MATRIX.get(segment, 0L, (long) index, (long) row, (long) col);
     }
 
     // ----- lock/unlock -----
@@ -160,4 +175,5 @@ public class EffectorModel {
             LockSupport.parkNanos(1);
         }
     }
+
 }

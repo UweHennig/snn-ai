@@ -7,11 +7,13 @@ package com.uwe_hennig.snn.anatomy.peripheral;
 
 import static java.lang.foreign.MemoryLayout.PathElement.groupElement;
 import static java.lang.foreign.MemoryLayout.PathElement.sequenceElement;
+import static java.lang.foreign.ValueLayout.JAVA_FLOAT;
 import static java.lang.foreign.ValueLayout.JAVA_INT;
 
 import java.lang.foreign.Arena;
 import java.lang.foreign.GroupLayout;
 import java.lang.foreign.MemoryLayout;
+import java.lang.foreign.MemoryLayout.PathElement;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SequenceLayout;
 import java.lang.invoke.VarHandle;
@@ -24,84 +26,100 @@ import java.util.concurrent.locks.LockSupport;
  */
 public class ReceptorModel {
     public final Arena arena;
-    public final int   rows;
-    public final int   cols;
+    public final int   capacity;
+
+    public final int rows;
+    public final int cols;
 
     MemorySegment segment;
 
-    final VarHandle VH_TEMPORAL_FILTER_INDEX;
-    final VarHandle VH_INFORMATION_FILTER_INDEX;
-    final VarHandle VH_DENDRIT_MATRIX;
     final VarHandle VH_LOCK;
+    final VarHandle VH_TIME_WINDOw;
+
+    final VarHandle VH_DENDRIT_ID;
+    final VarHandle VH_VALUE;
 
     // ----- public -----
 
+    // @formatter:off
     public ReceptorModel(int numReceptors, int rows, int cols) {
+        assert numReceptors > 0 : "invalid receptor number";
+        assert rows > 0  : "invalid rows in ReceptorModel";
+        assert cols >= 0 : "invalid columns in ReceptorModel";
+
         this.arena = Arena.ofShared();
+        this.capacity = numReceptors;
         this.rows = rows;
         this.cols = cols;
 
+        GroupLayout PAIR = MemoryLayout.structLayout(
+            JAVA_INT.withName("dendritId"),
+            JAVA_FLOAT.withName("value")
+        ).withByteAlignment(8);
+
         GroupLayout LAYOUT = MemoryLayout.structLayout(
-                JAVA_INT.withName("lock"),
-                MemoryLayout.paddingLayout(4),
-                JAVA_INT.withName("temporalFilterIndex"),
-                JAVA_INT.withName("informationFilterIndex"),
-                MemoryLayout.sequenceLayout(rows, MemoryLayout.sequenceLayout(cols, JAVA_INT)).withName("dendritMatrix"))
-            .withByteAlignment(8);
+            JAVA_INT.withName("lock"),
+            JAVA_FLOAT.withName("timeWindow"),
+            MemoryLayout.sequenceLayout(rows, MemoryLayout.sequenceLayout(cols, PAIR)).withName("matrix")
+        ).withByteAlignment(8);
 
         SequenceLayout poolLayout = MemoryLayout.sequenceLayout(numReceptors, LAYOUT);
         this.segment = arena.allocate(poolLayout);
 
         this.VH_LOCK = poolLayout.varHandle(sequenceElement(), MemoryLayout.PathElement.groupElement("lock"));
-        this.VH_TEMPORAL_FILTER_INDEX = poolLayout.varHandle(sequenceElement(), groupElement("temporalFilterIndex"));
-        this.VH_INFORMATION_FILTER_INDEX = poolLayout.varHandle(sequenceElement(), groupElement("informationFilterIndex"));
 
-        this.VH_DENDRIT_MATRIX = poolLayout.varHandle(
-            sequenceElement(),             // 1. Dimension: Receptor with pool
-            groupElement("dendritMatrix"), // 2. use matrix
-            sequenceElement(),             // 3. Dimension: rows
-            sequenceElement()              // 4. Dimension: columns
+        this.VH_TIME_WINDOw = poolLayout.varHandle(sequenceElement(), groupElement("timeWindow"));
+
+        this.VH_DENDRIT_ID = poolLayout.varHandle(
+            PathElement.sequenceElement(), // Receptor-Index
+            PathElement.groupElement("matrix"),
+            PathElement.sequenceElement(), // Row-Index
+            PathElement.sequenceElement(), // Col-Index
+            PathElement.groupElement("timeWindow")
+        );
+
+        this.VH_VALUE = poolLayout.varHandle(
+            PathElement.sequenceElement(), // Receptor-Index
+            PathElement.groupElement("matrix"),
+            PathElement.sequenceElement(), // Row-Index
+            PathElement.sequenceElement(), // Col-Index
+            PathElement.groupElement("value")
         );
     }
+    // @formatter:on
 
     public void close() {
-        if (arena != null) {
-            arena.close();
-        }
+        arena.close();
     }
 
-    public int rows() {
-        return rows;
-    }
-
-    public int columns() {
-        return cols;
+    public int getCapacity() {
+        return capacity;
     }
 
     // ----- getter/setter -----
 
-    int getTemporalFilterIndex(int index) {
-        return (int) VH_TEMPORAL_FILTER_INDEX.get(segment, 0L, (long) index);
+    float getTimeWindow(int index) {
+        return (float) VH_TIME_WINDOw.get(segment, 0L, (long) index);
     }
 
-    void setTemporalFilterIndex(int index, int value) {
-        VH_TEMPORAL_FILTER_INDEX.set(segment, 0L, (long) index, value);
+    void setTimeWindow(int index, float value) {
+        VH_TIME_WINDOw.set(segment, 0L, (long) index, value);
     }
 
-    int getInformationFilterIndex(int index) {
-        return (int) VH_INFORMATION_FILTER_INDEX.get(segment, 0L, (long) index);
+    int getDendriteId(int index, int row, int col) {
+        return (int) VH_DENDRIT_ID.get(segment, 0L, (long) index, row, col);
     }
 
-    void setInformationFilterIndex(int index, int value) {
-        VH_INFORMATION_FILTER_INDEX.set(segment, 0L, (long) index, value);
+    void setDendriteId(int index, int row, int col, int id) {
+        VH_DENDRIT_ID.set(segment, 0L, index, row, col, id);
     }
 
-    public void setDendriteId(int index, int row, int col, int dendriteId) {
-        VH_DENDRIT_MATRIX.set(segment, 0L, (long) index, (long) row, (long) col, dendriteId);
+    float getValue(int index, int row, int col) {
+        return (float) VH_VALUE.get(segment, 0L, (long) index, row, col);
     }
 
-    public int getDendriteId(int index, int row, int col) {
-        return (int) VH_DENDRIT_MATRIX.get(segment, 0L, (long) index, (long) row, (long) col);
+    void setValue(int index, int row, int col, float value) {
+        VH_VALUE.set(segment, 0L, index, row, col, value);
     }
 
     // ----- lock/unlock -----
@@ -174,5 +192,4 @@ public class ReceptorModel {
             LockSupport.parkNanos(1);
         }
     }
-
 }
