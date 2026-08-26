@@ -15,24 +15,24 @@ import com.uwe_hennig.snn.anatomy.allocator.EffectorModelManager;
 public class EffectorView {
     // ----- getter/setter -----
 
-    public static int getTemporalFilterIndex(int index) {
+    public static float getTimeWindow(int index) {
         EffectorModel model = EffectorModelManager.instance().getModel();
-        return model.getTemporalFilterIndex(index);
+        return model.getTimeWindow(index);
     }
 
-    public static void setTemporalFilterIndex(int index, int value) {
+    public static void setTimeWindow(int index, int value) {
         EffectorModel model = EffectorModelManager.instance().getModel();
-        model.setTemporalFilterIndex(index, value);
+        model.setTimeWindow(index, value);
     }
 
-    public static int getRelatedElement(int index, int position) {
+    public static void setValue(int index, int row, int column, float value) {
         EffectorModel model = EffectorModelManager.instance().getModel();
-        return model.getRelatedId(index, position);
+        model.setValue(index, row, column, value);
     }
 
-    public static void setRelatedElement(int index, int position, int value) {
+    public static float getValue(int index, int row, int column) {
         EffectorModel model = EffectorModelManager.instance().getModel();
-        model.setRelatedId(index, position, value);
+        return model.getValue(index, row, column);
     }
 
     // ----- lock/unlock -----
