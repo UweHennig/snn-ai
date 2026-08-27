@@ -5,19 +5,10 @@
  */
 package com.uwe_hennig.snn.anatomy.peripheral;
 
-import static java.lang.foreign.MemoryLayout.PathElement.groupElement;
-import static java.lang.foreign.MemoryLayout.PathElement.sequenceElement;
-import static java.lang.foreign.ValueLayout.JAVA_FLOAT;
-import static java.lang.foreign.ValueLayout.JAVA_INT;
-
 import java.lang.foreign.Arena;
-import java.lang.foreign.GroupLayout;
-import java.lang.foreign.MemoryLayout;
-import java.lang.foreign.MemoryLayout.PathElement;
 import java.lang.foreign.MemorySegment;
-import java.lang.foreign.SequenceLayout;
+import java.lang.foreign.ValueLayout;
 import java.lang.invoke.VarHandle;
-import java.util.concurrent.locks.LockSupport;
 
 /**
  * ReceptorModel
@@ -25,68 +16,46 @@ import java.util.concurrent.locks.LockSupport;
  * @author Uwe Hennig
  */
 public class ReceptorModel {
-    public final Arena arena;
-    public final int   capacity;
+    final int capacity;
 
-    public final int rows;
-    public final int cols;
+    final int rows;
+    final int cols;
 
+    Arena         arena;
     MemorySegment segment;
 
-    final VarHandle VH_LOCK;
-    final VarHandle VH_INTAKE_DISTANCE;
+    // @formatter:off
+    static final VarHandle VH_INT      = ValueLayout.JAVA_INT.withByteAlignment(4).varHandle();
+    static final VarHandle VH_FLOAT    = ValueLayout.JAVA_FLOAT.withByteAlignment(4).varHandle();
 
-    final VarHandle VH_TARGET_ID;
-    final VarHandle VH_TARGET_TYPE;
+    static final long      HEADER_SIZE = 8; // sizeof([HEADER_DATA])
+    static final long      TARGET_SIZE = 8; // sizeof([TARGET_ID, TARGET_TYPE])
+
+    final long rowSize;        // columns * TARGET_SIZE
+    final long receptorSize;   // HEADER_SIZE + rows * rowSize
 
     // ----- public -----
 
-    // @formatter:off
-    public ReceptorModel(int numReceptors, int rows, int cols) {
-        assert numReceptors > 0 : "invalid receptor number";
-        assert rows > 0  : "invalid rows in ReceptorModel";
-        assert cols >= 0 : "invalid columns in ReceptorModel";
+    public ReceptorModel(int numReceptors, int rows, int columns) {
+        assert numReceptors >= 1 : "invalid receptor number";
+        assert rows >= 1         : "invalid rows in ReceptorModel";
+        assert columns >= 1      : "invalid columns in ReceptorModel";
 
-        this.arena = Arena.ofShared();
         this.capacity = numReceptors;
         this.rows = rows;
-        this.cols = cols;
+        this.cols = columns;
 
-        GroupLayout TARGET = MemoryLayout.structLayout(
-            JAVA_INT.withName("targetId"),
-            JAVA_INT.withName("targetType")
-        ).withByteAlignment(8);
+        this.rowSize = columns * TARGET_SIZE;
+        this.receptorSize = HEADER_SIZE + (rows * rowSize);
 
-        GroupLayout LAYOUT = MemoryLayout.structLayout(
-            JAVA_INT.withName("lock"),
-            JAVA_FLOAT.withName("intakeDistance"),
-            MemoryLayout.sequenceLayout(rows, MemoryLayout.sequenceLayout(cols, TARGET)).withName("matrix")
-        ).withByteAlignment(8);
-
-        SequenceLayout poolLayout = MemoryLayout.sequenceLayout(numReceptors, LAYOUT);
-        this.segment = arena.allocate(poolLayout);
-
-        this.VH_LOCK = poolLayout.varHandle(sequenceElement(), MemoryLayout.PathElement.groupElement("lock"));
-        this.VH_INTAKE_DISTANCE = poolLayout.varHandle(sequenceElement(), groupElement("intakeDistance"));
-        this.VH_TARGET_ID = poolLayout.varHandle(
-            PathElement.sequenceElement(), // Receptor-Index
-            PathElement.groupElement("matrix"),
-            PathElement.sequenceElement(), // Row-Index
-            PathElement.sequenceElement(), // Col-Index
-            PathElement.groupElement("targetId")
-        );
-        this.VH_TARGET_TYPE = poolLayout.varHandle(
-            PathElement.sequenceElement(), // Receptor-Index
-            PathElement.groupElement("matrix"),
-            PathElement.sequenceElement(), // Row-Index
-            PathElement.sequenceElement(), // Col-Index
-            PathElement.groupElement("targetType")
-        );
+        this.arena = Arena.ofShared();
+        this.segment = arena.allocate(numReceptors * receptorSize);
     }
     // @formatter:on
 
     public void close() {
         arena.close();
+        arena = null;
     }
 
     public int getCapacity() {
@@ -94,99 +63,44 @@ public class ReceptorModel {
     }
 
     // ----- getter/setter -----
+    void setTargetId(int index, int row, int col, int value) {
+        long receptorIdx = index * receptorSize;
+        long matrixStart = receptorIdx + HEADER_SIZE;
+        long offsetTargetId = matrixStart + (row * rowSize) + (col * TARGET_SIZE);
 
-    float getIntakeDistance(int index) {
-        return (float) VH_INTAKE_DISTANCE.get(segment, 0L, (long) index);
-    }
+        VH_INT.set(segment, offsetTargetId, value);
 
-    void setIntakeDistance(int index, float value) {
-        VH_INTAKE_DISTANCE.set(segment, 0L, (long) index, value);
     }
 
     int getTargetId(int index, int row, int col) {
-        return (int) VH_TARGET_ID.get(segment, 0L, (long) index, row, col);
-    }
-
-    void setTargetId(int index, int row, int col, int id) {
-        VH_TARGET_ID.set(segment, 0L, index, row, col, id);
-    }
-
-    int getTargetType(int index, int row, int col) {
-        return (int) VH_TARGET_TYPE.get(segment, 0L, (long) index, row, col);
+        long receptorIdx = index * receptorSize;
+        long matrixStart = receptorIdx + HEADER_SIZE;
+        long offsetTargetId = matrixStart + (row * rowSize) + (col * TARGET_SIZE);
+        return (int) VH_INT.get(segment, offsetTargetId);
     }
 
     void setTargetType(int index, int row, int col, int value) {
-        VH_TARGET_TYPE.set(segment, 0L, index, row, col, value);
+        long receptorIdx = index * receptorSize;
+        long matrixStart = receptorIdx + HEADER_SIZE;
+
+        long offset = matrixStart + (row * rowSize) + (col * TARGET_SIZE) + 4;
+
+        VH_INT.set(segment, offset, value);
     }
 
-    // ----- lock/unlock -----
-
-    private static final int WRITER_WAITING = 0x40000000; // Bit 30
-    private static final int WRITER_ACTIVE  = 0xFFFFFFFF; // -1
-
-    void writeLock(int index) {
-        int spins = 0;
-        // set the WRITER_WAITING flag to indicate a write request
-        while (true) {
-            int current = (int) VH_LOCK.getVolatile(segment, 0L, index);
-            if ((current & WRITER_WAITING) == 0) {
-                if (VH_LOCK.compareAndSet(segment, 0L, index, current, current | WRITER_WAITING)) {
-                    break;
-                }
-            } else {
-                break;
-            }
-            backoff(spins++);
-        }
-
-        // set the lock
-        spins = 0;
-        while (true) {
-            int current = (int) VH_LOCK.getVolatile(segment, 0L, index);
-
-            // no reader active and write flag is set or initial state.
-            if (current == WRITER_WAITING || current == 0) {
-                if (VH_LOCK.compareAndSet(segment, 0L, index, current, WRITER_ACTIVE)) {
-                    return;
-                }
-            }
-
-            backoff(spins++);
-        }
+    int getTargetType(int index, int row, int col) {
+        long offsetTargetType = (index * receptorSize) + HEADER_SIZE + (row * rowSize) + (col * TARGET_SIZE) + 4;
+        return (int) VH_INT.get(segment, offsetTargetType);
     }
 
-    void writeUnlock(int index) {
-        VH_LOCK.setRelease(segment, 0L, index, 0);
+    public void setIntakeDistance(int index, float value) {
+        long offset = (index * receptorSize) + 4;
+        VH_FLOAT.set(segment, offset, value);
     }
 
-    boolean readLock(int index) {
-        int spins = 0;
-        while (true) {
-            int current = (int) VH_LOCK.getVolatile(segment, 0L, index);
-
-            // give priority to the writers
-            if (current < 0 || (current & WRITER_WAITING) != 0) {
-                backoff(spins++);
-                continue;
-            }
-
-            // increment reader counter
-            if (VH_LOCK.compareAndSet(segment, 0L, index, current, current + 1)) {
-                return true;
-            }
-        }
+    public float getIntakeDistance(int index) {
+        long offset = (index * receptorSize) + 4;
+        return (float) VH_FLOAT.get(segment, offset);
     }
 
-    void readUnlock(int index) {
-        // decrement reader counter
-        VH_LOCK.getAndAdd(segment, 0L, index, -1);
-    }
-
-    void backoff(int spins) {
-        if (spins < 64) {
-            Thread.onSpinWait();
-        } else {
-            LockSupport.parkNanos(1);
-        }
-    }
 }

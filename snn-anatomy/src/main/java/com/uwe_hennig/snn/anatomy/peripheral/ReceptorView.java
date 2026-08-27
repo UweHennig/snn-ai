@@ -15,56 +15,33 @@ import com.uwe_hennig.snn.anatomy.allocator.ReceptorModelManager;
 public class ReceptorView {
     // ----- getter/setter -----
 
-    public static int getTemporalFilterIndex(int index) {
+    public static float getIntakeDistance(int index) {
         ReceptorModel model = ReceptorModelManager.instance().getModel();
-        return model.getTemporalFilterIndex(index);
+        return model.getIntakeDistance(index);
     }
 
-    public static void setTemporalFilterIndex(int index, int value) {
+    public static void setIntakeDistance(int index, float value) {
         ReceptorModel model = ReceptorModelManager.instance().getModel();
-        model.setTemporalFilterIndex(index, value);
+        model.setIntakeDistance(index, value);
     }
 
-    public static int getInformationFilterIndex(int index) {
+    public static int getTargetId(int index, int row, int col) {
         ReceptorModel model = ReceptorModelManager.instance().getModel();
-        return model.getInformationFilterIndex(index);
+        return model.getTargetId(index, row, col);
     }
 
-    public static void setInformationFilterIndex(int index, int value) {
+    public static void setTargetId(int index, int row, int col, int id) {
         ReceptorModel model = ReceptorModelManager.instance().getModel();
-        model.setInformationFilterIndex(index, value);
+        model.setTargetId(index, row, col, id);
     }
 
-    public static int getDendritId(int index, int row, int col) {
+    public static int getTargetType(int index, int row, int col) {
         ReceptorModel model = ReceptorModelManager.instance().getModel();
-        return model.getDendriteId(index, row, col);
+        return model.getTargetType(index, row, col);
     }
 
-    public static void setDendriteId(int index, int row, int col, int id) {
+    public static void setTargetType(int index, int row, int col, int id) {
         ReceptorModel model = ReceptorModelManager.instance().getModel();
-        model.setDendriteId(index, row, col, id);
+        model.setTargetType(index, row, col, id);
     }
-
-    // ----- lock/unlock -----
-
-    public static void readLock(int index) {
-        ReceptorModel model = ReceptorModelManager.instance().getModel();
-        model.readLock(index);
-    }
-
-    public static void readUnlock(int index) {
-        ReceptorModel model = ReceptorModelManager.instance().getModel();
-        model.readUnlock(index);
-    }
-
-    public static void writeLock(int index) {
-        ReceptorModel model = ReceptorModelManager.instance().getModel();
-        model.writeLock(index);
-    }
-
-    public static void writeUnlock(int index) {
-        ReceptorModel model = ReceptorModelManager.instance().getModel();
-        model.writeUnlock(index);
-    }
-
 }

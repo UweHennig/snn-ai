@@ -5,10 +5,10 @@
  */
 package com.uwe_hennig.snn.anatomy.peripheral;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import java.util.Locale;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -28,45 +28,93 @@ public class ReceptorTest {
     @DisplayName("Receptor Matrix Test")
     public void testMatrix() {
         try {
-            final int bound = 1000;
-            ReceptorModel model = ReceptorModelManager.init(1, bound, bound).getModel();
-            ThreadLocalRandom rand = ThreadLocalRandom.current();
-            model.setInformationFilterIndex(0, 1234);
-            model.setTemporalFilterIndex(0, 56789);
+            final int capacity = 2;
+            final int rows = 10;
+            final int columns = 10;
+            final int loops = 1_000_000;
 
+            ReceptorModel model = ReceptorModelManager.init(capacity, rows, columns).getModel();
+
+            ThreadLocalRandom rand = ThreadLocalRandom.current();
+
+            System.out.println("Matrices " + capacity);
+            System.out.printf(Locale.ENGLISH, "rows = %d columns= %d%n", rows, columns);
+            System.out.println("Test loops  : " + loops);
+
+            long ops = 0L;
             long start = System.nanoTime();
-            for (int i = 0; i < 100_000_000; i++) {
-                int row = rand.nextInt(bound);
-                int col = rand.nextInt(bound);
-                int val = rand.nextInt(9) + 1;
-                model.setDendriteId(0, row, col, val);
+            for (int i = 0; i < loops; i++) {
+                for (int index = 0; index < capacity; index++) {
+                    float val = rand.nextFloat(1, 10);
+                    model.setIntakeDistance(index, val);
+                    for (int row = 0; row < rows; row++) {
+                        for (int col = 0; col < columns; col++) {
+                            int data = rand.nextInt(1, 100);
+                            model.setTargetId(index, row, col, data);
+                            model.setTargetType(index, row, col, data);
+                            ops++;
+                        }
+                    }
+                }
             }
             long end = System.nanoTime();
-            double sec = (end - start) / 1_000_000_000.0;
-            double avgOpsPerSec = 100_000_000.0 / sec;
+            double sec = (end - start) / ops;
+            double avgOpsPerSec = ops / sec;
 
+            System.out.println();
+
+            System.out.println("Filling matrix: ");
+            System.out.printf("Operations : %,6d%n", ops);
+            System.out.printf("Throughput : %,6.2f ops/sec%n", avgOpsPerSec);
+            System.out.printf("Latency    : %,13.2f ns/op%n", ops / avgOpsPerSec);
+
+            System.out.println();
+
+            ops = 0;
+            start = System.nanoTime();
+            for (int i = 0; i < loops; i++) {
+                for (int index = 0; index < capacity; index++) {
+                    for (int row = 0; row < rows; row++) {
+                        for (int col = 0; col < columns; col++) {
+                            int id  = model.getTargetId(index, row, col);
+                            int type  = model.getTargetType(index, row, col);
+                            Blackhole.consume(id);
+                            Blackhole.consume(type);
+                            ops++;
+                        }
+                    }
+                }
+            }
+            end = System.nanoTime();
+            sec = (end - start) / ops;
+            avgOpsPerSec = ops / sec;
+
+            System.out.println();
+            System.out.println("Reading matrix: ");
+            System.out.printf("Operations : %,6d%n", ops);
             System.out.printf("Throughput : %,6.2f ops/sec%n", avgOpsPerSec);
             System.out.printf("Latency    : %,13.2f ns/op%n", 1_000_000_000.0 / avgOpsPerSec);
 
             System.out.println();
 
-            int sum = 0;
-            int views = Math.min(bound, 10);
-            for (int row = 0; row < views; row++) {
-                for (int col = 0; col < views; col++) {
-                    int val = model.getDendriteId(0, row, col);
-                    sum += val;
-                    System.out.print(val + " ");
+            int maxRows = Math.min(rows, 5);
+            int maxCols = Math.min(rows, 5);
+            for (int index = 0; index < capacity; index++) {
+                System.out.println("Matrix " + (index + 1));
+                for (int row = 0; row < maxRows; row++) {
+                    for (int col = 0; col < maxCols; col++) {
+                        int type  = model.getTargetType(index, row, col);
+                        int id  = model.getTargetId(index, row, col);
+                        System.out.printf(Locale.ENGLISH, "(%2d, %2d) ", id, type);
+                        assertTrue(type >= 1 && type < 100, "Invalid type value in Receptor");
+                        assertTrue(id >= 1 && id < 100, "Invalid type value in Receptor");
+                    }
+                    System.out.println("...");
                 }
                 System.out.println("...");
             }
-            System.out.println("...");
-            assertTrue(sum > 100, "Values are not set!");
 
-            assertEquals(1234, model.getInformationFilterIndex(0));
-
-            assertEquals(bound, model.rows());
-            assertEquals(bound, model.columns());
+            System.out.println();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -81,6 +129,16 @@ public class ReceptorTest {
         String title = "### " + info.getDisplayName() + " ###";
         System.out.println("\n" + title);
         System.out.println("-".repeat(title.length()));
+    }
+
+    public final class Blackhole {
+        @SuppressWarnings("unused")
+        private static int SINK;
+
+        public static void consume(int v) {
+            SINK = v;
+            if ((v & 0x1) == 0x1) { /* noop */ }
+        }
     }
 
 }
