@@ -34,10 +34,10 @@ public class ReceptorModel {
     MemorySegment segment;
 
     final VarHandle VH_LOCK;
-    final VarHandle VH_TIME_WINDOw;
+    final VarHandle VH_INTAKE_DISTANCE;
 
-    final VarHandle VH_DENDRIT_ID;
-    final VarHandle VH_VALUE;
+    final VarHandle VH_TARGET_ID;
+    final VarHandle VH_TARGET_TYPE;
 
     // ----- public -----
 
@@ -52,38 +52,35 @@ public class ReceptorModel {
         this.rows = rows;
         this.cols = cols;
 
-        GroupLayout PAIR = MemoryLayout.structLayout(
-            JAVA_INT.withName("dendritId"),
-            JAVA_FLOAT.withName("value")
+        GroupLayout TARGET = MemoryLayout.structLayout(
+            JAVA_INT.withName("targetId"),
+            JAVA_INT.withName("targetType")
         ).withByteAlignment(8);
 
         GroupLayout LAYOUT = MemoryLayout.structLayout(
             JAVA_INT.withName("lock"),
-            JAVA_FLOAT.withName("timeWindow"),
-            MemoryLayout.sequenceLayout(rows, MemoryLayout.sequenceLayout(cols, PAIR)).withName("matrix")
+            JAVA_FLOAT.withName("intakeDistance"),
+            MemoryLayout.sequenceLayout(rows, MemoryLayout.sequenceLayout(cols, TARGET)).withName("matrix")
         ).withByteAlignment(8);
 
         SequenceLayout poolLayout = MemoryLayout.sequenceLayout(numReceptors, LAYOUT);
         this.segment = arena.allocate(poolLayout);
 
         this.VH_LOCK = poolLayout.varHandle(sequenceElement(), MemoryLayout.PathElement.groupElement("lock"));
-
-        this.VH_TIME_WINDOw = poolLayout.varHandle(sequenceElement(), groupElement("timeWindow"));
-
-        this.VH_DENDRIT_ID = poolLayout.varHandle(
+        this.VH_INTAKE_DISTANCE = poolLayout.varHandle(sequenceElement(), groupElement("intakeDistance"));
+        this.VH_TARGET_ID = poolLayout.varHandle(
             PathElement.sequenceElement(), // Receptor-Index
             PathElement.groupElement("matrix"),
             PathElement.sequenceElement(), // Row-Index
             PathElement.sequenceElement(), // Col-Index
-            PathElement.groupElement("timeWindow")
+            PathElement.groupElement("targetId")
         );
-
-        this.VH_VALUE = poolLayout.varHandle(
+        this.VH_TARGET_TYPE = poolLayout.varHandle(
             PathElement.sequenceElement(), // Receptor-Index
             PathElement.groupElement("matrix"),
             PathElement.sequenceElement(), // Row-Index
             PathElement.sequenceElement(), // Col-Index
-            PathElement.groupElement("value")
+            PathElement.groupElement("targetType")
         );
     }
     // @formatter:on
@@ -98,28 +95,28 @@ public class ReceptorModel {
 
     // ----- getter/setter -----
 
-    float getTimeWindow(int index) {
-        return (float) VH_TIME_WINDOw.get(segment, 0L, (long) index);
+    float getIntakeDistance(int index) {
+        return (float) VH_INTAKE_DISTANCE.get(segment, 0L, (long) index);
     }
 
-    void setTimeWindow(int index, float value) {
-        VH_TIME_WINDOw.set(segment, 0L, (long) index, value);
+    void setIntakeDistance(int index, float value) {
+        VH_INTAKE_DISTANCE.set(segment, 0L, (long) index, value);
     }
 
-    int getDendriteId(int index, int row, int col) {
-        return (int) VH_DENDRIT_ID.get(segment, 0L, (long) index, row, col);
+    int getTargetId(int index, int row, int col) {
+        return (int) VH_TARGET_ID.get(segment, 0L, (long) index, row, col);
     }
 
-    void setDendriteId(int index, int row, int col, int id) {
-        VH_DENDRIT_ID.set(segment, 0L, index, row, col, id);
+    void setTargetId(int index, int row, int col, int id) {
+        VH_TARGET_ID.set(segment, 0L, index, row, col, id);
     }
 
-    float getValue(int index, int row, int col) {
-        return (float) VH_VALUE.get(segment, 0L, (long) index, row, col);
+    int getTargetType(int index, int row, int col) {
+        return (int) VH_TARGET_TYPE.get(segment, 0L, (long) index, row, col);
     }
 
-    void setValue(int index, int row, int col, float value) {
-        VH_VALUE.set(segment, 0L, index, row, col, value);
+    void setTargetType(int index, int row, int col, int value) {
+        VH_TARGET_TYPE.set(segment, 0L, index, row, col, value);
     }
 
     // ----- lock/unlock -----
