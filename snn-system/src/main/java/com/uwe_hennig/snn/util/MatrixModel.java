@@ -1,5 +1,5 @@
 /**
- * @(#)Matrix.java
+ * @(#)MatrixModel.java
  * Copyright (c) 2026 Uwe Hennig
  * All rights reserved.
  */
@@ -8,9 +8,10 @@ package com.uwe_hennig.snn.util;
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.ValueLayout;
+import java.lang.invoke.VarHandle;
 
 /**
- * Matrix
+ * MatrixModel
  * @formatter:off
 +------------------------ HEADER-MATRIX -------------------------+
 | +---------------------- HEADER (fixed) ----------------------+ |
@@ -31,7 +32,7 @@ import java.lang.foreign.ValueLayout;
 +----------------------------------------------------------------+
  * @author Uwe Hennig
  */
-public class Matrix {
+public class MatrixModel {
     private static final long SLOT_SIZE = 8;
 
     private final int capacity;
@@ -49,10 +50,11 @@ public class Matrix {
     private final Arena arena;
     private final MemorySegment segment;
 
+    static final VarHandle VH_STATUS = ValueLayout.JAVA_INT.varHandle();
 
-    public Matrix(int capacity, int numHeaders, int numRows, int numColumns, int numSlotsPerCell) {
+    public MatrixModel(int capacity, int numHeaders, int numRows, int numColumns, int numSlotsPerCell) {
         this.capacity = capacity;
-        this.numHeaders = numHeaders;
+        this.numHeaders = numHeaders + 1; // 1 STATUS at the end
         this.numRows = numRows;
         this.numColumns = numColumns;
         this.numSlotsPerCell = numSlotsPerCell;
@@ -70,6 +72,26 @@ public class Matrix {
     // ------------------------------------------------------------
     // HEADER: set / get
     // ------------------------------------------------------------
+
+    public boolean setStatus(int index, int currentStatus, int newStatus) {
+        long offset = headerOffset(index, numHeaders - 1);
+        int spins = 0;
+
+        while (!VH_STATUS.compareAndSet(segment, offset, currentStatus, newStatus)) {
+            if (spins < 32) {
+                Thread.onSpinWait();
+                spins++;
+            } else {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public int getStatus(int index) {
+        long offset = headerOffset(index, numHeaders - 1);
+        return (int) VH_STATUS.get(segment, offset);
+    }
 
     public void setHeaderInt(long m, long h, int val) {
         segment.set(ValueLayout.JAVA_INT, headerOffset(m, h), val);
@@ -143,7 +165,7 @@ public class Matrix {
     // --- convenient ---
 
     private long headerOffset(long m, long h) {
-        return (m * fullBlockSize) + (h << 3);
+        return (m * fullBlockSize) + (h << 3); // 3 = slot_size
     }
 
     private long cellOffset(long m, long r, long c, long n) {

@@ -1,11 +1,13 @@
 /**
- * @(#)MatrixTest.java
+ * @(#)MatrixModelTest.java
  * Copyright (c) 2026 Uwe Hennig
  * All rights reserved.
  */
 package com.uwe_hennig.snn.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Locale;
 
@@ -15,11 +17,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
 /**
- * MatrixTest
+ * MatrixModelTest
  *
  * @author Uwe Hennig
  */
-public class MatrixTest {
+public class MatrixModelTest {
 
     @Test
     @DisplayName("Simple Matrix test")
@@ -30,7 +32,7 @@ public class MatrixTest {
         int numColumns = 3;
         int numSlotsPerCell = 2;
 
-        Matrix matrix = new Matrix(capacity, numHeaders, numRows, numColumns, numSlotsPerCell);
+        MatrixModel matrix = new MatrixModel(capacity, numHeaders, numRows, numColumns, numSlotsPerCell);
 
         matrix.setHeaderInt(0, 0, 1);
         matrix.setHeaderInt(0, 1, 2);
@@ -39,6 +41,10 @@ public class MatrixTest {
         matrix.setHeaderInt(1, 0, 4);
         matrix.setHeaderFloat(1, 1, 5f);
         matrix.setHeaderDouble(1, 2, 6d);
+
+        assertTrue(matrix.setStatus(0, 0, 5));
+        assertEquals(5, matrix.getStatus(0));
+        assertFalse(matrix.setStatus(0, 0, 0));
 
         int counter = 1;
         for (int index = 0; index < capacity; index++) {
