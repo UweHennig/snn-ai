@@ -34,6 +34,13 @@ public class MatrixModelTest {
 
         MatrixModel matrix = new MatrixModel(capacity, numHeaders, numRows, numColumns, numSlotsPerCell);
 
+        assertEquals(capacity, matrix.getCapacity());
+        assertEquals(numHeaders, matrix.getNumHeaders());
+        assertEquals(numRows, matrix.getNumRows());
+        assertEquals(numColumns, matrix.getNumColumns());
+        assertEquals(numSlotsPerCell, matrix.getNumSlotsPerCell());
+        System.out.println("Allocated bytes = " + matrix.getByteSize());
+
         matrix.setHeaderInt(0, 0, 1);
         matrix.setHeaderInt(0, 1, 2);
         matrix.setHeaderInt(0, 2, 3);

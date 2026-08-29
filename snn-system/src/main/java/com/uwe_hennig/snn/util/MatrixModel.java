@@ -46,6 +46,7 @@ public class MatrixModel {
     private final long rowByteSize;
     private final long matrixPartSize;
     private final long fullBlockSize;
+    private final long base;
 
     private final Arena arena;
     private final MemorySegment segment;
@@ -66,7 +67,9 @@ public class MatrixModel {
         this.fullBlockSize   = headerByteSize + matrixPartSize;
 
         this.arena   = Arena.ofShared();
-        this.segment = arena.allocate(capacity * fullBlockSize);
+        this.segment = arena.allocate(capacity * fullBlockSize + 24);
+
+        this.base = addMeta();
     }
 
     // ------------------------------------------------------------
@@ -165,33 +168,47 @@ public class MatrixModel {
     // --- convenient ---
 
     private long headerOffset(long m, long h) {
-        return (m * fullBlockSize) + (h << 3); // 3 = slot_size
+        return base + (m * fullBlockSize) + (h << 3); // 3 = slot_size
     }
 
     private long cellOffset(long m, long r, long c, long n) {
-        return (m * fullBlockSize) + headerByteSize + (r * rowByteSize) + (c * cellByteSize) + (n << 3);
+        return base + (m * fullBlockSize) + headerByteSize + (r * rowByteSize) + (c * cellByteSize) + (n << 3);
+    }
+
+    private long addMeta() {
+        segment.set(ValueLayout.JAVA_INT,  0, capacity);
+        segment.set(ValueLayout.JAVA_INT,  4, numHeaders);
+        segment.set(ValueLayout.JAVA_INT,  8, numRows);
+        segment.set(ValueLayout.JAVA_INT, 12, numColumns);
+        segment.set(ValueLayout.JAVA_INT, 16, numSlotsPerCell);
+        segment.set(ValueLayout.JAVA_INT, 20, (int)segment.byteSize());
+        return 24;
     }
 
     // --- Getter / Setter ---
 
     public int getCapacity() {
-        return capacity;
+        return segment.get(ValueLayout.JAVA_INT, 0);
     }
 
     public int getNumHeaders() {
-        return numHeaders;
+        return segment.get(ValueLayout.JAVA_INT, 4) - 1; // status is hidden
     }
 
     public int getNumRows() {
-        return numRows;
+        return segment.get(ValueLayout.JAVA_INT, 8);
     }
 
     public int getNumColumns() {
-        return numColumns;
+        return segment.get(ValueLayout.JAVA_INT, 12);
     }
 
     public int getNumSlotsPerCell() {
-        return numSlotsPerCell;
+        return segment.get(ValueLayout.JAVA_INT, 16);
+    }
+
+    public int getByteSize() {
+        return segment.get(ValueLayout.JAVA_INT, 20);
     }
 
     public void close() {
@@ -199,4 +216,6 @@ public class MatrixModel {
             arena.close();
         }
     }
+
+
 }
