@@ -5,11 +5,8 @@
  */
 package com.uwe_hennig.snn.anatomy.peripheral;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
-
-import java.util.Locale;
-import java.util.concurrent.ThreadLocalRandom;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -28,31 +25,74 @@ public class ReceptorTest {
     @DisplayName("Receptor Matrix Test")
     public void testMatrix() {
         try {
-            final int capacity = 2;
-            final int rows = 10;
-            final int columns = 10;
             final int loops = 1_000_000;
 
-            ReceptorModel model = ReceptorModelManager.init(capacity, rows, columns).getModel();
+            final int receptors = 2;
 
-            ThreadLocalRandom rand = ThreadLocalRandom.current();
+            final int capacityA = receptors;
+            final int numHeadersA = 1;
+            final int numRowsA = 3;
+            final int numColumnsA = 3;
+            final int numSlotsPerCellA = 2;
 
-            System.out.println("Matrices " + capacity);
-            System.out.printf(Locale.ENGLISH, "rows = %d columns= %d%n", rows, columns);
-            System.out.println("Test loops  : " + loops);
+            final int capacityB = receptors;
+            final int numHeadersB = 2;
+            final int numRowsB = 4;
+            final int numColumnsB = 2;
+            final int numSlotsPerCellB = 1;
 
-            long ops = 0L;
+            ReceptorModelManager manager = ReceptorModelManager.init(receptors);
+            assertEquals(receptors, manager.getNumReceptors());
+            System.out.println("Receptors : " + manager.getNumReceptors());
+
+            int receptorAId = manager.newReceptor(capacityA, numHeadersA, numRowsA, numColumnsA, numSlotsPerCellA);
+            int receptorBId = manager.newReceptor(capacityB, numHeadersB, numRowsB, numColumnsB, numSlotsPerCellB);
+
+            ReceptorView viewA = manager.getRecptorView(receptorAId);
+            ReceptorView viewB = manager.getRecptorView(receptorBId);
+
+            // check meta data
+            assertEquals(capacityA, viewA.getCapacity());
+            assertEquals(numHeadersA, viewA.getNumHeaders());
+            assertEquals(numRowsA, viewA.getNumRows());
+            assertEquals(numColumnsA, viewA.getNumColumns());
+            assertEquals(numSlotsPerCellA, viewA.getNumSlotsPerCell());
+
+            assertEquals(capacityB, viewB.getCapacity());
+            assertEquals(numHeadersB, viewB.getNumHeaders());
+            assertEquals(numRowsB, viewB.getNumRows());
+            assertEquals(numColumnsB, viewB.getNumColumns());
+            assertEquals(numSlotsPerCellB, viewB.getNumSlotsPerCell());
+
+            // check header data index 0
+            viewA.setIntakeDistance(0, 11f);
+            viewB.setIntakeDistance(0, 22f);
+            assertEquals(11f, viewA.getIntakeDistance(0), 0.001);
+            assertEquals(22f, viewB.getIntakeDistance(0), 0.001);
+
+            // check header data index 1
+            viewA.setIntakeDistance(1, 33f);
+            viewB.setIntakeDistance(1, 44f);
+
+            assertEquals(33f, viewA.getIntakeDistance(1), 0.001);
+            assertEquals(44f, viewB.getIntakeDistance(1), 0.001);
+
+            // check cell data
+
+            int ops = 0;
             long start = System.nanoTime();
             for (int i = 0; i < loops; i++) {
-                for (int index = 0; index < capacity; index++) {
-                    float val = rand.nextFloat(1, 10);
-                    model.setIntakeDistance(index, val);
-                    for (int row = 0; row < rows; row++) {
-                        for (int col = 0; col < columns; col++) {
-                            int data = rand.nextInt(1, 100);
-                            model.setTargetId(index, row, col, data);
-                            model.setTargetType(index, row, col, data);
-                            ops++;
+                for (int r = 0; r < receptors; r++) {
+                    // set A
+                    for (int row = 0; row < viewA.getNumRows(); row++) {
+                        for (int col = 0; col < viewA.getNumColumns(); col++) {
+                            viewA.setTargetId(r, row, col, ops++);
+                        }
+                    }
+                    // set B
+                    for (int row = 0; row < viewB.getNumRows(); row++) {
+                        for (int col = 0; col < viewB.getNumColumns(); col++) {
+                            viewB.setTargetId(r, row, col, ops++);
                         }
                     }
                 }
@@ -62,24 +102,32 @@ public class ReceptorTest {
             double avgOpsPerSec = ops / sec;
 
             System.out.println();
-
-            System.out.println("Filling matrix: ");
+            System.out.println("Filling receptor: ");
             System.out.printf("Operations : %,6d%n", ops);
             System.out.printf("Throughput : %,6.2f ops/sec%n", avgOpsPerSec);
             System.out.printf("Latency    : %,13.2f ns/op%n", ops / avgOpsPerSec);
 
             System.out.println();
 
+
             ops = 0;
             start = System.nanoTime();
             for (int i = 0; i < loops; i++) {
-                for (int index = 0; index < capacity; index++) {
-                    for (int row = 0; row < rows; row++) {
-                        for (int col = 0; col < columns; col++) {
-                            int id  = model.getTargetId(index, row, col);
-                            int type  = model.getTargetType(index, row, col);
-                            Blackhole.consume(id);
-                            Blackhole.consume(type);
+                for (int r = 0; r < receptors; r++) {
+                    // Check A
+                    for (int row = 0; row < viewA.getNumRows(); row++) {
+                        for (int col = 0; col < viewA.getNumColumns(); col++) {
+                            int actual   = viewA.getTargetId(r, row, col);
+                            Blackhole.consume(actual);
+                            ops++;
+                        }
+                    }
+
+                    // Check B
+                    for (int row = 0; row < viewB.getNumRows(); row++) {
+                        for (int col = 0; col < viewB.getNumColumns(); col++) {
+                            int actual   = viewB.getTargetId(r, row, col);
+                            Blackhole.consume(actual);
                             ops++;
                         }
                     }
@@ -89,38 +137,19 @@ public class ReceptorTest {
             sec = (end - start) / ops;
             avgOpsPerSec = ops / sec;
 
-            System.out.println();
-            System.out.println("Reading matrix: ");
+            System.out.println("Receptor reading: ");
             System.out.printf("Operations : %,6d%n", ops);
             System.out.printf("Throughput : %,6.2f ops/sec%n", avgOpsPerSec);
-            System.out.printf("Latency    : %,13.2f ns/op%n", 1_000_000_000.0 / avgOpsPerSec);
+            System.out.printf("Latency    : %,13.2f ns/op%n", ops / avgOpsPerSec);
 
             System.out.println();
 
-            int maxRows = Math.min(rows, 5);
-            int maxCols = Math.min(rows, 5);
-            for (int index = 0; index < capacity; index++) {
-                System.out.println("Matrix " + (index + 1));
-                for (int row = 0; row < maxRows; row++) {
-                    for (int col = 0; col < maxCols; col++) {
-                        int type  = model.getTargetType(index, row, col);
-                        int id  = model.getTargetId(index, row, col);
-                        System.out.printf(Locale.ENGLISH, "(%2d, %2d) ", id, type);
-                        assertTrue(type >= 1 && type < 100, "Invalid type value in Receptor");
-                        assertTrue(id >= 1 && id < 100, "Invalid type value in Receptor");
-                    }
-                    System.out.println("...");
-                }
-                System.out.println("...");
-            }
-
-            System.out.println();
 
         } catch (Exception e) {
             e.printStackTrace();
             fail("Exception in testMatrix: " + e.getLocalizedMessage());
         } finally {
-            ReceptorModelManager.close();
+            ReceptorModelManager.instance().close();
         }
     }
 
@@ -137,7 +166,8 @@ public class ReceptorTest {
 
         public static void consume(int v) {
             SINK = v;
-            if ((v & 0x1) == 0x1) { /* noop */ }
+            if ((v & 0x1) == 0x1) {
+                /* noop */ }
         }
     }
 

@@ -11,5 +11,5 @@ package com.uwe_hennig.snn.contracts.peripheral;
  * @author Uwe Hennig
  */
 public interface SnnReceptor {
-    void perceive(float value);
+    void perceive(float [][] value);
 }

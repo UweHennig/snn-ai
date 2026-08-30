@@ -5,29 +5,30 @@
  */
 package com.uwe_hennig.snn.anatomy.allocator;
 
-import com.uwe_hennig.snn.anatomy.peripheral.ReceptorModel;
+import com.uwe_hennig.snn.anatomy.peripheral.ReceptorView;
+import com.uwe_hennig.snn.util.MatrixModel;
 
 /**
  * ReceptorModelManager
  *
  * @author Uwe Hennig
  */
-public class ReceptorModelManager {
+public final class ReceptorModelManager {
     private static ReceptorModelManager INSTANCE;
 
-    private ReceptorModel model;
-    private int capacity;
+    private final ReceptorView[] receptors;
 
-    private ReceptorModelManager(int capacity, int rows, int columns) {
-        this.model = new ReceptorModel(capacity, rows, columns);
-        this.capacity = capacity;
+    private int nextIndex    = 0;
+
+    private ReceptorModelManager(int numReceptors) {
+        receptors = new ReceptorView[numReceptors];
     }
 
-    public static ReceptorModelManager init(int capacity, int rows, int columns) {
+    public static ReceptorModelManager init(int numReceptors) {
         if (INSTANCE == null) {
             synchronized (ReceptorModelManager.class) {
                 if (INSTANCE == null) {
-                    INSTANCE = new ReceptorModelManager(capacity, rows, columns);
+                    INSTANCE = new ReceptorModelManager(numReceptors);
                 }
             }
         }
@@ -38,19 +39,34 @@ public class ReceptorModelManager {
         return INSTANCE;
     }
 
-    public ReceptorModel getModel() {
-        return model;
+    // return receptor id
+    public int newReceptor(int capacity, int numHeaders, int numRows, int numColumns, int numSlotsPerCell) {
+        if (receptors.length <= nextIndex) {
+            throw new IllegalStateException("Out of off receptors memory");
+        }
+        MatrixModel model = new MatrixModel(capacity, numHeaders, numRows, numColumns, numSlotsPerCell);
+        ReceptorView view = new ReceptorView(model);
+        receptors[nextIndex] = view;
+
+        return nextIndex++;
     }
 
-    public int getCapacity() {
-        return capacity;
+    public ReceptorView getRecptorView(int receptorId) {
+        return receptors[receptorId];
     }
 
-    public static void close() {
+    public int getNumReceptors() {
+        return receptors.length;
+    }
+
+    public void close() {
         if (INSTANCE != null) {
-            INSTANCE.model.close();
-            INSTANCE.model = null;
-            INSTANCE = null;
+            for (int i = 0; i < receptors.length; i++) {
+                ReceptorView view = receptors[i];
+                if (view != null) {
+                    view.getModel().close();
+                }
+            }
         }
     }
 

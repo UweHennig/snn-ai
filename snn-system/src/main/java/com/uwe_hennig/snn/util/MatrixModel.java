@@ -32,7 +32,7 @@ import java.lang.invoke.VarHandle;
 +----------------------------------------------------------------+
  * @author Uwe Hennig
  */
-public class MatrixModel {
+public final class MatrixModel {
     private static final long SLOT_SIZE = 8;
 
     private final int capacity;
@@ -55,12 +55,12 @@ public class MatrixModel {
 
     public MatrixModel(int capacity, int numHeaders, int numRows, int numColumns, int numSlotsPerCell) {
         this.capacity = capacity;
-        this.numHeaders = numHeaders + 1; // 1 STATUS at the end
+        this.numHeaders = numHeaders;
         this.numRows = numRows;
         this.numColumns = numColumns;
         this.numSlotsPerCell = numSlotsPerCell;
 
-        this.headerByteSize  = numHeaders * SLOT_SIZE;
+        this.headerByteSize  = (numHeaders + 1) * SLOT_SIZE; // 1 more for status
         this.cellByteSize    = numSlotsPerCell * SLOT_SIZE;
         this.rowByteSize     = numColumns * cellByteSize;
         this.matrixPartSize  = numRows * rowByteSize;
@@ -192,7 +192,7 @@ public class MatrixModel {
     }
 
     public int getNumHeaders() {
-        return segment.get(ValueLayout.JAVA_INT, 4) - 1; // status is hidden
+        return segment.get(ValueLayout.JAVA_INT, 4);
     }
 
     public int getNumRows() {
