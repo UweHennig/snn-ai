@@ -49,6 +49,7 @@ public class MatrixModelTest {
         matrix.setHeaderFloat(1, 1, 5f);
         matrix.setHeaderDouble(1, 2, 6d);
 
+        System.out.println("Status: " + matrix.getStatus(0));
         assertTrue(matrix.setStatus(0, 0, 5));
         assertEquals(5, matrix.getStatus(0));
         assertFalse(matrix.setStatus(0, 0, 0));

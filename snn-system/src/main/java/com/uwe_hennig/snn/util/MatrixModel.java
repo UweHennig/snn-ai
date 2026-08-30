@@ -14,13 +14,32 @@ import java.lang.invoke.VarHandle;
  * MatrixModel
  * @formatter:off
 +------------------------ HEADER-MATRIX -------------------------+
-| +---------------------- HEADER (fixed) ----------------------+ |
+| +----------------------- META -------------------------------+ |
+| | capacity                                                   | |
+| | ...                                                        | |
+| +------------------------------------------------------------+ |
+| +---------------------- HEADER 0 (fixed) --------------------+ |
 | | 0x00: header data 1                                        | |
 | | 0x04: header data 2                                        | |
 | | 0x08: header data 3                                        | |
 | | ...                                                        | |
 | +------------------------------------------------------------+ |
-| +-------------------------- MATRIX --------------------------+ |
+| +-------------------------- MATRIX 0 ------------------------+ |
+| | +---------------------- Row 0 ---------------------------+ | |
+| | | CELL (0,0) | CELL (0,1) | CELL (0,2) | ...             | | |
+| | +---------------------- Row 1 ---------------------------+ | |
+| | | CELL (1,0) | CELL (1,1) | CELL (1,2) | ...             | | |
+| | +---------------------- Row 2 ---------------------------+ | |
+| | | CELL (2,0) | CELL (2,1) | CELL (2,2) | ...             | | |
+| | ...                                                      | | |
+| +----------------------------------------------------------+ | |
+| +---------------------- HEADER 1 (fixed) --------------------+ |
+| | 0x00: header data 1                                        | |
+| | 0x04: header data 2                                        | |
+| | 0x08: header data 3                                        | |
+| | ...                                                        | |
+| +------------------------------------------------------------+ |
+| +-------------------------- MATRIX 1 ------------------------+ |
 | | +---------------------- Row 0 ---------------------------+ | |
 | | | CELL (0,0) | CELL (0,1) | CELL (0,2) | ...             | | |
 | | +---------------------- Row 1 ---------------------------+ | |
@@ -77,7 +96,7 @@ public final class MatrixModel {
     // ------------------------------------------------------------
 
     public boolean setStatus(int index, int currentStatus, int newStatus) {
-        long offset = headerOffset(index, numHeaders - 1);
+        long offset = headerOffset(index, numHeaders);
         int spins = 0;
 
         while (!VH_STATUS.compareAndSet(segment, offset, currentStatus, newStatus)) {
@@ -92,7 +111,7 @@ public final class MatrixModel {
     }
 
     public int getStatus(int index) {
-        long offset = headerOffset(index, numHeaders - 1);
+        long offset = headerOffset(index, numHeaders);
         return (int) VH_STATUS.get(segment, offset);
     }
 
