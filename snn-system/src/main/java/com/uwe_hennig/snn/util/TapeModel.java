@@ -15,7 +15,8 @@ import java.lang.foreign.MemorySegment;
 import java.lang.invoke.VarHandle;
 
 /**
- * TapeModel The TapeModel is used to transfer runtime data for an event.
+ * TapeModel
+ * The TapeModel is used to transfer runtime data for an event.
  *
  * @author Uwe Hennig
  */
