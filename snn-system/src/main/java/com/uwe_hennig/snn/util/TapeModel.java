@@ -59,7 +59,7 @@ public class TapeModel {
         this.dataSegment = arena.allocate(MemoryLayout.sequenceLayout((long) capacity * blocks, ELEMENT_LAYOUT));
 
         for (int i = 0; i < blocks; i++) {
-            setBlockLength(i, capacity);
+            setCapacity(i, capacity);
         }
     }
 
@@ -114,11 +114,11 @@ public class TapeModel {
         }
     }
 
-    public int getBlockLength(int block) {
+    public int getCapacity(int block) {
         return (int) VH_LENGTH.get(statusSegment, 0L, (long) block);
     }
 
-    void setBlockLength(int block, int length) {
+    void setCapacity(int block, int length) {
         if (length < 0 || length > capacity) {
             throw new IllegalArgumentException("Länge überschreitet Kapazität");
         }
