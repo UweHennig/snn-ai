@@ -18,27 +18,35 @@ import java.lang.invoke.VarHandle;
  * @author Uwe Hennig
  */
 public class EventQueue implements AutoCloseable {
-    private final long queueCapacity;
-    private final long mask;
-    private final Arena arena;
+    private final long          queueCapacity;
+    private final long          mask;
+    private final Arena         arena;
     private final MemorySegment controlSegment;
     private final MemorySegment eventSegment;
 
+    // Hardware-Optimierung: Cache-Lines
     private static final long CACHE_LINE = 64;
+    private static final long PADDING    = 56; // 64 - 8 (für Long)
+
+    // Data optimisation: bit shifting instead of multiplication
+    private static final int  EVENT_SHIFT = 3; // 2^3 = 8 Bytes pro Event
+    private static final long EVENT_SIZE  = 8; // 8 Bytes (2 Ints)
+    private static final long ALIGN_8     = 8; // 8-Byte Alignment for memory
 
     // @formatter:off
-    // Das Control-Layout mit vollem Padding zur Vermeidung von False Sharing
     private static final GroupLayout CONTROL_LAYOUT = MemoryLayout.structLayout(
-        MemoryLayout.paddingLayout(CACHE_LINE),
-        ValueLayout.JAVA_INT.withName("lockPut"),
-        MemoryLayout.paddingLayout(CACHE_LINE - 4),
-        ValueLayout.JAVA_INT.withName("tail"),
-        MemoryLayout.paddingLayout(CACHE_LINE - 4),
-        ValueLayout.JAVA_INT.withName("lockTake"),
-        MemoryLayout.paddingLayout(CACHE_LINE - 4),
-        ValueLayout.JAVA_INT.withName("head"),
-        MemoryLayout.paddingLayout(CACHE_LINE - 4)
-    );
+        ValueLayout.JAVA_LONG.withName("lockPut"),
+        MemoryLayout.paddingLayout(PADDING),
+
+        ValueLayout.JAVA_LONG.withName("tail"),
+        MemoryLayout.paddingLayout(PADDING),
+
+        ValueLayout.JAVA_LONG.withName("lockTake"),
+        MemoryLayout.paddingLayout(PADDING),
+
+        ValueLayout.JAVA_LONG.withName("head"),
+        MemoryLayout.paddingLayout(PADDING)
+    ).withByteAlignment(CACHE_LINE);
 
     private static final VarHandle VH_LOCK_PUT  = CONTROL_LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("lockPut"));
     private static final VarHandle VH_LOCK_TAKE = CONTROL_LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("lockTake"));
@@ -58,24 +66,20 @@ public class EventQueue implements AutoCloseable {
 
         this.controlSegment = arena.allocate(CONTROL_LAYOUT);
 
-        this.eventSegment = arena.allocate(capacity * 8);
+        this.eventSegment = arena.allocate(capacity * EVENT_SIZE, ALIGN_8);
     }
 
-    /**
-     * Adds an event to the queue.
-     * It only blocks other producers, not the consumers.
-     */
     public boolean enqueue(int tapeId, int length) {
         lock(VH_LOCK_PUT);
         try {
-            int head = (int) VH_HEAD.getAcquire(controlSegment, 0L);
-            int tail = (int) VH_TAIL.get(controlSegment, 0L);
+            long head = (long) VH_HEAD.getAcquire(controlSegment, 0L);
+            long tail = (long) VH_TAIL.get(controlSegment, 0L);
 
             if (tail - head == queueCapacity) {
-                return false; // Queue full
+                return false;
             }
 
-            long offset = (tail & mask) << 3;
+            long offset = (tail & mask) << EVENT_SHIFT;
 
             VH_INT.set(eventSegment, offset, tapeId);
             VH_INT.set(eventSegment, offset + 4, length);
@@ -87,21 +91,17 @@ public class EventQueue implements AutoCloseable {
         }
     }
 
-    /**
-     * Reads an event from the queue.
-     * It only blocks other consumers, not the producers.
-     */
     public int[] dequeue() {
         lock(VH_LOCK_TAKE);
         try {
-            int head = (int) VH_HEAD.get(controlSegment, 0L);
-            int tail = (int) VH_TAIL.getAcquire(controlSegment, 0L);
+            long head = (long) VH_HEAD.get(controlSegment, 0L);
+            long tail = (long) VH_TAIL.getAcquire(controlSegment, 0L);
 
             if (head == tail) {
                 return null;
             }
 
-            long offset = (head & mask) << 3;
+            long offset = (head & mask) << EVENT_SHIFT;
 
             int tId = (int) VH_INT.get(eventSegment, offset);
             int len = (int) VH_INT.get(eventSegment, offset + 4);
@@ -114,25 +114,21 @@ public class EventQueue implements AutoCloseable {
         }
     }
 
-    // --- High Performance Locking ---
-
     private void lock(VarHandle lockHandle) {
-        if ((int) lockHandle.compareAndExchange(controlSegment, 0L, 0, 1) == 0) {
+        if ((long) lockHandle.compareAndExchange(controlSegment, 0L, 0L, 1L) == 0L) {
             return;
         }
-        while ((int) lockHandle.compareAndExchange(controlSegment, 0L, 0, 1) != 0) {
+        while ((long) lockHandle.compareAndExchange(controlSegment, 0L, 0L, 1L) != 0L) {
             Thread.onSpinWait();
         }
     }
 
     private void unlock(VarHandle lockHandle) {
-        lockHandle.setRelease(controlSegment, 0L, 0);
+        lockHandle.setRelease(controlSegment, 0L, 0L);
     }
 
     @Override
     public void close() {
-        if (arena != null) {
-            arena.close();
-        }
+        arena.close();
     }
 }

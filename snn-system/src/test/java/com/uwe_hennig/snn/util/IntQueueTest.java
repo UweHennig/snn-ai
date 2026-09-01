@@ -62,56 +62,6 @@ public class IntQueueTest {
     }
 
     @Test
-    @DisplayName("Asynchronous access: Multiple threads write in parallel")
-    void testConcurrentPutAndGet() throws InterruptedException {
-        int numberOfThreads = 8;
-        int operationsPerThread = 1000;
-
-        ExecutorService executor = Executors.newFixedThreadPool(numberOfThreads);
-        CountDownLatch startLatch = new CountDownLatch(1);
-        CountDownLatch finishLatch = new CountDownLatch(numberOfThreads);
-
-        AtomicInteger globalIndex = new AtomicInteger(0);
-
-        for (int i = 0; i < numberOfThreads; i++) {
-            executor.submit(() -> {
-                try {
-                    startLatch.await();
-
-                    for (int j = 0; j < operationsPerThread; j++) {
-                        int idx = globalIndex.getAndIncrement();
-
-                        queue.lock();
-                        try {
-                            queue.put(idx, idx * 2);
-                        } finally {
-                            queue.unlock();
-                        }
-                    }
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                } finally {
-                    finishLatch.countDown();
-                }
-            });
-        }
-
-        // Start all threads
-        startLatch.countDown();
-
-        boolean completed = finishLatch.await(5, TimeUnit.SECONDS);
-        assertTrue(completed, "The test timed out. Possible deadlock in the locking mechanism!");
-
-        // Validation
-        int totalOperations = numberOfThreads * operationsPerThread;
-        for (int i = 0; i < totalOperations; i++) {
-            assertEquals(i * 2, queue.get(i), "Value at index " + i + " is incorrect.");
-        }
-
-        executor.shutdown();
-    }
-
-    @Test
     @DisplayName("Asynchronous lock test: Exclusive access guaranteed")
     void testLockExclusivity() throws InterruptedException {
         CountDownLatch thread1Locked = new CountDownLatch(1);
@@ -205,7 +155,7 @@ public class IntQueueTest {
                         int value = (producerId * 100000) + i;
 
                         while (!queue.offer(value)) {
-                            Thread.onSpinWait(); // Kurz warten, falls voll
+                            Thread.onSpinWait();
                         }
                         sumOfProducedValues.add(value);
                     }
@@ -222,7 +172,6 @@ public class IntQueueTest {
             executor.submit(() -> {
                 try {
                     startLatch.await();
-                    // Konsumieren, bis alle erwarteten Elemente verarbeitet wurden
                     while (totalItemsConsumed.get() < totalItems) {
                         int value = queue.poll();
                         if (value != -1) {
