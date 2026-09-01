@@ -9,7 +9,6 @@ import java.lang.foreign.Arena;
 import java.lang.foreign.GroupLayout;
 import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
-import java.lang.foreign.SequenceLayout;
 import java.lang.foreign.ValueLayout;
 import java.lang.invoke.VarHandle;
 
@@ -18,116 +17,122 @@ import java.lang.invoke.VarHandle;
  *
  * @author Uwe Hennig
  */
-public class EventQueue {
+public class EventQueue implements AutoCloseable {
     private final long queueCapacity;
     private final long mask;
-
-    private final Arena         arena;
+    private final Arena arena;
     private final MemorySegment controlSegment;
     private final MemorySegment eventSegment;
 
+    private static final long CACHE_LINE = 64;
+
     // @formatter:off
+    // Das Control-Layout mit vollem Padding zur Vermeidung von False Sharing
     private static final GroupLayout CONTROL_LAYOUT = MemoryLayout.structLayout(
-        ValueLayout.JAVA_INT.withName("lock"),
-        ValueLayout.JAVA_INT.withName("head"),
+        MemoryLayout.paddingLayout(CACHE_LINE),
+        ValueLayout.JAVA_INT.withName("lockPut"),
+        MemoryLayout.paddingLayout(CACHE_LINE - 4),
         ValueLayout.JAVA_INT.withName("tail"),
-        MemoryLayout.paddingLayout(4)
+        MemoryLayout.paddingLayout(CACHE_LINE - 4),
+        ValueLayout.JAVA_INT.withName("lockTake"),
+        MemoryLayout.paddingLayout(CACHE_LINE - 4),
+        ValueLayout.JAVA_INT.withName("head"),
+        MemoryLayout.paddingLayout(CACHE_LINE - 4)
     );
 
-    private static final GroupLayout EVENT_LAYOUT = MemoryLayout.structLayout(
-        ValueLayout.JAVA_INT.withName("tapeId"),
-        ValueLayout.JAVA_INT.withName("length")
-    );
+    private static final VarHandle VH_LOCK_PUT  = CONTROL_LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("lockPut"));
+    private static final VarHandle VH_LOCK_TAKE = CONTROL_LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("lockTake"));
+    private static final VarHandle VH_TAIL      = CONTROL_LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("tail"));
+    private static final VarHandle VH_HEAD      = CONTROL_LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("head"));
 
-    private static final VarHandle VH_LOCK = CONTROL_LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("lock"));
-    private static final VarHandle VH_HEAD = CONTROL_LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("head"));
-    private static final VarHandle VH_TAIL = CONTROL_LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("tail"));
-
-    private final VarHandle VH_TAPE_ID;
-    private final VarHandle VH_LENGTH;
+    private static final VarHandle VH_INT = ValueLayout.JAVA_INT.varHandle();
+    // @formatter:on
 
     public EventQueue(long capacity) {
         if ((capacity & (capacity - 1)) != 0) {
-            throw new IllegalArgumentException("The capacity must be a power of two!");
+            throw new IllegalArgumentException("Capacity must be a power of two!");
         }
-
         this.queueCapacity = capacity;
         this.mask = capacity - 1;
         this.arena = Arena.ofShared();
 
         this.controlSegment = arena.allocate(CONTROL_LAYOUT);
 
-        SequenceLayout eventArrayLayout = MemoryLayout.sequenceLayout(capacity, EVENT_LAYOUT);
-        this.eventSegment = arena.allocate(eventArrayLayout);
-
-        this.VH_TAPE_ID = eventArrayLayout.varHandle(MemoryLayout.PathElement.sequenceElement(), MemoryLayout.PathElement.groupElement("tapeId"));
-        this.VH_LENGTH = eventArrayLayout.varHandle( MemoryLayout.PathElement.sequenceElement(), MemoryLayout.PathElement.groupElement("length"));
+        this.eventSegment = arena.allocate(capacity * 8);
     }
-    // @formatter:on
 
+    /**
+     * Adds an event to the queue.
+     * It only blocks other producers, not the consumers.
+     */
     public boolean enqueue(int tapeId, int length) {
-        lock();
+        lock(VH_LOCK_PUT);
         try {
-            int head = (int) VH_HEAD.get(controlSegment, 0L);
+            int head = (int) VH_HEAD.getAcquire(controlSegment, 0L);
             int tail = (int) VH_TAIL.get(controlSegment, 0L);
 
             if (tail - head == queueCapacity) {
-                return false;
+                return false; // Queue full
             }
 
-            long index = tail & mask;
+            long offset = (tail & mask) << 3;
 
-            VH_TAPE_ID.set(eventSegment, 0L, index, tapeId);
-            VH_LENGTH.set(eventSegment, 0L, index, length);
+            VH_INT.set(eventSegment, offset, tapeId);
+            VH_INT.set(eventSegment, offset + 4, length);
 
-            VH_TAIL.set(controlSegment, 0L, tail + 1);
-
+            VH_TAIL.setRelease(controlSegment, 0L, tail + 1);
             return true;
         } finally {
-            unlock();
+            unlock(VH_LOCK_PUT);
         }
     }
 
+    /**
+     * Reads an event from the queue.
+     * It only blocks other consumers, not the producers.
+     */
     public int[] dequeue() {
-        lock();
+        lock(VH_LOCK_TAKE);
         try {
             int head = (int) VH_HEAD.get(controlSegment, 0L);
-            int tail = (int) VH_TAIL.get(controlSegment, 0L);
+            int tail = (int) VH_TAIL.getAcquire(controlSegment, 0L);
 
             if (head == tail) {
                 return null;
             }
 
-            long index = head & mask;
+            long offset = (head & mask) << 3;
 
-            int tapeId = (int) VH_TAPE_ID.get(eventSegment, 0L, index);
-            int length = (int) VH_LENGTH.get(eventSegment, 0L, index);
+            int tId = (int) VH_INT.get(eventSegment, offset);
+            int len = (int) VH_INT.get(eventSegment, offset + 4);
 
-            VH_HEAD.set(controlSegment, 0L, head + 1);
+            VH_HEAD.setRelease(controlSegment, 0L, head + 1);
 
-            return new int[] {tapeId, length};
+            return new int[] { tId, len };
         } finally {
-            unlock();
+            unlock(VH_LOCK_TAKE);
         }
     }
 
+    // --- High Performance Locking ---
+
+    private void lock(VarHandle lockHandle) {
+        if ((int) lockHandle.compareAndExchange(controlSegment, 0L, 0, 1) == 0) {
+            return;
+        }
+        while ((int) lockHandle.compareAndExchange(controlSegment, 0L, 0, 1) != 0) {
+            Thread.onSpinWait();
+        }
+    }
+
+    private void unlock(VarHandle lockHandle) {
+        lockHandle.setRelease(controlSegment, 0L, 0);
+    }
+
+    @Override
     public void close() {
         if (arena != null) {
             arena.close();
         }
-    }
-
-    private void lock() {
-        int spins = 0;
-        while ((int) VH_LOCK.compareAndExchange(controlSegment, 0L, 0, 1) != 0) {
-            if (spins < 64) {
-                Thread.onSpinWait();
-                spins++;
-            }
-        }
-    }
-
-    private void unlock() {
-        VH_LOCK.setRelease(controlSegment, 0L, 0);
     }
 }
