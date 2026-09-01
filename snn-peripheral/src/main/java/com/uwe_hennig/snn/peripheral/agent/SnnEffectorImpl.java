@@ -7,7 +7,6 @@ package com.uwe_hennig.snn.peripheral.agent;
 
 import com.uwe_hennig.snn.contracts.peripheral.EffectorConsumer;
 import com.uwe_hennig.snn.contracts.peripheral.SnnEffector;
-import com.uwe_hennig.snn.services.StimulusService;
 
 /**
  * SnnEffectorImpl
@@ -29,8 +28,9 @@ public class SnnEffectorImpl implements SnnEffector {
 
     public void stimulate(int stimulusIdentifier) {
         if (consumer != null) {
-            float value = StimulusService.getValue(stimulusIdentifier);
-            consumer.accept(this, value);
+// TODO
+//            float value = StimulusService.getValue(stimulusIdentifier);
+//            consumer.accept(this, value);
         }
     }
 
@@ -42,5 +42,11 @@ public class SnnEffectorImpl implements SnnEffector {
     @Override
     public void withConsumer(EffectorConsumer consumer) {
         this.consumer = consumer;
+    }
+
+    @Override
+    public float getValue(int row, int column) {
+        // TODO Auto-generated method stub class SnnEffector
+        return 0;
     }
 }

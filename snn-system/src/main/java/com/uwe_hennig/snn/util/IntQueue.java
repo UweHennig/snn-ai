@@ -12,7 +12,6 @@ import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SequenceLayout;
 import java.lang.foreign.ValueLayout;
 import java.lang.invoke.VarHandle;
-import java.util.concurrent.locks.LockSupport;
 
 /**
  * IntQueue
@@ -81,11 +80,13 @@ public class IntQueue {
         int spins = 0;
         while (!VH_LOCK.compareAndSet(queuePtr, 0L, 0, 1)) {
             if (spins < 64) {
-                Thread.onSpinWait(); // Phase 1: Fast CPU spinning
+                Thread.onSpinWait();
                 spins++;
-            } else {
-                LockSupport.parkNanos(1); // Phase 2: OS thread parking during congestion
             }
+//          For platform threads only – not required for virtual threads
+//          else {
+//              LockSupport.parkNanos(1);
+//          }
         }
     }
 

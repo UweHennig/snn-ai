@@ -34,7 +34,18 @@ public class StimulusView {
         return model;
     }
 
-    public int claimStimulus(int eventType, float value, int targetRef) {
+    public int claimSingleStimulus(int stimulusType, int targetId, int targetType, float value, long expiry) {
+        // TODO
+        return 0;
+    }
+
+    public int claimMatrixStimulus(int eventType, int targetIndex, int targetType, long expiry) {
+        // TODO
+        return 0;
+    }
+
+    @Deprecated
+    public int claimMultiDataStimulus(int eventType, int transferType, int targetRef) {
         long now = System.nanoTime(); // TODO check
         int start = nextSearchStart.getAndAdd(32) & MASK;
 
@@ -48,7 +59,7 @@ public class StimulusView {
 
                             model.setStimulusType(index, eventType);
                             model.setTargetRef(index, targetRef);
-                            model.setValue(index, value);
+                            //model.setValue(index, value);
                             model.setExpiry(index, now + TTL_NANO);
 
                             return index;

@@ -44,9 +44,10 @@ public final class ReceptorModelManager {
         if (receptors.length <= nextIndex) {
             throw new IllegalStateException("Out of off receptors memory");
         }
-        MatrixModel model = new MatrixModel(capacity, numHeaders, numRows, numColumns, numSlotsPerCell);
-        ReceptorView view = new ReceptorView(model);
-        receptors[nextIndex] = view;
+// TODO combine MartrixModel & TapeModel
+//        MatrixModel model = new MatrixModel(capacity, numHeaders, numRows, numColumns, numSlotsPerCell);
+//        ReceptorView view = new ReceptorView(model);
+//        receptors[nextIndex] = view;
 
         return nextIndex++;
     }

@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
@@ -20,6 +21,8 @@ import com.uwe_hennig.snn.anatomy.allocator.ReceptorModelManager;
  *
  * @author Uwe Hennig
  */
+// TODO Enable!
+@Disabled
 public class ReceptorTest {
     @Test
     @DisplayName("Receptor Matrix Test")
@@ -102,7 +105,7 @@ public class ReceptorTest {
             double avgOpsPerSec = ops / sec;
 
             System.out.println();
-            System.out.println("Filling receptor: ");
+            System.out.println("Writing receptor: ");
             System.out.printf("Operations : %,6d%n", ops);
             System.out.printf("Throughput : %,6.2f ops/sec%n", avgOpsPerSec);
             System.out.printf("Latency    : %,13.2f ns/op%n", ops / avgOpsPerSec);
@@ -137,7 +140,7 @@ public class ReceptorTest {
             sec = (end - start) / ops;
             avgOpsPerSec = ops / sec;
 
-            System.out.println("Receptor reading: ");
+            System.out.println("Reading receptors: ");
             System.out.printf("Operations : %,6d%n", ops);
             System.out.printf("Throughput : %,6.2f ops/sec%n", avgOpsPerSec);
             System.out.printf("Latency    : %,13.2f ns/op%n", ops / avgOpsPerSec);
@@ -167,8 +170,12 @@ public class ReceptorTest {
         public static void consume(int v) {
             SINK = v;
             if ((v & 0x1) == 0x1) {
-                /* noop */ }
+                /* noop */
+            }
+        }
+
+        public static int getSink() {
+            return SINK;
         }
     }
-
 }

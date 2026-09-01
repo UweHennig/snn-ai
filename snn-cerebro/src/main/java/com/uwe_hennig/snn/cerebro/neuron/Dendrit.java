@@ -6,13 +6,9 @@
 package com.uwe_hennig.snn.cerebro.neuron;
 
 import com.uwe_hennig.snn.anatomy.neuron.DendritView;
-import com.uwe_hennig.snn.anatomy.neuron.WeightView;
 import com.uwe_hennig.snn.contracts.core.NeuronElement;
 import com.uwe_hennig.snn.contracts.core.NeuronElementType;
-import com.uwe_hennig.snn.contracts.core.StimulusType;
 import com.uwe_hennig.snn.contracts.core.ViewIdentity;
-import com.uwe_hennig.snn.services.StimulusService;
-import com.uwe_hennig.snn.util.SnnTransferservice;
 
 /**
  * Dendrit
@@ -37,18 +33,19 @@ public final class Dendrit extends ViewIdentity implements NeuronElement {
     public void stimulate(int stimulusIdentifier) {
         try {
             DendritView.writeLock(viewId);
-            float currentTime = 1000; // TODO Model time
-
-            float stimulusValue = StimulusService.getValue(stimulusIdentifier);
-            if (StimulusService.isStimulus(stimulusIdentifier)) {
-                stimulusValue = WeightView.applyStimulus(weightId, stimulusValue, currentTime);
-                stimulusIdentifier = StimulusService.update(stimulusIdentifier, StimulusType.STIMULUS.code(), stimulusValue, DendritView.getSomaId(viewId));
-            }
-            if (StimulusService.isTimeFeedback(stimulusIdentifier)) {
-                WeightView.applyFeedback(weightId, stimulusValue);
-            }
-
-            SnnTransferservice.transfer(stimulusIdentifier);
+// TODO
+//            float currentTime = 1000; // TODO Model time
+//
+//            float stimulusValue = StimulusService.getValue(stimulusIdentifier);
+//            if (StimulusService.isStimulus(stimulusIdentifier)) {
+//                stimulusValue = WeightView.applyStimulus(weightId, stimulusValue, currentTime);
+//                stimulusIdentifier = StimulusService.update(stimulusIdentifier, StimulusType.STIMULUS.code(), stimulusValue, DendritView.getSomaId(viewId));
+//            }
+//            if (StimulusService.isTimeFeedback(stimulusIdentifier)) {
+//                WeightView.applyFeedback(weightId, stimulusValue);
+//            }
+//
+//            SnnTransferservice.transfer(stimulusIdentifier);
 
         } finally {
             DendritView.writeUnlock(viewId);

@@ -15,9 +15,9 @@ public class StateChannel {
     private final EnvState state;
     private final SnnReceptor receptor;
 
-    private final Converter<EnvSignal<?>, Float> converter;
+    private final Converter<EnvSignal<?>, float [][]> converter;
 
-    public StateChannel(EnvState state, Converter<EnvSignal<?>, Float> converter, SnnReceptor receptor) {
+    public StateChannel(EnvState state, Converter<EnvSignal<?>, float [][]> converter, SnnReceptor receptor) {
         this.state = state;
         this.converter = converter;
         this.receptor = receptor;
@@ -27,7 +27,7 @@ public class StateChannel {
         return state;
     }
 
-    public Converter<EnvSignal<?>, Float> getConverter() {
+    public Converter<EnvSignal<?>, float [][]> getConverter() {
         return converter;
     }
 

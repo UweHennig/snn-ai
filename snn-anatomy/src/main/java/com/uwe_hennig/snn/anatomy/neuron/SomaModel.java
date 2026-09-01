@@ -37,6 +37,7 @@ public final class SomaModel {
         JAVA_INT.withName("stpId"),
         JAVA_INT.withName("ltpId"),
         JAVA_INT.withName("axonId")
+        // TODO Refractory period
     ).withByteAlignment(8);
 
     static final VarHandle VH_LOCK =

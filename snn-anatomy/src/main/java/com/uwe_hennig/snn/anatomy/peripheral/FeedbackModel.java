@@ -17,7 +17,7 @@ import java.util.concurrent.locks.LockSupport;
 
 /**
  * FeedbackModel
- *
+ * TODO rename to SNNFeedbackModel
  * @author Uwe Hennig
  */
 public class FeedbackModel {

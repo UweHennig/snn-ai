@@ -16,7 +16,6 @@ import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SequenceLayout;
 import java.lang.invoke.VarHandle;
 import java.util.concurrent.locks.LockSupport;
-import java.util.logging.MemoryHandler;
 
 /**
  * StimulusModel

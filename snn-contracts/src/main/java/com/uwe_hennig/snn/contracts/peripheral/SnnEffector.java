@@ -13,4 +13,5 @@ package com.uwe_hennig.snn.contracts.peripheral;
 public interface SnnEffector {
     void withConsumer(EffectorConsumer consumer);
     long getIdentifier();
+    float getValue(int row, int column);
 }

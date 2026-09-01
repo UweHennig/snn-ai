@@ -49,27 +49,29 @@ public class EchoEnvironment implements Environment {
 
     @Override
     public void onAction(EnvAction action, EnvSignal<?> signal) {
-        if (pendingAnswer.compareAndSet(true, false)) {
-            // received in time
-            Integer actionValue = (Integer) signal.data();
-
-            EnvSignal<Integer> valueFeedbackSignal = new EchoSignal(state - actionValue);
-            valueFeedbackPort.invoke(valueFeedbackSignal);
-        }
+// TODO
+//        if (pendingAnswer.compareAndSet(true, false)) {
+//            // received in time
+//            Integer actionValue = (Integer) signal.data();
+//
+//            EnvSignal<Integer> valueFeedbackSignal = new EchoSignal(state - actionValue);
+//            valueFeedbackPort.invoke(valueFeedbackSignal);
+//        }
     }
 
     private void sendData() {
-        if (pendingAnswer.compareAndSet(true, false)) {
-            // not in time
-            EnvSignal<Integer> timeFeedbackSignal = new EchoSignal(10);
-            timeFeedbackPort.invoke(timeFeedbackSignal);
-        }
-
-        // next test
-        state = rand.nextInt(10) + 1;
-        EnvSignal<Integer> stateSignal = new EchoSignal(state);
-        statePort.invoke(stateSignal);
-        pendingAnswer.getAndSet(true);
+// TODO
+//        if (pendingAnswer.compareAndSet(true, false)) {
+//            // not in time
+//            EnvSignal<Integer> timeFeedbackSignal = new EchoSignal(10);
+//            timeFeedbackPort.invoke(timeFeedbackSignal);
+//        }
+//
+//        // next test
+//        state = rand.nextInt(10) + 1;
+//        EnvSignal<Integer> stateSignal = new EchoSignal(state);
+//        statePort.invoke(stateSignal);
+//        pendingAnswer.getAndSet(true);
     }
 
     @Override

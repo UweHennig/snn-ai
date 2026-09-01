@@ -53,15 +53,15 @@ public final class ReceptorView {
     public int claimWaitingBlock() {
         int blocks = tape.getCapacity(0);
         for (int i=0; i<blocks;i++) {
-           if (tape.setStatus(blocks, STATE_FREE, STATE_WRITING)) {
+           if (tape.setStatus(blocks, STATE_WAITING, STATE_READING)) {
                return i;
            }
         }
         return -1;
     }
 
-    public boolean releaseSlot(int slot) {
-        return tape.setStatus(slot, STATE_READING, STATE_FREE);
+    public boolean releaseBlock(int block) {
+        return tape.setStatus(block, STATE_READING, STATE_FREE);
     }
 
     public void setStimulusType(int block, long index, int type) {

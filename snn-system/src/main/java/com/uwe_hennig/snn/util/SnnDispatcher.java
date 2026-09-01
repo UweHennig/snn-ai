@@ -5,42 +5,38 @@
  */
 package com.uwe_hennig.snn.util;
 
-import com.uwe_hennig.snn.contracts.core.TransferType;
-import com.uwe_hennig.snn.services.StimulusService;
-
 /**
  * SnnDispatcher
  *
  * @author Uwe Hennig
  */
-public class SnnDispatcher {
+public final class SnnDispatcher {
     private static final long    QUEUE_TIMEOUT_MS = 1000;
     private static SnnDispatcher instance;
 
-    private final IntQueue ingestQueue;
-    private final IntQueue workerQueue;
-    private final Thread[] workersQueueThreads;
-    private final Thread   moveThread;
+    private final EventQueue ingestQueue;
+    private final EventQueue workerQueue;
+
+    private final Thread[]   workersQueueThreads;
+    private final Thread     moveThread;
 
     private volatile boolean running  = false;
     private volatile boolean stopping = false;
     private volatile boolean shutdown = false;
 
-    private SnnDispatcher(int ingestQueueSize, int workerQueueSize, int workerThreadSize) {
-        ingestQueueSize = nextPowerTwo(ingestQueueSize);
-        workerQueueSize = nextPowerTwo(workerQueueSize);
+    private SnnDispatcher(EventQueue ingestQueue, EventQueue workerQueue, int workerThreadSize) {
+        this.ingestQueue = ingestQueue;
+        this.workerQueue = workerQueue;
 
-        this.ingestQueue = new IntQueue(ingestQueueSize);
-        this.workerQueue = new IntQueue(workerQueueSize);
         this.workersQueueThreads = new Thread[workerThreadSize];
         moveThread = Thread.ofVirtual().unstarted(this::moveTask);
     }
 
-    public static SnnDispatcher of(int ingestQueueSize, int workerQueueSize, int workerThreadSize) {
+    public static SnnDispatcher of(EventQueue ingestQueue, EventQueue workerQueue, int workerThreadSize) {
         if (instance == null) {
             synchronized (SnnDispatcher.class) {
                 if (instance == null) {
-                    instance = new SnnDispatcher(ingestQueueSize, workerQueueSize, workerThreadSize);
+                    instance = new SnnDispatcher(ingestQueue, workerQueue, workerThreadSize);
                 }
             }
         } else {
@@ -76,13 +72,13 @@ public class SnnDispatcher {
         }
     }
 
-    public void offer(int stimulusId) {
+    public void offer(int tapeId, int length) {
         if (stopping || shutdown) {
             return;
         }
 
         long deadline = System.currentTimeMillis() + QUEUE_TIMEOUT_MS;
-        while (!ingestQueue.offer(stimulusId)) {
+        while (!ingestQueue.enqueue(tapeId, length)) {
             if (System.currentTimeMillis() > deadline || shutdown) {
                 return;
             }
@@ -98,12 +94,12 @@ public class SnnDispatcher {
 
     private void moveTask() {
         while (!shutdown) {
-            int stimulusId = ingestQueue.poll();
-            if (stimulusId != -1) {
+            int [] values = ingestQueue.dequeue();
+            if (values != null && values.length == 2) {
                 // offer to workerQueue
                 long deadline = System.currentTimeMillis() + QUEUE_TIMEOUT_MS;
 
-                while (!workerQueue.offer(stimulusId)) {
+                while (!workerQueue.enqueue(values[0], values[1])) {
                     if (System.currentTimeMillis() > deadline || shutdown) {
                         break;
                     }
@@ -148,9 +144,9 @@ public class SnnDispatcher {
 
     private void execute() {
         while (!shutdown) {
-            int stimulusId = workerQueue.poll();
-            if (stimulusId != -1) {
-                doIt(stimulusId);
+            int [] values = workerQueue.dequeue();
+            if (values != null && values.length == 2) {
+                doIt(values);
             } else {
                 try {
                     Thread.sleep(1);
@@ -162,21 +158,9 @@ public class SnnDispatcher {
         }
     }
 
-    protected void doIt(int stimulusId) {
-        int trgRef = StimulusService.getTargetRef(stimulusId);
-        int trgType = StimulusService.getTargetType(stimulusId);
-        int transferType = StimulusService.getTransferType(stimulusId);
-
-        // TODO more cases!
-        if (TransferType.DIRECT == TransferType.fromCode(transferType)) {
-            // TODO check
-        }
-    }
-
-    private int nextPowerTwo(int value) {
-        if (value <= 4) {
-            return 4;
-        }
-        return Integer.highestOneBit(value - 1) << 1;
+    protected void doIt(int [] values) {
+        int tapeId = values[0];
+        int length = values[1];
+        // TODO
     }
 }

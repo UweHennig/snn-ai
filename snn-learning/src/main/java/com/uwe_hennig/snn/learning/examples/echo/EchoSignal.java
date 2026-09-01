@@ -5,12 +5,11 @@
  */
 package com.uwe_hennig.snn.learning.examples.echo;
 
-import com.uwe_hennig.snn.contracts.peripheral.EnvSignal;
-
 /**
  * EchoSignal
  *
  * @author Uwe Hennig
  */
-public record EchoSignal(Integer data) implements EnvSignal<Integer> {
+// TODO change Integer
+public record EchoSignal(Integer data) /*implements EnvSignal<Integer>*/ {
 }

@@ -35,10 +35,10 @@ public class TapeModelTest {
             assertEquals(1, status);
         }
 
-        assertEquals(10, model.getBlockLength(0));
+        assertEquals(10, model.getCapacity(0));
         int counter = 1;
         for (int block = 0; block < blocks; block++) {
-            for (int data = 0; data < model.getBlockLength(0); data++) {
+            for (int data = 0; data < model.getCapacity(0); data++) {
                 model.setStimulusType(block, data, counter++);
                 model.setTargetId(block, data, counter++);
                 model.setTargetType(block, data, counter++);
@@ -48,7 +48,7 @@ public class TapeModelTest {
 
         counter = 1;
         for (int block = 0; block < blocks; block++) {
-            for (int data = 0; data < model.getBlockLength(0); data++) {
+            for (int data = 0; data < model.getCapacity(0); data++) {
                 int v1= model.getStimulusType(block, data);
                 assertEquals(counter, v1);
                 counter++;

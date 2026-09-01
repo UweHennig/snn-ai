@@ -43,20 +43,20 @@ public abstract class AgentMediator {
     // --- (EnvState, EnvSignal) → (SnnReceptor, Float) ---
 
     public void registerState(EnvState state, Converter<EnvSignal<?>, Float> converter, SnnReceptor receptor) {
-        StateChannel stateChannel = new StateChannel(state, converter, receptor);
-        stateChannels.put(state.getIdentifier(), stateChannel);
-        state.withConsumer(this::onState);
+//        StateChannel stateChannel = new StateChannel(state, converter, receptor);
+//        stateChannels.put(state.getIdentifier(), stateChannel);
+//        state.withConsumer(this::onState);
     }
 
     protected void onState(EnvState state, EnvSignal<?> signal) {
-        StateChannel stateChannel = stateChannels.get(state.getIdentifier());
-        Converter<EnvSignal<?>, Float> converter = stateChannel.getConverter();
-        SnnReceptor receptor = stateChannel.getReceptor();
-
-        if (converter != null && receptor != null) {
-            float convertedValue = converter.convert(signal);
-            receptor.perceive(convertedValue);
-        }
+//        StateChannel stateChannel = stateChannels.get(state.getIdentifier());
+//        Converter<EnvSignal<?>, Float> converter = stateChannel.getConverter();
+//        SnnReceptor receptor = stateChannel.getReceptor();
+//
+//        if (converter != null && receptor != null) {
+//            float convertedValue = converter.convert(signal);
+//            receptor.perceive(convertedValue);
+//        }
     }
 
     // --- (EnvFeedback, EnvSignal) → (SnnFeedback, Float) ---

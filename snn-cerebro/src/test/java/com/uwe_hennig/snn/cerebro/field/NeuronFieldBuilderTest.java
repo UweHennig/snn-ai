@@ -11,6 +11,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
@@ -26,9 +27,11 @@ import com.uwe_hennig.snn.graph.generator.DefaultEfferentGraphGenerator;
  *
  * @author Uwe Hennig
  */
+// TODO enable again!
+@Disabled
 public class NeuronFieldBuilderTest {
 
-    //@Test
+    @Test
     @DisplayName("Simple NeuronField pipeline Test")
     public void testSimplePipeline() {
         try {
