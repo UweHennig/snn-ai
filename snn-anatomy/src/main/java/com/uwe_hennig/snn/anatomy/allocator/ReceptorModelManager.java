@@ -17,18 +17,20 @@ public final class ReceptorModelManager {
     private static ReceptorModelManager INSTANCE;
 
     private final ReceptorView[] receptors;
+    private MatrixModel          model;
 
-    private int nextIndex    = 0;
+    private int nextIndex = 0;
 
-    private ReceptorModelManager(int numReceptors) {
+    private ReceptorModelManager(int numReceptors, long totalSize) {
         receptors = new ReceptorView[numReceptors];
+        model = new MatrixModel(numReceptors, totalSize);
     }
 
-    public static ReceptorModelManager init(int numReceptors) {
+    public static ReceptorModelManager init(int numReceptors, long totalSize) {
         if (INSTANCE == null) {
             synchronized (ReceptorModelManager.class) {
                 if (INSTANCE == null) {
-                    INSTANCE = new ReceptorModelManager(numReceptors);
+                    INSTANCE = new ReceptorModelManager(numReceptors, totalSize);
                 }
             }
         }
@@ -44,12 +46,20 @@ public final class ReceptorModelManager {
         if (receptors.length <= nextIndex) {
             throw new IllegalStateException("Out of off receptors memory");
         }
-// TODO combine MartrixModel & TapeModel
-//        MatrixModel model = new MatrixModel(capacity, numHeaders, numRows, numColumns, numSlotsPerCell);
-//        ReceptorView view = new ReceptorView(model);
-//        receptors[nextIndex] = view;
 
-        return nextIndex++;
+        nextIndex = model.registerMatrix(numHeaders, numRows, numColumns, numSlotsPerCell);
+        ReceptorView view = new ReceptorView(model, nextIndex);
+        receptors[nextIndex] = view;
+
+        return nextIndex;
+    }
+
+    public static long matrixSize(int numHeaders, int numRows, int numColumns, int numSlotsPerCell) {
+        return MatrixModel.matrixSize(numHeaders, numRows, numColumns, numSlotsPerCell);
+    }
+
+    public static long metaSize() {
+        return MatrixModel.metaSize();
     }
 
     public ReceptorView getRecptorView(int receptorId) {
@@ -62,11 +72,8 @@ public final class ReceptorModelManager {
 
     public void close() {
         if (INSTANCE != null) {
-            for (int i = 0; i < receptors.length; i++) {
-                ReceptorView view = receptors[i];
-                if (view != null) {
-                    view.getModel().close();
-                }
+            if (model != null) {
+                model.close();
             }
         }
     }
