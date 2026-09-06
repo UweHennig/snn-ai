@@ -6,6 +6,7 @@
 package com.uwe_hennig.snn.cerebro.neuron;
 
 import com.uwe_hennig.snn.anatomy.neuron.DendritView;
+import com.uwe_hennig.snn.anatomy.neuron.WeightView;
 import com.uwe_hennig.snn.contracts.core.NeuronElement;
 import com.uwe_hennig.snn.contracts.core.NeuronElementType;
 import com.uwe_hennig.snn.contracts.core.ViewIdentity;
@@ -17,11 +18,11 @@ import com.uwe_hennig.snn.contracts.core.ViewIdentity;
  */
 public final class Dendrit extends ViewIdentity implements NeuronElement {
     private final int viewId;
-    private final int weightId;
+    private final WeightView weightView;
 
-    public Dendrit(int viewId, int weightId) {
+    public Dendrit(int viewId, WeightView weightView) {
         this.viewId = viewId;
-        this.weightId = weightId;
+        this.weightView = weightView;
     }
 
     /**

@@ -7,6 +7,7 @@ package com.uwe_hennig.snn.cerebro.neuron;
 
 import static com.uwe_hennig.snn.contracts.core.NeuronElementType.AXON;
 
+import com.uwe_hennig.snn.anatomy.neuron.ModulatorView;
 import com.uwe_hennig.snn.anatomy.neuron.SynapseView;
 import com.uwe_hennig.snn.contracts.core.NeuronElement;
 import com.uwe_hennig.snn.contracts.core.NeuronElementType;
@@ -19,36 +20,37 @@ import com.uwe_hennig.snn.services.NeuronElementRegistry;
  * @author Uwe Hennig
  */
 public final class Synapse extends ViewIdentity implements NeuronElement {
-    private final int viewId;
-    private final int modulatorViewId;
-    private int       targetId;
+    private final ModulatorView modulatorView;
+    private final SynapseView   synapseView;
 
-    public Synapse(int viewId, int modulatorViewId) {
-        this.viewId = viewId;
-        this.modulatorViewId = modulatorViewId;
+    private int targetId;
+
+    public Synapse(SynapseView synapseView, ModulatorView modulatorView) {
+        this.synapseView = synapseView;
+        this.modulatorView = modulatorView;
     }
 
     @Override
     public void stimulate(int stimulusIdentifier) {
         try {
-            SynapseView.writeLock(viewId);
-//            // TODO complete implementation
-//            float currentTime = 1000; // TODO
-//
-//            float stimulusValue = StimulusService.getValue(stimulusIdentifier);
-//            int stimulusType = StimulusService.getStimulusType(stimulusIdentifier);
-//
-//            if (StimulusService.isStimulus(stimulusIdentifier) && isExternalStimulus(stimulusIdentifier)) {
-//                stimulusValue = ModulatorView.applyStimulus(modulatorViewId, stimulusValue, currentTime);
-//            } else if (StimulusService.isStimulus(stimulusIdentifier)) {
-//                stimulusValue = ModulatorView.applyStimulus(modulatorViewId, stimulusType, currentTime);
-//            }
-//
-//            stimulusIdentifier = StimulusService.update(stimulusIdentifier, stimulusType, stimulusValue, targetId);
-//            SnnTransferservice.transfer(stimulusIdentifier);
+            synapseView.writeLock();
+            //            // TODO complete implementation
+            //            float currentTime = 1000; // TODO
+            //
+            //            float stimulusValue = StimulusService.getValue(stimulusIdentifier);
+            //            int stimulusType = StimulusService.getStimulusType(stimulusIdentifier);
+            //
+            //            if (StimulusService.isStimulus(stimulusIdentifier) && isExternalStimulus(stimulusIdentifier)) {
+            //                stimulusValue = ModulatorView.applyStimulus(modulatorViewId, stimulusValue, currentTime);
+            //            } else if (StimulusService.isStimulus(stimulusIdentifier)) {
+            //                stimulusValue = ModulatorView.applyStimulus(modulatorViewId, stimulusType, currentTime);
+            //            }
+            //
+            //            stimulusIdentifier = StimulusService.update(stimulusIdentifier, stimulusType, stimulusValue, targetId);
+            //            SnnTransferservice.transfer(stimulusIdentifier);
 
         } finally {
-            SynapseView.writeUnlock(viewId);
+            synapseView.writeUnlock();
         }
     }
 
@@ -67,7 +69,7 @@ public final class Synapse extends ViewIdentity implements NeuronElement {
 
     @Override
     public int getNeuronId() {
-        return SynapseView.getNeuronId(viewId);
+        return synapseView.getNeuronId();
     }
 
     private boolean isExternalStimulus(int stimulusIdentifier) {
@@ -77,6 +79,6 @@ public final class Synapse extends ViewIdentity implements NeuronElement {
 
     @Override
     public int getViewId() {
-        return viewId;
+        return synapseView.getId();
     }
 }

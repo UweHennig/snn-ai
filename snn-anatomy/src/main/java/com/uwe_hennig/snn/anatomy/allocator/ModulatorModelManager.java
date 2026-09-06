@@ -6,6 +6,7 @@
 package com.uwe_hennig.snn.anatomy.allocator;
 
 import com.uwe_hennig.snn.anatomy.neuron.ModulatorModel;
+import com.uwe_hennig.snn.anatomy.neuron.ModulatorView;
 
 /**
  * ModulatorModelManager
@@ -37,11 +38,12 @@ public class ModulatorModelManager {
         return INSTANCE;
     }
 
-    public int nextId() {
+    public ModulatorView createView() {
         if (model.getCapacity() <= nextOffset) {
             throw new IllegalStateException("Out of off heap modulator memory");
         }
-        return nextOffset++;
+
+        return new ModulatorView(model, nextOffset++);
     }
 
     public int capacity() {

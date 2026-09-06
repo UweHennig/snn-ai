@@ -6,6 +6,7 @@
 package com.uwe_hennig.snn.anatomy.allocator;
 
 import com.uwe_hennig.snn.anatomy.neuron.SomaModel;
+import com.uwe_hennig.snn.anatomy.neuron.SomaView;
 
 /**
  * SomaModelMangager
@@ -37,11 +38,11 @@ public class SomaModelMangager {
         return INSTANCE;
     }
 
-    public int nextId() {
+    public SomaView createView() {
         if (model.getCapacity() <= nextOffset) {
             throw new IllegalStateException("Out of off heap soma memory");
         }
-        return nextOffset++;
+        return new SomaView(model, nextOffset++);
     }
 
     public int capacity() {

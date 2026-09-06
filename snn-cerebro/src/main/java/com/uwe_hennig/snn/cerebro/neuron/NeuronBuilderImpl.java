@@ -22,10 +22,13 @@ import com.uwe_hennig.snn.anatomy.allocator.ThresholdModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.WeightModelManager;
 import com.uwe_hennig.snn.anatomy.neuron.AxonView;
 import com.uwe_hennig.snn.anatomy.neuron.DendritView;
+import com.uwe_hennig.snn.anatomy.neuron.ModulatorView;
 import com.uwe_hennig.snn.anatomy.neuron.NeuronView;
+import com.uwe_hennig.snn.anatomy.neuron.PlasticityView;
 import com.uwe_hennig.snn.anatomy.neuron.PotentialView;
 import com.uwe_hennig.snn.anatomy.neuron.SomaView;
 import com.uwe_hennig.snn.anatomy.neuron.SynapseView;
+import com.uwe_hennig.snn.anatomy.neuron.ThresholdView;
 import com.uwe_hennig.snn.anatomy.neuron.WeightView;
 import com.uwe_hennig.snn.cerebro.contracts.NeuronBuilder;
 import com.uwe_hennig.snn.cerebro.contracts.NeuronGraph;
@@ -122,10 +125,9 @@ public class NeuronBuilderImpl implements NeuronBuilder {
             DendritView.setStructure(dendritId, fieldId, neuronId, somaId);
 
             WeightModelManager wmm = WeightModelManager.instance();
-            int weightId = wmm.nextId();
-            WeightView.initDefaultValues(weightId);
+            WeightView weightView = wmm.createView();
 
-            return new Dendrit(dendritId, weightId);
+            return new Dendrit(dendritId, weightView);
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("Exception in createDendrit " + e.getLocalizedMessage());
@@ -135,45 +137,44 @@ public class NeuronBuilderImpl implements NeuronBuilder {
 
     private Soma createSoma(int axonId) {
         SomaModelMangager somm = SomaModelMangager.instance();
-        int somaId = somm.nextId();
-        SomaView.setStructure(somaId, fieldId, neuronId, axonId);
+        SomaView somaView = somm.createView();
+        somaView.setStructure(fieldId, neuronId, axonId);
 
         ThresholdModelManager tmm = ThresholdModelManager.instance();
-        int thresholdId = tmm.nextId();
+        ThresholdView thresholdView = tmm.createView();
 
         PotentialModelManager pmm = PotentialModelManager.instance();
-        int potentialId = pmm.nextId();
-        PotentialView.initData(potentialId);
+        PotentialView potentialView = pmm.createView();
 
         PlasticityModelManager plmm = PlasticityModelManager.instance();
-        int stpId = plmm.nextId();
-        int ltpId = plmm.nextId();
+        PlasticityView stpView = plmm.createView();
+        PlasticityView ltpView = plmm.createView();
 
-        return new Soma(somaId, thresholdId, potentialId, stpId, ltpId);
+        return new Soma(somaView, thresholdView, potentialView, stpView, ltpView);
     }
 
     private Axon createAxon(int synapseRef) {
         AxonModelManager amm = AxonModelManager.instance();
-        int axonId = amm.nextId();
+        AxonView axonView = amm.createView();
 
         ModulatorModelManager mmm = ModulatorModelManager.instance();
-        int modulatorId = mmm.nextId();
+        ModulatorView modulatorView = mmm.createView();
 
-        AxonView.setStructure(axonId, fieldId, neuronId, synapseRef, modulatorId);
+        axonView.setStructure(fieldId, neuronId, synapseRef);
 
-        return new Axon(axonId, modulatorId, synapseRef);
+        return new Axon(axonView, modulatorView);
     }
 
     private Synapse createSynapse() {
         SynapseModelManager smm = SynapseModelManager.instance();
-        int synapseId = smm.nextId();
+        SynapseView synapseView = smm.createView();
 
         ModulatorModelManager mmm = ModulatorModelManager.instance();
-        int modulatorId = mmm.nextId();
+        ModulatorView modulatorView = mmm.createView();
 
-        SynapseView.setStructure(synapseId, fieldId, neuronId, modulatorId);
+        synapseView.setStructure(fieldId, neuronId, modulatorView.getId());
 
-        return new Synapse(synapseId, modulatorId);
+        return new Synapse(synapseView, modulatorView);
     }
 
     private boolean checkPreconditions() {

@@ -5,28 +5,34 @@
  */
 package com.uwe_hennig.snn.anatomy.neuron;
 
-import com.uwe_hennig.snn.anatomy.allocator.PlasticityModelManager;
-
 /**
  * PlasticityView
  *
  * @author Uwe Hennig
  */
 public final class PlasticityView {
+    private final PlasticityModel model;
+    private final int             index;
+
+    public PlasticityView(PlasticityModel model, int index) {
+        this.model = model;
+        this.index = index;
+    }
 
     // is always called before others
-    public static float updatePlasticityPotential(int index, float currentTime) {
-        PlasticityModel model = PlasticityModelManager.instance().getModel();
+    public float updatePlasticityPotential(float currentTime) {
         model.writeLock(index);
         try {
             float lastUpdateTime = model.getLastUpdateTime(index);
             float elapsed = currentTime - lastUpdateTime;
             float currentPot = model.getCurrentPotential(index);
+
             // 1. Apply to dementia
             float restingPot = model.getRestingPotential(index);
             float restingTime = model.getRestingTime(index);
             float restingRate = model.getRestingRate(index);
             float newPot = update(currentPot, restingPot, restingTime, restingRate, elapsed);
+
             // 2. Apply to learn
             float targetPot = model.getTargetPotential(index);
             float targetTime = model.getTargetTime(index);
@@ -41,14 +47,12 @@ public final class PlasticityView {
     }
 
     // is called when value adjustments are made
-    public static void applyValueFeedback(int index, float deltaValueFeedback, float currentTime) {
+    public void applyValueFeedback(float deltaValueFeedback, float currentTime) {
         if (Math.abs(deltaValueFeedback) < 0.001f) {
             return;
         }
 
-        PlasticityModel model = PlasticityModelManager.instance().getModel();
         model.writeLock(index);
-
         try {
             float elapsed = currentTime - model.getLastUpdateTime(index);
             float targetPot = model.getTargetPotential(index);
@@ -72,8 +76,7 @@ public final class PlasticityView {
         }
     }
 
-    public static float getCurrentPotential(int index) {
-        PlasticityModel model = PlasticityModelManager.instance().getModel();
+    public float getCurrentPotential() {
         try {
             model.readLock(index);
             return model.getCurrentPotential(index);
@@ -83,11 +86,10 @@ public final class PlasticityView {
     }
 
     // is called when time adjustments are made
-    public static void applyTimeFeedback(int index, float deltaTimeFeedback, float currentTime) {
+    public void applyTimeFeedback(float deltaTimeFeedback, float currentTime) {
         if (Math.abs(deltaTimeFeedback) < 0.001f) {
             return;
         }
-        PlasticityModel model = PlasticityModelManager.instance().getModel();
         model.writeLock(index);
 
         try {
@@ -114,11 +116,10 @@ public final class PlasticityView {
     /**
      * Alpha function / Euler integration
      */
-    private static float update(float currentValue, float targetValue, float maxTimeRange, float tauDominator, float elapsed) {
+    private float update(float currentValue, float targetValue, float maxTimeRange, float tauDominator, float elapsed) {
         float tau = maxTimeRange / tauDominator;
         float alpha = elapsed / (tau + elapsed);
 
         return currentValue + (targetValue - currentValue) * alpha;
     }
-
 }

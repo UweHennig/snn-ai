@@ -19,12 +19,23 @@ public final class ModulatorView {
     static final float POTENTIAL_RANGE = 70f;
     static final float ALPHA_FACTOR    = 0.01f;
 
+    private final ModulatorModel model;
+    private final int index;
+
+    public ModulatorView(ModulatorModel model, int index) {
+        this.model = model;
+        this.index = index;
+    }
+
+    public int getId() {
+        return index;
+    }
+
     // ----- Domain Logic -----
 
     // The method is called on normal stimuli
-    public static float applyStimulus(int index, float stimulus, float currentTime) {
-        ModulatorModel model = ModulatorModelManager.instance().getModel();
-        if (!relevantGain(index, currentTime)) {
+    public float applyStimulus(float stimulus, float currentTime) {
+        if (!relevantGain(currentTime)) {
             // No influence
             return stimulus;
         }
@@ -38,7 +49,7 @@ public final class ModulatorView {
     }
 
     // The method is called ony on inhibitory/excitatory events
-    public static void applyModulation(int index, float potential, float currentTime, boolean inhibitory) {
+    public void applyModulation(float potential, float currentTime, boolean inhibitory) {
         ModulatorModel model = ModulatorModelManager.instance().getModel();
 
         // Recalculate the influence factor
@@ -58,7 +69,7 @@ public final class ModulatorView {
 
     // ----- convenience -----
 
-    private static boolean relevantGain(int index, float currentTime) {
+    private boolean relevantGain(float currentTime) {
         ModulatorModel model = ModulatorModelManager.instance().getModel();
         float lastEventTime = model.getLastEventTime(index);
         float deltaTime = currentTime - lastEventTime;

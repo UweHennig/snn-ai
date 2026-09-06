@@ -29,7 +29,7 @@ public class WeightMain {
     private FunctionPlotter plotter;
     private WeightModel  model;
 
-    private int     index;
+    private WeightView weightView;
     private boolean running;
 
     private float currentTime;
@@ -61,7 +61,7 @@ public class WeightMain {
     public void calculateFeedback() {
         if (running) {
             float deltaTimeFeedback = calculateFeedbackDT();
-            float potential = WeightView.applyFeedback(index, deltaTimeFeedback);
+            float potential = weightView.applyFeedback(deltaTimeFeedback);
             plotter.addPoint(POTENTIAL_FUNCTION_NAME, currentTime, potential);
         }
     }
@@ -69,14 +69,14 @@ public class WeightMain {
     public void calculateStimulus() {
         if (running) {
             float receivingPotential = createStimulus();
-            float potential = WeightView.applyStimulus(index, receivingPotential, currentTime);
+            float potential = weightView.applyStimulus(receivingPotential, currentTime);
             plotter.addPoint(POTENTIAL_FUNCTION_NAME, currentTime, potential);
         }
     }
 
     public void calculateWeight() {
         if (running) {
-            float weight = WeightView.getWeight(index);
+            float weight = weightView.getWeight();
             plotter.addPoint(WEIGHT_FUNCTION_NAME, currentTime, weight);
         }
     }
@@ -94,8 +94,7 @@ public class WeightMain {
     private void initOffheap() {
         WeightModelManager manager = WeightModelManager.init(1);
         model = manager.getModel();
-        index = manager.nextId();
-        WeightView.initDefaultValues(index);
+        weightView = manager.createView();
     }
 
     private void close() {

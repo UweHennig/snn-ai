@@ -8,7 +8,10 @@ package com.uwe_hennig.snn.cerebro.neuron;
 import static com.uwe_hennig.snn.contracts.core.NeuronElementType.AXON;
 import static com.uwe_hennig.snn.contracts.core.NeuronElementType.SOMA;
 
+import com.uwe_hennig.snn.anatomy.neuron.PlasticityView;
+import com.uwe_hennig.snn.anatomy.neuron.PotentialView;
 import com.uwe_hennig.snn.anatomy.neuron.SomaView;
+import com.uwe_hennig.snn.anatomy.neuron.ThresholdView;
 import com.uwe_hennig.snn.contracts.core.NeuronElement;
 import com.uwe_hennig.snn.contracts.core.NeuronElementType;
 import com.uwe_hennig.snn.contracts.core.ViewIdentity;
@@ -20,25 +23,25 @@ import com.uwe_hennig.snn.services.NeuronElementRegistry;
  * @author Uwe Hennig
  */
 public final class Soma extends ViewIdentity implements NeuronElement {
-    private final int viewId;
-    private final int thresholdViewId;
-    private final int potentialViewId;
-    private final int stpViewId;
-    private final int ltpViewId;
+    private final SomaView somaView;
+    private final ThresholdView thresholdView;
+    private final PotentialView potentialView;
+    private final PlasticityView stpView;
+    private final PlasticityView ltpView;
 
-    public Soma(int viewId, int thresholdViewId, int potentialViewId, int stpViewId, int ltpViewId) {
-        this.viewId = viewId;
-        this.stpViewId = stpViewId;
-        this.ltpViewId = ltpViewId;
-        this.thresholdViewId = thresholdViewId;
-        this.potentialViewId = potentialViewId;
+    public Soma(SomaView somaView, ThresholdView thresholdView, PotentialView potentialView, PlasticityView stpView, PlasticityView ltpView) {
+        this.somaView = somaView;
+        this.stpView = stpView;
+        this.ltpView = ltpView;
+        this.potentialView = potentialView;
+        this.thresholdView = thresholdView;
     }
 
     @Override
     public void stimulate(int stimulusIdentifier) {
         try {
             // Master Lock
-            SomaView.writeLock(viewId);
+            somaView.writeLock();
 // TODO
 //            float currentTime = 1000; // TODO
 //
@@ -73,7 +76,7 @@ public final class Soma extends ViewIdentity implements NeuronElement {
 //            SnnTransferservice.transfer(stimulusIdentifier);
 
         } finally {
-            SomaView.writeUnlock(viewId);
+            somaView.writeUnlock();
         }
     }
 
@@ -84,7 +87,7 @@ public final class Soma extends ViewIdentity implements NeuronElement {
 
     @Override
     public int getNeuronId() {
-        return SomaView.getNeuronId(viewId);
+        return somaView.getNeuronId();
     }
 
     private boolean isExternalStimulus(int stimulusIdentifier) {
@@ -93,11 +96,11 @@ public final class Soma extends ViewIdentity implements NeuronElement {
     }
 
     public int getTargetId() {
-        return SomaView.getAxonId(viewId);
+        return somaView.getAxonId();
     }
 
     @Override
     public int getViewId() {
-        return viewId;
+        return somaView.getId();
     }
 }

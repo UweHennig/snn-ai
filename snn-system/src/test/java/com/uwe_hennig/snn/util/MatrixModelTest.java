@@ -6,8 +6,7 @@
 package com.uwe_hennig.snn.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import java.util.concurrent.TimeUnit;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -109,43 +108,53 @@ public class MatrixModelTest {
     @Test
     @DisplayName("Variable Matrix test")
     public void testPerformance() {
-        final int loops = 1_000_000;
-        final int size = 100_000;
-        final int matrices = 2;
+        try {
+            final int loops = 1_000_000;
+            final int size = 100_000;
+            final int matrices = 2;
 
-        MatrixModel matrix = new MatrixModel(matrices, size);
-        int m0 = matrix.registerMatrix(2, 20, 20, 5);
+            MatrixModel matrix = new MatrixModel(matrices, size);
+            int m0 = matrix.registerMatrix(2, 20, 20, 5);
 
-        int numHeaders = matrix.getNumHeaders(m0);
-        int numRows = matrix.getNumRows(m0);
-        int numCols = matrix.getNumColumns(m0);
-        int numSlots = matrix.getNumSlotsPerCell(m0);
+            int numHeaders = matrix.getNumHeaders(m0);
+            int numRows = matrix.getNumRows(m0);
+            int numCols = matrix.getNumColumns(m0);
+            int numSlots = matrix.getNumSlotsPerCell(m0);
 
-        long operations = 0;
-        int value =0;
-        long start = System.nanoTime();
-        for (int l = 0; l < loops; l++) {
-            for (int nH = 0; nH < numHeaders; nH++) {
-                matrix.setHeaderInt(m0, nH, value++);
-                operations++;
-                for (int nR = 0; nR < numRows; nR++) {
-                    for (int nC = 0; nC < numCols; nC++) {
-                        for (int nS = 0; nS < numSlots; nS++) {
-                            matrix.setCellInt(m0, nR, nC, nS, value++);
-                            operations++;
+            long operations = 0;
+            int value =0;
+            long start = System.nanoTime();
+            for (int l = 0; l < loops; l++) {
+                for (int nH = 0; nH < numHeaders; nH++) {
+                    matrix.setHeaderInt(m0, nH, value++);
+                    operations++;
+                    for (int nR = 0; nR < numRows; nR++) {
+                        for (int nC = 0; nC < numCols; nC++) {
+                            for (int nS = 0; nS < numSlots; nS++) {
+                                matrix.setCellInt(m0, nR, nC, nS, value++);
+                                operations++;
+                            }
                         }
                     }
                 }
             }
+            long end = System.nanoTime();
+
+            long totalNs = end - start;
+            double nsPerOp = (double) totalNs / operations;
+            double opsPerSec = 1_000_000_000.0 / nsPerOp;
+
+            System.out.printf("Operations     : %,13d ops%n", operations);
+            System.out.printf("Throughput     : %,13.2f ops/s%n", opsPerSec);
+            System.out.printf("Latency        : %,6.2f ns/op%n", nsPerOp);
+
+            // TODO Check whether the values have actually been written.
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getLocalizedMessage());
         }
-        long end = System.nanoTime();
-
-        long totalNs = end - start;
-        double nsPerOp = (double) totalNs / operations;
-        double opsPerSec = 1_000_000_000.0 / nsPerOp;
-
-        System.out.printf("Throughput     : %,13.2f ops/s%n", opsPerSec);
-        System.out.printf("Latency        : %,6.2f ns/op%n", nsPerOp);
     }
 
     @Test
@@ -197,5 +206,13 @@ public class MatrixModelTest {
         String title = "### " + info.getDisplayName() + " ###";
         System.out.println("\n" + title);
         System.out.println("-".repeat(title.length()));
+    }
+
+    public final class Blackhole {
+        private static volatile Object SINK;
+
+        public static void consume(Object v) {
+            SINK = v;
+        }
     }
 }

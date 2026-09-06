@@ -13,7 +13,12 @@ import com.uwe_hennig.snn.anatomy.allocator.PotentialModelManager;
  * @author Uwe Hennig
  */
 public final class PotentialView {
-    public static float decay(int index, float currentTime) {
+    private final int index;
+    public PotentialView(int index) {
+        this.index = index;
+    }
+
+    public float decay(float currentTime) {
         PotentialModel model = PotentialModelManager.instance().getModel();
 
         float currentPotential = model.getPotential(index);
@@ -29,7 +34,7 @@ public final class PotentialView {
         return potential;
     }
 
-    public static float getPotential(int index) {
+    public float getPotential() {
         PotentialModel model = PotentialModelManager.instance().getModel();
         try {
             model.readLock(index);
@@ -39,13 +44,13 @@ public final class PotentialView {
         }
     }
 
-    public static float addPotentitial(int index, float potential, float currentTime) {
+    public float addPotentitial(float potential, float currentTime) {
         PotentialModel model = PotentialModelManager.instance().getModel();
 
-        return withPotential(index, potential + model.getPotential(index), currentTime);
+        return withPotential(potential + model.getPotential(index), currentTime);
     }
 
-    public static boolean fire(int index, float threshold) {
+    public boolean fire(float threshold) {
         PotentialModel model = PotentialModelManager.instance().getModel();
         try {
             model.readLock(index);
@@ -55,7 +60,7 @@ public final class PotentialView {
         }
     }
 
-    private static float withPotential(int index, float potential, float currentTime) {
+    private float withPotential(float potential, float currentTime) {
         PotentialModel model = PotentialModelManager.instance().getModel();
 
         model.setPotential(index, potential);
@@ -64,7 +69,7 @@ public final class PotentialView {
     }
 
     // TODO remove
-    public static void initData(int index) {
+    public void initData() {
         PotentialModel model = PotentialModelManager.instance().getModel();
         try {
             model.writeLock(index);

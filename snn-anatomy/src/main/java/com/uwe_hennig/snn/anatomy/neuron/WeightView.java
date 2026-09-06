@@ -5,19 +5,24 @@
  */
 package com.uwe_hennig.snn.anatomy.neuron;
 
-import com.uwe_hennig.snn.anatomy.allocator.WeightModelManager;
-
 /**
  * WeightView
  *
  * @author Uwe Hennig
  */
 public final class WeightView {
+    private final WeightModel model;
+    private final int index;
+
+    public WeightView(WeightModel model, int index) {
+        this.model = model;
+        this.index = index;
+    }
+
     // ----- Domain Logic -----
 
     // The method is called only by the dendrite corresponding to the stimulus type
-    public static float applyStimulus(int index, float potential, float currentTime) {
-        WeightModel model = WeightModelManager.instance().getModel();
+    public float applyStimulus(float potential, float currentTime) {
         try {
             float preSynapticTime = model.getPostSynapticTime(index);
 
@@ -34,15 +39,14 @@ public final class WeightView {
     }
 
     // The method is called only by the dendrite corresponding to the stimulus type
-    public static int applyFeedback(int index, float deltaTimeFeedback) {
-        WeightModel model = WeightModelManager.instance().getModel();
+    public int applyFeedback(float deltaTimeFeedback) {
         model.writeLock(index);
         try {
             float preSynapticTime = model.getPreSynapticTime(index);
             float postSynapticTime = model.getPostSynapticTime(index);
 
             float dt = Math.max(postSynapticTime - preSynapticTime, 0);
-            float deltaWeight = deltaWeight(index, deltaTimeFeedback) + deltaHebbWeight(index, deltaTimeFeedback, dt);
+            float deltaWeight = deltaWeight(deltaTimeFeedback) + deltaHebbWeight(deltaTimeFeedback, dt);
 
             float weight = Math.clamp(deltaWeight + model.getWeight(index), 0f, 1f);
             model.setWeight(index, weight);
@@ -55,8 +59,7 @@ public final class WeightView {
         }
     }
 
-    public static float getWeight(int index) {
-        WeightModel model = WeightModelManager.instance().getModel();
+    public float getWeight() {
         try {
             model.readLock(index);
             return model.getWeight(index);
@@ -67,8 +70,7 @@ public final class WeightView {
 
     // ----- convenience -----
 
-    static float deltaWeight(int index, float deltaTimeFeedback) {
-        WeightModel model = WeightModelManager.instance().getModel();
+    float deltaWeight(float deltaTimeFeedback) {
         float timeLimit = model.getTimeLimit(index);
         float phase = Math.clamp(Math.abs(deltaTimeFeedback / timeLimit), 0f, 1f);
         float effect = 1 - phase * phase * phase;
@@ -77,8 +79,7 @@ public final class WeightView {
         return weightScale * effect * Math.signum(deltaTimeFeedback);
     }
 
-    static float deltaHebbWeight(int index, float deltaTimeFeedback, float dt) {
-        WeightModel model = WeightModelManager.instance().getModel();
+    float deltaHebbWeight(float deltaTimeFeedback, float dt) {
         float hebbTimeRange = model.getHebbTimeRange(index);
         if (dt >= hebbTimeRange || hebbTimeRange == 0) {
             return 0.0f;
@@ -89,8 +90,7 @@ public final class WeightView {
         return proximity * hebbScale * Math.signum(deltaTimeFeedback);
     }
 
-    public static void initDefaultValues(int index) {
-        WeightModel model = WeightModelManager.instance().getModel();
+    public void initDefaultValues() {
         model.writeLock(index);
         try {
             if (model.getWeightScale(index) == 0.0f) {

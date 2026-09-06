@@ -6,6 +6,7 @@
 package com.uwe_hennig.snn.anatomy.allocator;
 
 import com.uwe_hennig.snn.anatomy.neuron.PotentialModel;
+import com.uwe_hennig.snn.anatomy.neuron.PotentialView;
 
 /**
  * PotentialModelManager
@@ -37,11 +38,11 @@ public class PotentialModelManager {
         return INSTANCE;
     }
 
-    public int nextId() {
+    public PotentialView createView() {
         if (model.getCapacity() <= nextOffset) {
             throw new IllegalStateException("Out of off heap ptoential memory");
         }
-        return nextOffset++;
+        return new PotentialView(nextOffset++);
     }
 
     public int capacity() {

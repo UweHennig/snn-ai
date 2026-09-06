@@ -6,6 +6,7 @@
 package com.uwe_hennig.snn.anatomy.allocator;
 
 import com.uwe_hennig.snn.anatomy.neuron.PlasticityModel;
+import com.uwe_hennig.snn.anatomy.neuron.PlasticityView;
 
 /**
  * PlasticityModelManager
@@ -37,11 +38,12 @@ public class PlasticityModelManager {
         return INSTANCE;
     }
 
-    public int nextId() {
+    public PlasticityView createView() {
         if (model.getCapacity() <= nextOffset) {
             throw new IllegalStateException("Out of off heap plasticity memory");
         }
-        return nextOffset++;
+        PlasticityView view = new PlasticityView(model, nextOffset++);
+        return view;
     }
 
     public int capacity() {

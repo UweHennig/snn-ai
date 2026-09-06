@@ -6,6 +6,7 @@
 package com.uwe_hennig.snn.anatomy.allocator;
 
 import com.uwe_hennig.snn.anatomy.neuron.WeightModel;
+import com.uwe_hennig.snn.anatomy.neuron.WeightView;
 
 /**
  * WeightModelManager
@@ -37,11 +38,14 @@ public class WeightModelManager {
         return INSTANCE;
     }
 
-    public int nextId() {
+    public WeightView createView() {
         if (model.getCapacity() <= nextOffset) {
             throw new IllegalStateException("Out of off heap weight memory");
         }
-        return nextOffset++;
+        WeightView view = new WeightView(model, nextOffset++);
+        view.initDefaultValues();
+
+        return view;
     }
 
     public int capacity() {

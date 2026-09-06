@@ -57,7 +57,7 @@ public class PlasticityTest {
     @DisplayName("Simple PlasticityModel Test")
     public void testPlasticityView() {
         PlasticityModel model = PlasticityModelManager.init(1).getModel();
-        PlasticityView view = null;
+        PlasticityView plasticityView = PlasticityModelManager.instance().createView();
         try {
             // initial values
             model.writeLock(0);
@@ -91,9 +91,9 @@ public class PlasticityTest {
 
             float currentTime = 400f;
 
-            PlasticityView.updatePlasticityPotential(0, currentTime + 100);
-            PlasticityView.applyValueFeedback(0, 100, currentTime + 200);
-            PlasticityView.applyTimeFeedback(0, 100, currentTime + 300);
+            plasticityView.updatePlasticityPotential(currentTime + 100);
+            plasticityView.applyValueFeedback(100, currentTime + 200);
+            plasticityView.applyTimeFeedback(100, currentTime + 300);
 
             System.out.println("\n### Changed values");
             System.out.println("elapsed = " + (currentTime - model.getLastUpdateTime(0)));

@@ -6,6 +6,7 @@
 package com.uwe_hennig.snn.anatomy.allocator;
 
 import com.uwe_hennig.snn.anatomy.neuron.AxonModel;
+import com.uwe_hennig.snn.anatomy.neuron.AxonView;
 
 /**
  * AxonAllocator
@@ -37,11 +38,11 @@ public class AxonModelManager {
         return INSTANCE;
     }
 
-    public int nextId() {
+    public AxonView createView() {
         if (model.getCapacity() <= nextOffset) {
             throw new IllegalStateException("Out of off heap axon memory");
         }
-        return nextOffset++;
+        return new AxonView(model, nextOffset++);
     }
 
     public int capacity() {

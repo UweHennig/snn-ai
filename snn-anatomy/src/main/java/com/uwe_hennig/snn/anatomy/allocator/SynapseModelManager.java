@@ -6,6 +6,7 @@
 package com.uwe_hennig.snn.anatomy.allocator;
 
 import com.uwe_hennig.snn.anatomy.neuron.SynapseModel;
+import com.uwe_hennig.snn.anatomy.neuron.SynapseView;
 
 /**
  * SynapseModelManager
@@ -37,11 +38,12 @@ public class SynapseModelManager {
         return INSTANCE;
     }
 
-    public int nextId() {
+    public SynapseView createView() {
         if (model.getCapacity() <= nextOffset) {
             throw new IllegalStateException("Out of off heap synapse memory");
         }
-        return nextOffset++;
+
+        return new SynapseView(model, nextOffset++);
     }
 
     public int capacity() {

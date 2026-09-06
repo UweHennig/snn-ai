@@ -6,6 +6,7 @@
 package com.uwe_hennig.snn.anatomy.allocator;
 
 import com.uwe_hennig.snn.anatomy.neuron.ThresholdModel;
+import com.uwe_hennig.snn.anatomy.neuron.ThresholdView;
 
 /**
  * ThresholdModelManager
@@ -37,11 +38,11 @@ public class ThresholdModelManager {
         return INSTANCE;
     }
 
-    public int nextId() {
+    public ThresholdView createView() {
         if (model.getCapacity() <= nextOffset) {
             throw new IllegalStateException("Out of off heap threshold memory");
         }
-        return nextOffset++;
+        return new ThresholdView(model, nextOffset++);
     }
 
     public int capacity() {
