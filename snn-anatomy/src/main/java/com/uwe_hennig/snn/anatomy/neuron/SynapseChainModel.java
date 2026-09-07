@@ -104,7 +104,7 @@ public class SynapseChainModel {
     }
 
 
-    public void close() throws Exception {
+    public void close() {
         if (arena != null) {
             arena.close();
         }

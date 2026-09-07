@@ -30,6 +30,7 @@ import org.junit.jupiter.api.TestInfo;
 
 /**
  * MultiListTest
+ *
  * @author Uwe Hennig
  */
 public class MultiListTest {
@@ -80,6 +81,35 @@ public class MultiListTest {
     }
 
     @Test
+    @DisplayName("MultiList Performance Test")
+    public void testPerformanceSingleWrite() {
+        MultiList multiList = new MultiList(1_000_000, 256);
+        long offset = multiList.allocate();
+        long operations = 0L;
+
+        int[] one = new int[1];
+
+        long start = System.nanoTime();
+        for (int i = 0; i < 2_000_000; i++) {
+            one[0] = i;
+            multiList.put(offset, one);
+            operations++;
+        }
+        long end = System.nanoTime();
+
+        long totalNs = end - start;
+        double nsPerOp = (double) totalNs / operations;
+        double opsPerSec = 1_000_000_000.0 / nsPerOp;
+
+        System.out.println("Single Value Write Test");
+        System.out.printf("Operations     : %,13d ops%n", operations);
+        System.out.printf("Throughput     : %,13.2f ops/s%n", opsPerSec);
+        System.out.printf("Latency        : %,6.2f ns/op%n", nsPerOp);
+
+        multiList.close();
+    }
+
+    @Test
     @DisplayName("Simple MultiList Delete Test")
     public void testDelete() {
         MultiList testSimple = new MultiList(MAX_BLOCKS, MAX_ROW_BYTE_LENGTH);
@@ -125,11 +155,11 @@ public class MultiListTest {
 
         // init some data
         List<int[]> data = new ArrayList<>();
-        for (int i=0;i<NUM_THREADS;i++) {
+        for (int i = 0; i < NUM_THREADS; i++) {
             int size = rand.nextInt(35);
-            for (int j=0;j<size;j++) {
-                int [] x = new int [size];
-                for (int k=0;k<size;k++) {
+            for (int j = 0; j < size; j++) {
+                int[] x = new int[size];
+                for (int k = 0; k < size; k++) {
                     x[k] = rand.nextInt(100);
                 }
                 data.add(x);
@@ -146,11 +176,11 @@ public class MultiListTest {
                     long offset = multiList.allocate();
                     multiList.put(offset, data.get(pos));
 
-                    int [] r = multiList.getInts(offset);
+                    int[] r = multiList.getInts(offset);
                     assertNotNull(r);
                     assertEquals(data.get(pos).length, r.length);
 
-                } catch(Exception e) {
+                } catch (Exception e) {
                     fail("Exception in Thread " + pos + " " + e.getLocalizedMessage());
                 }
             });

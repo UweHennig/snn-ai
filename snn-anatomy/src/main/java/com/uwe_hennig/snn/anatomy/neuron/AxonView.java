@@ -12,7 +12,7 @@ package com.uwe_hennig.snn.anatomy.neuron;
  */
 public final class AxonView {
     private final AxonModel model;
-    private final int index;
+    private final int       index;
 
     public AxonView(AxonModel model, int index) {
         this.model = model;

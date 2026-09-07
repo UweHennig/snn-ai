@@ -33,13 +33,13 @@ public class StimulusModel {
     public static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         JAVA_INT.withName("lock"),
         MemoryLayout.paddingLayout(4),
-        JAVA_INT.withName("stimulusType"),
-        JAVA_INT.withName("transferType"),
-        JAVA_INT.withName("targetRef"),
-        JAVA_INT.withName("targetSubRef"),
-        JAVA_INT.withName("targetType"),
-        JAVA_FLOAT.withName("value"),
-        JAVA_LONG.withName("expiry")
+        JAVA_INT.withName("stimulusType"),  // FEEDBACK_TIME, FEEDBACK_VALUE, STIMULUS
+        JAVA_INT.withName("transferType"),  // REZEPTOR, EFFECTOR, AXON
+        JAVA_INT.withName("targetRef"),     // MATRIX_REF, AXON_SYNAPSE_REF, REZEPTOR_REF, DENDRIT_REF, ...
+        JAVA_INT.withName("targetSubRef"),  // (x,y) or positin
+        JAVA_INT.withName("targetType"),    // Neuronelement
+        JAVA_FLOAT.withName("value"),       // delta value or absolute value
+        JAVA_LONG.withName("expiry")        // expiry
     ).withByteAlignment(8);
 
     static final VarHandle VH_LOCK           = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("lock"));

@@ -7,8 +7,10 @@ package com.uwe_hennig.snn.anatomy.neuron;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
@@ -20,6 +22,7 @@ import org.junit.jupiter.api.TestInfo;
 public class SynapseChainModelTest {
 
     @Test
+    @DisplayName("SynapseChainModel single Block Test")
     public void testSingleBlock() {
         SynapseChainModel list = new SynapseChainModel(1024);
 
@@ -31,10 +34,11 @@ public class SynapseChainModelTest {
 
         int[] syn = list.getSynapses(offset);
 
-        assertArrayEquals(new int[]{10, 20, 30}, syn);
+        assertArrayEquals(new int[] { 10, 20, 30 }, syn);
     }
 
     @Test
+    @DisplayName("SynapseChainModel two Blocks Test")
     public void testTwoBlocks() {
         SynapseChainModel list = new SynapseChainModel(2048);
 
@@ -46,11 +50,11 @@ public class SynapseChainModelTest {
 
         int[] syn = list.getSynapses(offset);
 
-        assertArrayEquals(new int[]{1, 2, 3}, syn);
+        assertArrayEquals(new int[] { 1, 2, 3 }, syn);
     }
 
-
     @Test
+    @DisplayName("SynapseChainModel multi Blocks Test")
     public void testMultiBlocks() {
         SynapseChainModel list = new SynapseChainModel(4096);
 
@@ -62,10 +66,11 @@ public class SynapseChainModelTest {
 
         int[] syn = list.getSynapses(offset);
 
-        assertArrayEquals(new int[]{0,1,2,3,4,5,6,7,8,9}, syn);
+        assertArrayEquals(new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }, syn);
     }
 
     @Test
+    @DisplayName("SynapseChainModel next Block terminator Test")
     public void testNextBlockTerminator() {
         SynapseChainModel list = new SynapseChainModel(1024);
 
@@ -77,6 +82,48 @@ public class SynapseChainModelTest {
     }
 
     @Test
+    @DisplayName("SynapseChainModel Performance Test")
+    public void testPerformance() {
+        final int it = 1024;
+
+        SynapseChainModel model = null;
+        try {
+            model = new SynapseChainModel(it * it * it);
+            int chainOffset = model.allocate(100);
+
+            long operations = 0L;
+            long start = System.nanoTime();
+            for (int o = 0; o < it; o++) {
+                int offset = model.allocate(it);
+                model.addSynapseId(chainOffset, offset);
+
+                for (int id = 0; id < it; id++) {
+                    model.addSynapseId(offset, id);
+                    operations++;
+                }
+            }
+            long end = System.nanoTime();
+
+            long totalNs = end - start;
+            double nsPerOp = (double) totalNs / operations;
+            double opsPerSec = 1_000_000_000.0 / nsPerOp;
+
+            System.out.println("Reading: ");
+            System.out.printf("Operations     : %,10d.00 ops%n", operations);
+            System.out.printf("Throughput     : %,13.2f ops/s%n", opsPerSec);
+            System.out.printf("Latency        : %,13.2f ns/op%n", nsPerOp);
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getLocalizedMessage());
+        } finally {
+            if (model != null) {
+                model.close();
+            }
+        }
+    }
+
+    @Test
+    @DisplayName("SynapseChainModel Header Test")
     public void testHeaderIntegrity() {
         SynapseChainModel list = new SynapseChainModel(2048);
 
