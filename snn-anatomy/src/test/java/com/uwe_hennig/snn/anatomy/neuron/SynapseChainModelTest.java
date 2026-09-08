@@ -90,12 +90,13 @@ public class SynapseChainModelTest {
         try {
             model = new SynapseChainModel(it * it * it);
             int chainOffset = model.allocate(100);
-
             long operations = 0L;
+
             long start = System.nanoTime();
             for (int o = 0; o < it; o++) {
                 int offset = model.allocate(it);
                 model.addSynapseId(chainOffset, offset);
+                operations++;
 
                 for (int id = 0; id < it; id++) {
                     model.addSynapseId(offset, id);
@@ -108,10 +109,24 @@ public class SynapseChainModelTest {
             double nsPerOp = (double) totalNs / operations;
             double opsPerSec = 1_000_000_000.0 / nsPerOp;
 
-            System.out.println("Reading: ");
-            System.out.printf("Operations     : %,10d.00 ops%n", operations);
-            System.out.printf("Throughput     : %,13.2f ops/s%n", opsPerSec);
-            System.out.printf("Latency        : %,13.2f ns/op%n", nsPerOp);
+            printPerformenceResult("Writing:", operations, nsPerOp, opsPerSec);
+
+            operations = 0L;
+            start = System.nanoTime();
+            int[] offsets = model.getFirstList();
+            operations+=offsets.length;
+            for (int i = 0; i < offsets.length; i++) {
+                int [] snapses = model.getSynapses(offsets[i]);
+                Blackhole.consume(snapses);
+                operations+=snapses.length;
+            }
+            end = System.nanoTime();
+            totalNs = end - start;
+            nsPerOp = (double) totalNs / operations;
+            opsPerSec = 1_000_000_000.0 / nsPerOp;
+
+            printPerformenceResult("Reading:", operations, nsPerOp, opsPerSec);
+
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getLocalizedMessage());
@@ -142,10 +157,28 @@ public class SynapseChainModelTest {
         assertEquals(1, list.getNumElements(next));
     }
 
+    private void printPerformenceResult(String info, long operations, double nsPerOp, double opsPerSec) {
+        System.out.println();
+        System.out.println(info);
+        System.out.println("----------------------------------------");
+        System.out.printf("Operations     : %,10d.00 ops%n", operations);
+        System.out.printf("Throughput     : %,13.2f ops/s%n", opsPerSec);
+        System.out.printf("Latency        : %,13.2f ns/op%n", nsPerOp);
+    }
+
     @BeforeEach
     public void beforeEach(TestInfo info) {
         String title = "### " + info.getDisplayName() + " ###";
         System.out.println("\n" + title);
         System.out.println("-".repeat(title.length()));
     }
+
+    public final class Blackhole {
+        private static volatile Object SINK;
+
+        public static void consume(Object v) {
+            SINK = v;
+        }
+    }
+
 }

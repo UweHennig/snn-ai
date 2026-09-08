@@ -28,7 +28,9 @@ import java.lang.foreign.ValueLayout;
  * @formatter:on
  * @author Uwe Hennig
  */
-public class SynapseChainModel {
+public final class SynapseChainModel {
+    private static final int LIST_ARRAY_START = 4;
+
     private Arena         arena;
     private MemorySegment segment;
 
@@ -62,9 +64,9 @@ public class SynapseChainModel {
             int num = getNumElements(currentOffset);
 
             if (num < cap) {
-                setSynapseId(currentOffset, num, synapseId);
-                setNumElements(currentOffset, num + 1);
                 setTotalElements(startOffset, getTotalElements(startOffset) + 1);
+                setNumElements(currentOffset, num + 1);
+                setSynapseId(currentOffset, num, synapseId);
                 return;
             }
 
@@ -79,30 +81,13 @@ public class SynapseChainModel {
         }
     }
 
-    public int[] getSynapses(int offset) {
-        int total = getTotalElements(offset);
-        int[] result = new int[total];
-
-        int pos = 0;
-        int current = offset;
-
-        while (true) {
-            int num = getNumElements(current);
-
-            MemorySegment.copy(segment, ValueLayout.JAVA_INT, current + 16, result, pos, num);
-            pos += num;
-
-            int next = getNextBlock(current);
-            if (next == -1) {
-                break;
-            }
-
-            current = next;
-        }
-
-        return result;
+    public int [] getFirstList() {
+        return getList(LIST_ARRAY_START);
     }
 
+    public int[] getSynapses(int offset) {
+        return getList(offset);
+    }
 
     public void close() {
         if (arena != null) {
@@ -154,5 +139,31 @@ public class SynapseChainModel {
 
     int getNextBlock(int base) {
         return segment.get(ValueLayout.JAVA_INT, base + 12);
+    }
+
+    // --- convenient ---
+
+    private int[] getList(int offset) {
+        int total = getTotalElements(offset);
+        int[] result = new int[total];
+
+        int pos = 0;
+        int current = offset;
+
+        while (true) {
+            int num = getNumElements(current);
+
+            MemorySegment.copy(segment, ValueLayout.JAVA_INT, current + 16, result, pos, num);
+            pos += num;
+
+            int next = getNextBlock(current);
+            if (next == -1) {
+                break;
+            }
+
+            current = next;
+        }
+
+        return result;
     }
 }
