@@ -74,6 +74,7 @@ public class EventQueueTest {
         System.out.printf("Operations : %,6d%n", numOps);
         System.out.printf("Throughput : %,6.2f ops/sec%n", avgOpsPerSec);
         System.out.printf("Latency    : %,13.2f ns/op%n", numOps / avgOpsPerSec);
+        Blackhole.print();
     }
 
     @BeforeEach
@@ -91,18 +92,21 @@ public class EventQueueTest {
     }
 
     public final class Blackhole {
-        @SuppressWarnings("unused")
-        private static int SINK;
+        public static long liveness;
 
-        public static void consume(int v) {
-            SINK = v;
-            if ((v & 0x1) == 0x1) {
-                /* noop */
+        public static void consume(Object obj) {
+            if (obj != null) {
+                liveness++;
             }
         }
 
-        public static int getSink() {
-            return SINK;
+        public static void print() {
+            if (liveness == System.nanoTime()) {
+                System.out.print("");
+            }
+            System.out.println("\nBlackhole calls: " + liveness);
+            liveness = 0L;
         }
     }
+
 }

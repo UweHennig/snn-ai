@@ -145,6 +145,7 @@ public class WeightTest {
         } finally {
             model.close();
         }
+        Blackhole.print();
     }
 
     @Test
@@ -229,6 +230,7 @@ public class WeightTest {
                     operations.incrementAndGet();
                 }
             });
+            Blackhole.print();
         }
 
         try {
@@ -356,18 +358,20 @@ public class WeightTest {
     }
 
     public final class Blackhole {
-        private static volatile Object SINK;
+        public static long liveness;
 
-        public static void consume(Object v) {
-            SINK = v;
-            long c = counter.incrementAndGet();
-            if (c % 10_000_000L == 0L) {
-                System.out.print(".");
+        public static void consume(Object obj) {
+            if (obj != null) {
+                liveness++;
             }
         }
 
-        public static Object getSink() {
-            return SINK;
+        public static void print() {
+            if (liveness == System.nanoTime()) {
+                System.out.print("");
+            }
+            System.out.println("\nBlackhole calls: " + liveness);
+            liveness = 0L;
         }
     }
 

@@ -209,10 +209,21 @@ public class MatrixModelTest {
     }
 
     public final class Blackhole {
-        private static volatile Object SINK;
+        public static long liveness;
 
-        public static void consume(Object v) {
-            SINK = v;
+        public static void consume(Object obj) {
+            if (obj != null) {
+                liveness++;
+            }
+        }
+
+        public static void print() {
+            if (liveness == System.nanoTime()) {
+                System.out.print("");
+            }
+            System.out.println("\nBlackhole calls: " + liveness);
+            liveness = 0L;
         }
     }
+
 }

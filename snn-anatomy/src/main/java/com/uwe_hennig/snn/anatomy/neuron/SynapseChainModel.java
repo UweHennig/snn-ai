@@ -150,13 +150,16 @@ public final class SynapseChainModel {
         int pos = 0;
         int current = offset;
 
+        int next = 0;
+        int num = 0;
+
         while (true) {
-            int num = getNumElements(current);
+            num = getNumElements(current);
 
             MemorySegment.copy(segment, ValueLayout.JAVA_INT, current + 16, result, pos, num);
             pos += num;
 
-            int next = getNextBlock(current);
+            next = getNextBlock(current);
             if (next == -1) {
                 break;
             }
