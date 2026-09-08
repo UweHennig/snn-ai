@@ -160,7 +160,7 @@ public class ReceptorTest {
         } finally {
             ReceptorModelManager.instance().close();
         }
-        Blackhole.print();
+        Blackhole.end();
     }
 
     @BeforeEach
@@ -171,19 +171,22 @@ public class ReceptorTest {
     }
 
     public final class Blackhole {
-        public static long liveness;
+        private static long liveness;
+        public static volatile long SINK;
 
         public static void consume(Object obj) {
             if (obj != null) {
-                liveness++;
+                liveness += System.identityHashCode(obj);
             }
         }
 
-        public static void print() {
-            if (liveness == System.nanoTime()) {
-                System.out.print("");
+        public static void end() {
+            SINK = liveness;
+
+            if (SINK == System.nanoTime()) {
+                System.out.print("This will almost never happen" + SINK);
             }
-            System.out.println("\nBlackhole calls: " + liveness);
+
             liveness = 0L;
         }
     }
