@@ -47,6 +47,11 @@ import java.lang.foreign.ValueLayout;
  * @author Uwe Hennig
  */
 public final class TransferSegment {
+    public static final int STATE_AVAILABLE = 0;
+    public static final int STATE_WRITING   = 1;
+    public static final int STATE_PUBLISHED = 2;
+    public static final int STATE_READING   = 3;
+
     private static final int META_SIZE   = 20;
     private static final int HEADER_SIZE = 20;
     private static final int ENTRY_SIZE  = 12;
@@ -62,96 +67,7 @@ public final class TransferSegment {
         initMeta();
     }
 
-    void setEntry(int blockOffset, int position, int targetId, int targetType, float value) {
-        setTargetId(blockOffset, position, targetId);
-        setTargetType(blockOffset, position, targetType);
-        setValue(blockOffset, position, value);
-    }
-
-    void setTargetId(int blockOffset, int position, int value) {
-        int startEntryOffset = blockOffset + HEADER_SIZE + position * ENTRY_SIZE;
-        segment.set(ValueLayout.JAVA_INT, startEntryOffset + 0, value);
-    }
-
-    int getTargetId(int blockOffset, int position) {
-        int startEntryOffset = blockOffset + HEADER_SIZE + position * ENTRY_SIZE;
-        return segment.get(ValueLayout.JAVA_INT, startEntryOffset + 0);
-    }
-
-    void setTargetType(int blockOffset, int position, int value) {
-        int startEntryOffset = blockOffset + HEADER_SIZE + position * ENTRY_SIZE;
-        segment.set(ValueLayout.JAVA_INT, startEntryOffset + 4, value);
-    }
-
-    int getTargetType(int blockOffset, int position) {
-        int startEntryOffset = blockOffset + HEADER_SIZE + position * ENTRY_SIZE;
-        return segment.get(ValueLayout.JAVA_INT, startEntryOffset + 4);
-    }
-
-    void setValue(int blockOffset, int position, float value) {
-        int startEntryOffset = blockOffset + HEADER_SIZE + position * ENTRY_SIZE;
-        segment.set(ValueLayout.JAVA_FLOAT, startEntryOffset + 8, value);
-    }
-
-    float getValue(int blockOffset, int position) {
-        int startEntryOffset = blockOffset + HEADER_SIZE + position * ENTRY_SIZE;
-        return segment.get(ValueLayout.JAVA_FLOAT, startEntryOffset + 8);
-    }
-
-    int allocateBlock(int capacity) {
-        int offset = getEndOffset();
-
-        setState(offset, -1);
-        setCount(offset, 0);
-        setCapacity(offset, capacity);
-        setStimulusType(offset, -1);
-        setNextBlock(offset, -1);
-
-        int newEnd = offset + 12 * capacity;
-        setEndOffset(newEnd);
-
-        return offset;
-    }
-
-    void setState(long blockOffset, int value) {
-        segment.set(ValueLayout.JAVA_INT, blockOffset + 0, value);
-    }
-
-    int getState(long blockOffset) {
-        return segment.get(ValueLayout.JAVA_INT, blockOffset + 0);
-    }
-
-    void setCount(long blockOffset, int value) {
-        segment.set(ValueLayout.JAVA_INT, blockOffset + 4, value);
-    }
-
-    int getCount(long blockOffset) {
-        return segment.get(ValueLayout.JAVA_INT, blockOffset + 4);
-    }
-
-    void setCapacity(long blockOffset, int value) {
-        segment.set(ValueLayout.JAVA_INT, blockOffset + 8, value);
-    }
-
-    int getCapacity(long blockOffset) {
-        return segment.get(ValueLayout.JAVA_INT, blockOffset + 8);
-    }
-
-    void setStimulusType(long blockOffset, int value) {
-        segment.set(ValueLayout.JAVA_INT, blockOffset + 12, value);
-    }
-
-    int getStimulusType(long blockOffset) {
-        return segment.get(ValueLayout.JAVA_INT, blockOffset + 12);
-    }
-
-    void setNextBlock(long blockOffset, int value) {
-        segment.set(ValueLayout.JAVA_INT, blockOffset + 16, value);
-    }
-
-    int getNextBlock(long blockOffset) {
-        return segment.get(ValueLayout.JAVA_INT, blockOffset + 16);
-    }
+    // --- Meta ---
 
     private void initMeta() {
         setNumBlocks(0);
@@ -199,6 +115,121 @@ public final class TransferSegment {
 
     int getEndOffset() {
         return segment.get(ValueLayout.JAVA_INT, 16);
+    }
+
+    // --- Block ---
+
+    int allocateBlock(int capacity) {
+        int offset = getEndOffset();
+
+        setState(offset, STATE_AVAILABLE);
+        setCount(offset, 0);
+        setCapacity(offset, capacity);
+        setStimulusType(offset, -1);
+        setNextBlock(offset, -1);
+
+        int newEnd = offset + 12 * capacity;
+        setEndOffset(newEnd);
+
+        return offset;
+    }
+
+    boolean changeStateToWriting(long blockOffset) {
+        return ValueLayout.JAVA_INT.varHandle().compareAndSet(segment, blockOffset, STATE_AVAILABLE, STATE_WRITING);
+    }
+
+    boolean changeStateToPublished(long blockOffset) {
+        return ValueLayout.JAVA_INT.varHandle().compareAndSet(segment, blockOffset, STATE_WRITING, STATE_PUBLISHED);
+    }
+
+    boolean changeStateTpReading(long blockOffset) {
+        return ValueLayout.JAVA_INT.varHandle().compareAndSet(segment, blockOffset, STATE_PUBLISHED, STATE_READING);
+    }
+
+    boolean changeStateToAvailable(long blockOffset) {
+        return ValueLayout.JAVA_INT.varHandle().compareAndSet(segment, blockOffset, STATE_READING, STATE_AVAILABLE);
+    }
+
+    void setState(long blockOffset, int value) {
+        segment.set(ValueLayout.JAVA_INT, blockOffset + 0, value);
+    }
+
+    int getStatus(long blockOffset) {
+        return segment.get(ValueLayout.JAVA_INT, blockOffset + 0);
+    }
+
+    void setCount(long blockOffset, int value) {
+        segment.set(ValueLayout.JAVA_INT, blockOffset + 4, value);
+    }
+
+    int getCount(long blockOffset) {
+        return segment.get(ValueLayout.JAVA_INT, blockOffset + 4);
+    }
+
+    void setCapacity(long blockOffset, int value) {
+        segment.set(ValueLayout.JAVA_INT, blockOffset + 8, value);
+    }
+
+    int getCapacity(long blockOffset) {
+        return segment.get(ValueLayout.JAVA_INT, blockOffset + 8);
+    }
+
+    void setStimulusType(long blockOffset, int value) {
+        segment.set(ValueLayout.JAVA_INT, blockOffset + 12, value);
+    }
+
+    int getStimulusType(long blockOffset) {
+        return segment.get(ValueLayout.JAVA_INT, blockOffset + 12);
+    }
+
+    void setNextBlock(long blockOffset, int value) {
+        segment.set(ValueLayout.JAVA_INT, blockOffset + 16, value);
+    }
+
+    int getNextBlock(long blockOffset) {
+        return segment.get(ValueLayout.JAVA_INT, blockOffset + 16);
+    }
+
+    // --- Entry ---
+
+    void setEntry(int blockOffset, int position, int targetId, int targetType, float value) {
+        int capacity = getCapacity(blockOffset);
+
+        if (position < capacity) {
+            setTargetId(blockOffset, position, targetId);
+            setTargetType(blockOffset, position, targetType);
+            setValue(blockOffset, position, value);
+        }
+    }
+
+    void setTargetId(int blockOffset, int position, int value) {
+        int startEntryOffset = blockOffset + HEADER_SIZE + position * ENTRY_SIZE;
+        segment.set(ValueLayout.JAVA_INT, startEntryOffset + 0, value);
+    }
+
+    int getTargetId(int blockOffset, int position) {
+        int startEntryOffset = blockOffset + HEADER_SIZE + position * ENTRY_SIZE;
+        return segment.get(ValueLayout.JAVA_INT, startEntryOffset + 0);
+    }
+
+    void setTargetType(int blockOffset, int position, int value) {
+        int startEntryOffset = blockOffset + HEADER_SIZE + position * ENTRY_SIZE;
+        segment.set(ValueLayout.JAVA_INT, startEntryOffset + 4, value);
+    }
+
+    int getTargetType(int blockOffset, int position) {
+        int startEntryOffset = blockOffset + HEADER_SIZE + position * ENTRY_SIZE;
+        return segment.get(ValueLayout.JAVA_INT, startEntryOffset + 4);
+    }
+
+    void setValue(int blockOffset, int position, float value) {
+        int startEntryOffset = blockOffset + HEADER_SIZE + position * ENTRY_SIZE;
+        segment.set(ValueLayout.JAVA_FLOAT, startEntryOffset + 8, value);
+    }
+
+    float getValue(int blockOffset, int position) {
+        int startEntryOffset = blockOffset + HEADER_SIZE + position * ENTRY_SIZE;
+        return segment.get(ValueLayout.JAVA_FLOAT, startEntryOffset + 8);
     }
 
     public void close() {

@@ -6,6 +6,10 @@
 package com.uwe_hennig.snn.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -22,7 +26,7 @@ public class TransferSegmentTest {
 
     @Test
     @DisplayName("TransferSegment Data Test")
-    public void dataTest() {
+    public void testdata() {
         TransferSegment ts = new TransferSegment(2048);
 
         // --- meta test
@@ -55,7 +59,7 @@ public class TransferSegmentTest {
         ts.setStimulusType(blockOffset, 4);
         ts.setNextBlock(blockOffset, 5);
 
-        value = ts.getState(blockOffset);
+        value = ts.getStatus(blockOffset);
         assertEquals(1, value, "invalid state");
 
         value = ts.getCount(blockOffset);
@@ -93,6 +97,92 @@ public class TransferSegmentTest {
         assertEquals(11f, fValue, "invalid value at 1");
 
         ts.close();
+    }
+
+    @Test
+    @DisplayName("TransferSegment Data Test")
+    public void testStatus() {
+        TransferSegment ts = new TransferSegment(2048);
+        int blockOffset = ts.allocateBlock(1);
+
+        boolean value = ts.changeStateToWriting(blockOffset);
+        assertTrue(value, "invalid status writing");
+
+        value = ts.changeStateToPublished(blockOffset);
+        assertTrue(value, "invalid status published");
+
+        value = ts.changeStateTpReading(blockOffset);
+        assertTrue(value, "invalid status reading");
+
+        value = ts.changeStateToAvailable(blockOffset);
+        assertTrue(value, "invalid status available");
+
+        value = ts.changeStateToPublished(blockOffset);
+        assertFalse(value, "invalid status published");
+
+        value = ts.changeStateTpReading(blockOffset);
+        assertFalse(value, "invalid status reading");
+
+        value = ts.changeStateToAvailable(blockOffset);
+        assertFalse(value, "invalid status available");
+
+        ts.close();
+    }
+
+    @Test
+    @DisplayName("TransferSegment Performance Test")
+    public void testPerformance() {
+        ThreadLocalRandom rand = ThreadLocalRandom.current();
+        TransferSegment ts = new TransferSegment(2048 * 2048);
+        int block = ts.allocateBlock(100);
+
+        long operations = 0L;
+        int trgId = 0;
+        int trgType = 0;
+        float value =0F;
+
+        long start = System.nanoTime();
+        for (int i = 0; i < 10_000_000; i++) {
+            int pos = rand.nextInt(100);
+            ts.setEntry(block, pos, trgId++, trgType, value+=i);
+            operations++;
+        }
+        long end = System.nanoTime();
+        printPerformance("Writing Entries", operations, end-start);
+
+        ts.close();
+    }
+
+    void printPerformance(String info, long operations, long deltaT) {
+        double nsPerOp = (double) deltaT / operations;
+        double opsPerSec = 1_000_000_000.0 / nsPerOp;
+        System.out.println();
+        System.out.println(info);
+        System.out.println("----------------------------------------");
+        System.out.printf("Operations     : %,10d.00 ops%n", operations);
+        System.out.printf("Throughput     : %,13.2f ops/s%n", opsPerSec);
+        System.out.printf("Latency        : %,13.2f ns/op%n", nsPerOp);
+    }
+
+    public final class Blackhole {
+        private static long         liveness;
+        public static volatile long SINK;
+
+        public static void consume(Object obj) {
+            if (obj != null) {
+                liveness += System.identityHashCode(obj);
+            }
+        }
+
+        public static void end() {
+            SINK = liveness;
+
+            if (SINK == System.nanoTime()) {
+                System.out.print("This will almost never happen" + SINK);
+            }
+
+            liveness = 0L;
+        }
     }
 
     @BeforeEach
