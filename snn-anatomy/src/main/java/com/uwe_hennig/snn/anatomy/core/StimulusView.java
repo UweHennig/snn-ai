@@ -74,32 +74,6 @@ public class StimulusView {
         return -1;
     }
 
-    public boolean updateStimulus(int index, int eventType, float value, int targetRef) {
-        long now = System.nanoTime(); // TODO check
-        if (model.getExpiry(index) >= now) {
-            if (model.tryWriteLock(index)) {
-                try {
-                    if (model.getExpiry(index) >= now) {
-                        if (Math.abs(value) < 0.001) {
-                            model.setExpiry(index, now - TTL_NANO);
-                            return false;
-                        }
-
-                        model.setStimulusType(index, eventType);
-                        model.setTargetRef(index, targetRef);
-                        model.setValue(index, value);
-
-                        return true;
-                    }
-                } finally {
-                    model.writeUnlock(index);
-                }
-            }
-        }
-
-        return false;
-    }
-
     public void invalidate(int index) {
         try {
             long now = System.nanoTime(); // TODO check
