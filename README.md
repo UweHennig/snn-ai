@@ -2,6 +2,8 @@
 
 With this development, I would like to show that it is possible to develop an asynchronous, recurrent, artificial intelligence SNN with Java. <br>The reinforcement learning agent connects the autonomously operating neural network with the asynchronously running environment.
 
+Link to the detailed documentation: [content](./docs/content.md) 
+
 ## **Core Architectural Principles**
 
 ### Neuronal Representation
