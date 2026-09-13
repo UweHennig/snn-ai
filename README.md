@@ -104,7 +104,7 @@ Link to the detailed documentation: [content](./docs/content.md)
 ---
 
 #### Project status
-28.8.2026 : In progress with new design
-13.6.2026 : In progress
-<br>30.5.2026 : Project created
+- 28.8.2026 : In progress with new design
+- 13.6.2026 : In progress
+- 30.5.2026 : Project created
 
