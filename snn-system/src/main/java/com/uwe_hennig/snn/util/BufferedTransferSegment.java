@@ -58,19 +58,19 @@ import java.nio.Buffer;
 ///
 /// @author Uwe Hennig
 public final class BufferedTransferSegment {
-    public static final float EMTPY_VALUE = Float.MIN_VALUE;
+    static final float EMTPY_VALUE = Float.MIN_VALUE;
 
-    private static final int META_SIZE  = 20;
-    private static final int BLOCK_SIZE = 12;
-    private static final int ENTRY_SIZE = 48;
+    static final int META_SIZE  = 20;
+    static final int BLOCK_SIZE = 12;
+    static final int ENTRY_SIZE = 48;
 
-    public static final int STATE_OUTPUT_MASK  = 0b0001;
-    public static final int STATE_WAITING_MASK = 0b0010;
-    public static final int STATE_INPUT_MASK   = 0b0100;
-    public static final int STATE_LOCKED       = 0b1000;
+    static final int STATE_OUTPUT_MASK  = 0b0001;
+    static final int STATE_WAITING_MASK = 0b0010;
+    static final int STATE_INPUT_MASK   = 0b0100;
+    static final int STATE_LOCKED       = 0b1000;
 
-    private Arena         arena;
-    private MemorySegment segment;
+    final Arena         arena;
+    final MemorySegment segment;
 
     public BufferedTransferSegment(int size) {
         this.arena = Arena.ofShared();
@@ -133,7 +133,7 @@ public final class BufferedTransferSegment {
 
     int allocateBlock(int entries, int srcId, int srcType) {
         int endBlock = getEndOffset();
-        setEndOffset(endBlock + entries * ENTRY_SIZE);
+        setEndOffset(endBlock + BLOCK_SIZE + entries * ENTRY_SIZE);
         int numBlocks = getNumBlocks();
         setNumBlocks(numBlocks + 1);
 
@@ -168,6 +168,12 @@ public final class BufferedTransferSegment {
         return segment.get(ValueLayout.JAVA_INT, blockOffset + 8);
     }
 
+    void close() {
+        if (arena != null) {
+            arena.close();
+        }
+    }
+
     // --- Meta ---
 
     private void initMeta() {
@@ -196,6 +202,10 @@ public final class BufferedTransferSegment {
 
     void setBlockSize(int value) {
         segment.set(ValueLayout.JAVA_INT, 8L, value);
+    }
+
+    int getBlockSize() {
+        return segment.get(ValueLayout.JAVA_INT, 8L);
     }
 
     int getHeaderSize() {
