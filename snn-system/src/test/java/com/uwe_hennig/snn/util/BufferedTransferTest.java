@@ -9,6 +9,8 @@ import static com.uwe_hennig.snn.util.BufferedTransferSegment.ENTRY_SIZE;
 import static com.uwe_hennig.snn.util.BufferedTransferSegment.META_SIZE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -114,6 +116,44 @@ public class BufferedTransferTest {
         ts.close();
     }
 
+    @Test
+    @DisplayName("BufferedTransfer simple entry rotation test")
+    public void testPerformance() {
+        ThreadLocalRandom rand = ThreadLocalRandom.current();
+
+        final int entries = 100;
+        final int srcId = 10;
+        final int srcType = 20;
+
+        BufferedTransferSegment ts = new BufferedTransferSegment(1048576);
+        int blockOffset = ts.allocateBlock(entries, srcId, srcType);
+        assertEquals(EMTPY_VALUE, ts.pollFbTime(blockOffset, 0));
+        int entry = 0;
+        int method = 0;
+
+        long operations = 0L;
+        long start = System.nanoTime();
+        for (int i = 0; i < 10_000_000; i++) {
+            entry = rand.nextInt(entries);
+            method = rand.nextInt(3);
+            switch(method) {
+                case 0: ts.offerSimulus(blockOffset, entry, rand.nextFloat(1f, 100f));break;
+                case 1: ts.offerFbTime(blockOffset, entry, rand.nextFloat(1f, 100f));break;
+                case 2: ts.offerFbValue(blockOffset, entry, rand.nextFloat(1f, 100f));break;
+            }
+            method = rand.nextInt(3);
+            switch(method) {
+                case 0: Blackhole.consume(ts.pollStimulus(blockOffset, entry));break;
+                case 1: Blackhole.consume(ts.pollFbTime(blockOffset, entry));break;
+                case 2: Blackhole.consume(ts.pollFbValue(blockOffset, entry));break;
+            }
+            operations+=2;
+        }
+        long end = System.nanoTime();
+        printPerformance("Read/write entries", operations, end - start);
+        ts.close();
+    }
+
     public final class Blackhole {
         private static long         liveness;
         public static volatile long SINK;
@@ -133,6 +173,17 @@ public class BufferedTransferTest {
 
             liveness = 0L;
         }
+    }
+
+    void printPerformance(String info, long operations, long deltaT) {
+        double nsPerOp = (double) deltaT / operations;
+        double opsPerSec = 1_000_000_000.0 / nsPerOp;
+        System.out.println();
+        System.out.println(info);
+        System.out.println("----------------------------------------");
+        System.out.printf("Operations     : %,10d.00 ops%n", operations);
+        System.out.printf("Throughput     : %,13.2f ops/s%n", opsPerSec);
+        System.out.printf("Latency        : %,13.2f ns/op%n", nsPerOp);
     }
 
     @BeforeEach

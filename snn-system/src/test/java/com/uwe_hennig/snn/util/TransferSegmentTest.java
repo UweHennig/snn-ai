@@ -18,8 +18,7 @@ import org.junit.jupiter.api.TestInfo;
 
 /**
  * TransferSegmentTest
- * @formatter:off
- * @formatter:on
+ *
  * @author Uwe Hennig
  */
 public class TransferSegmentTest {
@@ -139,16 +138,16 @@ public class TransferSegmentTest {
         long operations = 0L;
         int trgId = 0;
         int trgType = 0;
-        float value =0F;
+        float value = 0F;
 
         long start = System.nanoTime();
         for (int i = 0; i < 10_000_000; i++) {
             int pos = rand.nextInt(100);
-            ts.setEntry(block, pos, trgId++, trgType, value+=i);
+            ts.setEntry(block, pos, trgId++, trgType, value += i);
             operations++;
         }
         long end = System.nanoTime();
-        printPerformance("Writing Entries", operations, end-start);
+        printPerformance("Writing Entries", operations, end - start);
 
         ts.close();
     }
