@@ -18,7 +18,7 @@ import org.junit.jupiter.api.TestInfo;
 
 /**
  * TransferSegmentTest
- *
+ * 
  * @author Uwe Hennig
  */
 public class TransferSegmentTest {

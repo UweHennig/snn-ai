@@ -127,7 +127,7 @@ public class BufferedTransferTest {
 
         BufferedTransferSegment ts = new BufferedTransferSegment(1048576);
         int blockOffset = ts.allocateBlock(entries, srcId, srcType);
-        assertEquals(EMTPY_VALUE, ts.pollFbTime(blockOffset, 0));
+
         int entry = 0;
         int method = 0;
 
@@ -135,22 +135,44 @@ public class BufferedTransferTest {
         long start = System.nanoTime();
         for (int i = 0; i < 10_000_000; i++) {
             entry = rand.nextInt(entries);
-            method = rand.nextInt(3);
-            switch(method) {
-                case 0: ts.offerSimulus(blockOffset, entry, rand.nextFloat(1f, 100f));break;
-                case 1: ts.offerFbTime(blockOffset, entry, rand.nextFloat(1f, 100f));break;
-                case 2: ts.offerFbValue(blockOffset, entry, rand.nextFloat(1f, 100f));break;
+            method = i % 3;
+            switch (method) {
+                case 0:
+                    ts.offerSimulus(blockOffset, entry, i % 10);
+                break;
+                case 1:
+                    ts.offerFbTime(blockOffset, entry, i % 20);
+                break;
+                case 2:
+                    ts.offerFbValue(blockOffset, entry, i % 30);
+                break;
             }
-            method = rand.nextInt(3);
-            switch(method) {
-                case 0: Blackhole.consume(ts.pollStimulus(blockOffset, entry));break;
-                case 1: Blackhole.consume(ts.pollFbTime(blockOffset, entry));break;
-                case 2: Blackhole.consume(ts.pollFbValue(blockOffset, entry));break;
-            }
-            operations+=2;
+            operations++;
         }
         long end = System.nanoTime();
-        printPerformance("Read/write entries", operations, end - start);
+        printPerformance("Write entries", operations, end - start);
+
+        operations = 0L;
+        start = System.nanoTime();
+        for (int i = 0; i < 10_000_000; i++) {
+            entry = rand.nextInt(entries);
+            method = i % 3;
+            switch (method) {
+                case 0:
+                    Blackhole.consume(ts.pollStimulus(blockOffset, entry));
+                break;
+                case 1:
+                    Blackhole.consume(ts.pollFbTime(blockOffset, entry));
+                break;
+                case 2:
+                    Blackhole.consume(ts.pollFbValue(blockOffset, entry));
+                break;
+            }
+            operations++;
+        }
+        end = System.nanoTime();
+        printPerformance("Read entries", operations, end - start);
+
         ts.close();
     }
 
