@@ -5,8 +5,8 @@
  */
 package com.uwe_hennig.snn.peripheral.agent;
 
-import com.uwe_hennig.snn.anatomy.allocator.ReceptorModelManager;
 import com.uwe_hennig.snn.anatomy.peripheral.ReceptorView;
+import com.uwe_hennig.snn.contracts.core.StimulusType;
 import com.uwe_hennig.snn.contracts.peripheral.SnnReceptor;
 import com.uwe_hennig.snn.contracts.peripheral.TemporalFilter;
 
@@ -16,11 +16,13 @@ import com.uwe_hennig.snn.contracts.peripheral.TemporalFilter;
  * @author Uwe Hennig
  */
 public final class SnnReceptorImpl implements SnnReceptor {
-    private final int      identifier;
-    private TemporalFilter temporalFilter; // TODO implementation required
+    private final int          identifier;
+    private final ReceptorView view;
+    private TemporalFilter     temporalFilter; // TODO implementation required
 
-    private SnnReceptorImpl(int identifier) {
+    private SnnReceptorImpl(int identifier, ReceptorView view) {
         this.identifier = identifier;
+        this.view = view;
     }
 
     public void setTemporalFilter(TemporalFilter filter) {
@@ -28,22 +30,18 @@ public final class SnnReceptorImpl implements SnnReceptor {
     }
 
     @Override
-    public void perceive(float[][] value) {
-        // TODO
-        ReceptorView view = ReceptorModelManager.instance().getRecptorView(identifier);
-        int rows = view.getNumRows();
-        int cols = view.getNumColumns();
-
-        for (int r = 0; r < rows; r++) {
-            for (int c = 0; c < cols; c++) {
-                // TODO
-                //view.setValue(r, c, value[r][c]);
-            }
+    public void perceive(StimulusType stimulusType, float[][] values) {
+        switch (stimulusType) {
+            case STIMULUS:
+                view.transferStimulus(values);
+            break;
+            case TIME_FEEDBACK:
+                view.transferFbTime(values);
+            break;
+            case VALUE_FEEDBACK:
+                view.transferFbValue(values);
+            break;
         }
-
-        // TODO view.publishBlock(tapeId);
-        // TODO Event
-        // new Event(RECEPTOR, tapeId, ??);
     }
 
     public int getIdentifier() {

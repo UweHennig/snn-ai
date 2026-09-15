@@ -6,7 +6,6 @@ package com.uwe_hennig.snn.util;
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.ValueLayout;
-import java.nio.Buffer;
 
 /// BufferedTransferSegment
 /// ````
@@ -99,7 +98,7 @@ public final class BufferedTransferSegment {
         return segment.get(ValueLayout.JAVA_INT, offset);
     }
 
-    boolean offerSimulus(int blockOffset, int entry, float value) {
+    public boolean offerStimulus(int blockOffset, int entry, float value) {
         int offset = blockOffset + entry * ENTRY_SIZE + 8;
         return BufferedTransferHelper.offer(segment, offset, value);
     }
@@ -109,7 +108,7 @@ public final class BufferedTransferSegment {
         return BufferedTransferHelper.poll(segment, offset);
     }
 
-    boolean offerFbTime(int blockOffset, int entry, float value) {
+    public boolean offerFbTime(int blockOffset, int entry, float value) {
         int offset = blockOffset + entry * ENTRY_SIZE + 24;
         return BufferedTransferHelper.offer(segment, offset, value);
     }
@@ -119,7 +118,7 @@ public final class BufferedTransferSegment {
         return BufferedTransferHelper.poll(segment, offset);
     }
 
-    boolean offerFbValue(int blockOffset, int entry, float value) {
+    public boolean offerFbValue(int blockOffset, int entry, float value) {
         int offset = blockOffset + entry * ENTRY_SIZE + 40;
         return BufferedTransferHelper.offer(segment, offset, value);
     }
@@ -131,7 +130,8 @@ public final class BufferedTransferSegment {
 
     // --- Block ---
 
-    int allocateBlock(int entries, int srcId, int srcType) {
+    // returns the offset, which ist an index of receptor view
+    public int allocateBlock(int entries, int srcId, int srcType) {
         int endBlock = getEndOffset();
         setEndOffset(endBlock + BLOCK_SIZE + entries * ENTRY_SIZE);
         int numBlocks = getNumBlocks();
@@ -142,6 +142,10 @@ public final class BufferedTransferSegment {
         setSrcType(endBlock, srcType);
 
         return endBlock;
+    }
+
+    public int getEntries(int blockOffset) {
+        return segment.get(ValueLayout.JAVA_INT, blockOffset + 8);
     }
 
     void setSrcType(int blockOffset, int value) {
@@ -162,10 +166,6 @@ public final class BufferedTransferSegment {
 
     void setEntries(int blockOffset, int value) {
         segment.set(ValueLayout.JAVA_INT, blockOffset + 8, value);
-    }
-
-    int getEntries(int blockOffset) {
-        return segment.get(ValueLayout.JAVA_INT, blockOffset + 8);
     }
 
     void close() {

@@ -19,7 +19,7 @@ import com.uwe_hennig.snn.services.NeuronElementRegistry;
 
 /**
  * Soma
- *
+ * TODO Refractory period
  * @author Uwe Hennig
  */
 public final class Soma extends ViewIdentity implements NeuronElement {

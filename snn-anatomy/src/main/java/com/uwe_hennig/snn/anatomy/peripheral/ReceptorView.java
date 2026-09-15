@@ -5,8 +5,8 @@
  */
 package com.uwe_hennig.snn.anatomy.peripheral;
 
+import com.uwe_hennig.snn.util.BufferedTransferSegment;
 import com.uwe_hennig.snn.util.MatrixModel;
-import com.uwe_hennig.snn.util.TapeModel;
 
 /**
  * ReceptorView
@@ -14,71 +14,81 @@ import com.uwe_hennig.snn.util.TapeModel;
  * @author Uwe Hennig
  */
 public final class ReceptorView {
-    private static final int STATE_FREE    = 0;
-    private static final int STATE_WRITING = 1;
-    private static final int STATE_WAITING = 2;
-    private static final int STATE_READING = 3;
+    private final BufferedTransferSegment model;
+    private final int                     index;
+    private final int                     entries;
 
-    private static final int CELL_TARGET_ID_POS   = 0;
-    private static final int CELL_TARGET_TYPE_POS = 1;
-    private static final int HEAD_INTAKE_POS      = 0;
+    @FunctionalInterface
+    public interface TransferAction {
+        void offer(int index, int entry, float value);
+    }
 
-    private final MatrixModel model;
-    private final int         index;
-
-    public ReceptorView(MatrixModel model, int index) {
+    public ReceptorView(BufferedTransferSegment model, int index) {
         this.model = model;
         this.index = index;
+        this.entries = model.getEntries(index);
     }
 
-    // --- Matrix cell operations ---
-    public int getTargetId(int row, int col) {
-        return model.getCellInt(index, row, col, CELL_TARGET_ID_POS);
+    public int getIndex() {
+        return index;
     }
 
-    public void setTargetId(int row, int col, int id) {
-        model.setCellInt(index, row, col, CELL_TARGET_ID_POS, id);
+    public void transferStimulus(float[][] values) {
+        transfer(values, model::offerStimulus);
     }
 
-    public int getTargetType(int row, int col) {
-        return model.getCellInt(index, row, col, CELL_TARGET_TYPE_POS);
+    public void transferFbValue(float[][] values) {
+        transfer(values, model::offerFbValue);
     }
 
-    public void setTargetType(int row, int col, int type) {
-        model.setCellInt(index, row, col, CELL_TARGET_TYPE_POS, type);
+    public void transferFbTime(float[][] values) {
+        transfer(values, model::offerFbTime);
     }
 
-    // --- Header data ---
-    public void setIntakeDistance(float value) {
-        model.setHeaderFloat(index, HEAD_INTAKE_POS, value);
+    public void transferStimulus(float value) {
+        model.offerStimulus(index, 0, value);
     }
 
-    public float getIntakeDistance() {
-        return model.getHeaderFloat(index, HEAD_INTAKE_POS);
+    public void transferFbTime(float value) {
+        model.offerFbTime(index, 0, value);
     }
 
-    // --- Meta data ---
-    public int getCapacity() {
-        return model.getCapacity();
+    public void transferFbValue(float value) {
+        model.offerFbValue(index, 0, value);
     }
 
-    public int getNumHeaders() {
-        return model.getNumHeaders(index);
+    public void transferStimulus(float [] values) {
+        transfer(values, model::offerStimulus);
     }
 
-    public int getNumRows() {
-        return model.getNumRows(index);
+    public void transferFbTime(float [] values) {
+        transfer(values, model::offerFbTime);
     }
 
-    public int getNumColumns() {
-        return model.getNumColumns(index);
+    public void transferFbValue(float [] values) {
+        transfer(values, model::offerFbValue);
     }
 
-    public int getNumSlotsPerCell() {
-        return model.getNumSlotsPerCell(index);
+    private void transfer(float[][] values, TransferAction action) {
+        int entry = 0;
+        for (int r = 0; r < values.length; r++) {
+            float[] row = values[r];
+            for (int c = 0; c < row.length; c++) {
+                if (entry >= entries) {
+                    return;
+                }
+                action.offer(index, entry++, row[c]);
+            }
+        }
     }
 
-    public MatrixModel getModel() {
-        return model;
+    private void transfer(float[] values, TransferAction action) {
+        int entry = 0;
+        for (int c = 0; c < values.length; c++) {
+            if (entry >= entries) {
+                return;
+            }
+            action.offer(index, entry++, values[c]);
+        }
     }
 }

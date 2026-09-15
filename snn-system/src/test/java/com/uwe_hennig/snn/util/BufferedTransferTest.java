@@ -138,7 +138,7 @@ public class BufferedTransferTest {
             method = i % 3;
             switch (method) {
                 case 0:
-                    ts.offerSimulus(blockOffset, entry, i % 10);
+                    ts.offerStimulus(blockOffset, entry, i % 10);
                 break;
                 case 1:
                     ts.offerFbTime(blockOffset, entry, i % 20);
