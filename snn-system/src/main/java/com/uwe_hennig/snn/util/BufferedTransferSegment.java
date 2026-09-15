@@ -58,7 +58,7 @@ import java.nio.Buffer;
 ///
 /// @author Uwe Hennig
 public final class BufferedTransferSegment {
-    static final float EMTPY_VALUE = Float.MIN_VALUE;
+    static final float EMTPY_VALUE = Float.NaN;
 
     static final int META_SIZE  = 20;
     static final int BLOCK_SIZE = 12;

@@ -180,10 +180,8 @@ public class BufferedTransferTest {
         private static long         liveness;
         public static volatile long SINK;
 
-        public static void consume(Object obj) {
-            if (obj != null) {
-                liveness += System.identityHashCode(obj);
-            }
+        public static void consume(float f) {
+            liveness += Float.floatToRawIntBits(f);
         }
 
         public static void end() {
