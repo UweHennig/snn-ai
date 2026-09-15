@@ -41,7 +41,7 @@ public final class BufferedTransferHelper {
             // New state retains the head, updates the count and tail
             newState = (nextCount << 4) | (head << 2) | nextTail;
 
-        } while (!INT_HANDLE.compareAndSet(segment, queueOffset, oldState, newState) && retryCount >=0);
+        } while (!INT_HANDLE.compareAndSet(segment, queueOffset, oldState, newState) && retryCount-- >=0);
 
         if (retryCount >=0) {
             segment.set(ValueLayout.JAVA_FLOAT, queueOffset + tail * 4 + 4, value);
@@ -60,18 +60,18 @@ public final class BufferedTransferHelper {
             oldState = (int) INT_HANDLE.getVolatile(segment, queueOffset);
             count = (oldState >> 4) & 0x03;
             if (count == 0) {
-                return EMPTY; // Puffer ist leer
+                return EMPTY;
             }
 
             head = (oldState >> 2) & 0x03;
             tail = oldState & 0x03;
 
-            // Head rotieren
+            // Rotate the head
             nextHead = (head == 2) ? 0 : head + 1;
             nextCount = count - 1;
 
             newState = (nextCount << 4) | (nextHead << 2) | tail;
-        } while (!INT_HANDLE.compareAndSet(segment, queueOffset, oldState, newState) && retryCount >= 0);
+        } while (!INT_HANDLE.compareAndSet(segment, queueOffset, oldState, newState) && retryCount-- >= 0);
 
         if (retryCount >=0) {
             return segment.get(ValueLayout.JAVA_FLOAT, queueOffset + head * 4 + 4);
