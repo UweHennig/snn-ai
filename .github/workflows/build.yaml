@@ -18,8 +18,9 @@ jobs:
       - name: Set up Java
         uses: actions/setup-java@v5
         with:
-          distribution: temurin
+          distribution: oracle-openjdk
           java-version: 27
+          cache: maven
 
       - name: Cache Maven repository
         uses: actions/cache@v5
