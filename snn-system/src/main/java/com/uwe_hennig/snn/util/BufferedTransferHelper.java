@@ -34,11 +34,11 @@ public final class BufferedTransferHelper {
             head = (oldState >> 2) & 0x03;
             tail = oldState & 0x03;
 
-            // Tail rotieren (z. B. bei max 3 Elementen / Größe 3)
+            // Tail rotate (e.g. with a maximum of 3 elements / size 3)
             nextTail = (tail == 2) ? 0 : tail + 1;
             nextCount = count + 1;
 
-            // Neuer State behält den head, aktualisiert count und tail
+            // New state retains the head, updates the count and tail
             newState = (nextCount << 4) | (head << 2) | nextTail;
 
         } while (!INT_HANDLE.compareAndSet(segment, queueOffset, oldState, newState) && retryCount >=0);
