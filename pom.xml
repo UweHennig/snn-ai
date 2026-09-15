@@ -7,10 +7,10 @@
 	<name>AI Spiking Neuronal Network (SNN) with Java</name>
 	
 	<properties>
+		<java.version>27</java.version>
+		<maven.compiler.target>27</maven.compiler.target>
+		<maven.compiler.source>27</maven.compiler.source>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<java.version>26</java.version>
-		<maven.compiler.target>26</maven.compiler.target>
-		<maven.compiler.source>26</maven.compiler.source>
 		<maven.plugin.validation>DEFAULT</maven.plugin.validation>
 		<snn-version>0.0.1-SNAPSHOT</snn-version>
 		
