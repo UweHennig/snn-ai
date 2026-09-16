@@ -73,6 +73,11 @@
                 <artifactId>snn-analytics</artifactId>
                 <version>${snn-version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.uwe-hennig</groupId>
+                <artifactId>snn-core</artifactId>
+                <version>${snn-version}</version>
+            </dependency>
             <!-- Source: https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupite -->
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
@@ -99,6 +104,7 @@
         <module>snn-graph</module>
         <module>snn-util</module>
         <module>snn-analytics</module>
+        <module>snn-core</module>
 	</modules>
 	
     <build>

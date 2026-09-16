@@ -4,8 +4,11 @@
     <groupId>com.uwe-hennig</groupId>
     <artifactId>snn-ai</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
   </parent>
+  
   <artifactId>snn-util</artifactId>
-  <name>SNN Utility</name>
+    <packaging>jar</packaging>
+  <name>Snn Utility</name>
   <description>A collection of various utility programmes</description>
 </project>

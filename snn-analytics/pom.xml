@@ -7,6 +7,9 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>snn-analytics</artifactId>
+    <packaging>jar</packaging>
+    <name>Snn-Analytics</name>
+  <description>Measurement of Plasticity</description>
   <dependencies>
     <dependency>
         <groupId>com.uwe-hennig</groupId>
