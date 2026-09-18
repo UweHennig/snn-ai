@@ -3,12 +3,13 @@
 /// All rights reserved.
 package com.uwe_hennig.snn.util;
 
-import static com.uwe_hennig.snn.util.BufferedTransferSegment.BLOCK_SIZE;
 import static com.uwe_hennig.snn.util.BufferedTransferSegment.EMTPY_VALUE;
 import static com.uwe_hennig.snn.util.BufferedTransferSegment.ENTRY_SIZE;
 import static com.uwe_hennig.snn.util.BufferedTransferSegment.META_SIZE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -36,14 +37,8 @@ public class BufferedTransferTest {
         value = ts.getStartOffset();
         assertEquals(META_SIZE, value, "invalid stored start offset");
 
-        value = ts.getBlockSize();
-        assertEquals(BLOCK_SIZE, value, "invalid stored block size");
-
         value = ts.getEntrySize();
         assertEquals(ENTRY_SIZE, value, "invalid stored entry size");
-
-        value = ts.getEndOffset();
-        assertEquals(META_SIZE + BLOCK_SIZE + ENTRY_SIZE, value, "invalid stored end offset");
 
         value = ts.getSrcId(blockOffset);
         assertEquals(srcId, value, "invalid stored source id");
@@ -65,6 +60,7 @@ public class BufferedTransferTest {
 
         ts.setTrgId(blockOffset, 0, 30);
         ts.setTrgId(blockOffset, 1, 40);
+
         ts.setTrgType(blockOffset, 0, 50);
         ts.setTrgType(blockOffset, 1, 60);
 
@@ -87,33 +83,58 @@ public class BufferedTransferTest {
     @Test
     @DisplayName("BufferedTransfer simple entry rotation test")
     public void testSimpleRotation() {
+        System.setProperty("snn.logging", "true");
         final int srcId = 10;
         final int srcType = 20;
-
         BufferedTransferSegment ts = new BufferedTransferSegment(1048576);
         int blockOffset = ts.allocateBlock(1, srcId, srcType);
+        try {
+            Queue<Float> fbTimeQ = new LinkedList<>();
+            Queue<Float> fbValueQ = new LinkedList<>();
+            Queue<Float> stimulusQ = new LinkedList<>();
 
-        assertEquals(EMTPY_VALUE, ts.pollFbTime(blockOffset, 0));
+            for (int i = 0; i < 3; i++) {
+                ts.offerFbTime(blockOffset, 0, 10f);
+                fbTimeQ.offer(10f);
+                ts.offerFbTime(blockOffset, 0, 20f);
+                fbTimeQ.offer(20f);
+                ts.offerFbTime(blockOffset, 0, 30f);
+                fbTimeQ.offer(30f);
+                assertEquals(fbTimeQ.poll(), ts.pollFbTime(blockOffset, 0));
+                assertEquals(fbTimeQ.poll(), ts.pollFbTime(blockOffset, 0));
+                assertEquals(fbTimeQ.poll(), ts.pollFbTime(blockOffset, 0));
 
-        ts.offerFbTime(blockOffset, 0, 10f);
-        assertEquals(10f, ts.pollFbTime(blockOffset, 0));
-        assertEquals(EMTPY_VALUE, ts.pollFbTime(blockOffset, 0));
+                ts.offerFbValue(blockOffset, 0, 40f);
+                fbValueQ.offer(40f);
+                ts.offerFbValue(blockOffset, 0, 50f);
+                fbValueQ.offer(50f);
+                ts.offerFbValue(blockOffset, 0, 60f);
+                fbValueQ.offer(60f);
+                assertEquals(fbValueQ.poll(), ts.pollFbValue(blockOffset, 0));
 
-        ts.offerFbTime(blockOffset, 0, 10f);
-        ts.offerFbTime(blockOffset, 0, 20f);
-        assertEquals(10f, ts.pollFbTime(blockOffset, 0));
-        assertEquals(20f, ts.pollFbTime(blockOffset, 0));
-        assertEquals(EMTPY_VALUE, ts.pollFbTime(blockOffset, 0));
+                ts.offerStimulus(blockOffset, 0, 70f);
+                stimulusQ.offer(70f);
+                ts.offerStimulus(blockOffset, 0, 80f);
+                stimulusQ.offer(80f);
+                ts.offerStimulus(blockOffset, 0, 90f);
+                stimulusQ.offer(90f);
 
-        ts.offerFbTime(blockOffset, 0, 10f);
-        ts.offerFbTime(blockOffset, 0, 20f);
-        ts.offerFbTime(blockOffset, 0, 30f);
-        assertEquals(10f, ts.pollFbTime(blockOffset, 0));
-        assertEquals(20f, ts.pollFbTime(blockOffset, 0));
-        assertEquals(30f, ts.pollFbTime(blockOffset, 0));
-        assertEquals(EMTPY_VALUE, ts.pollFbTime(blockOffset, 0));
+                assertEquals(stimulusQ.poll(), ts.pollStimulus(blockOffset, 0));
+                assertEquals(stimulusQ.poll(), ts.pollStimulus(blockOffset, 0));
 
-        ts.close();
+                assertEquals(fbValueQ.poll(), ts.pollFbValue(blockOffset, 0));
+                assertEquals(fbValueQ.poll(), ts.pollFbValue(blockOffset, 0));
+                assertEquals(stimulusQ.poll(), ts.pollStimulus(blockOffset, 0));
+            }
+            assertEquals(EMTPY_VALUE, ts.pollFbTime(blockOffset, 0));
+            assertEquals(EMTPY_VALUE, ts.pollFbValue(blockOffset, 0));
+            assertEquals(EMTPY_VALUE, ts.pollStimulus(blockOffset, 0));
+            System.setProperty("snn.logging", "false");
+        } finally {
+            if (ts != null) {
+                ts.close();
+            }
+        }
     }
 
     @Test

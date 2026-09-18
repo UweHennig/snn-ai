@@ -59,14 +59,12 @@ import java.lang.foreign.ValueLayout;
 public final class BufferedTransferSegment {
     static final float EMTPY_VALUE = Float.NaN;
 
-    static final int META_SIZE  = 20;
-    static final int BLOCK_SIZE = 12;
-    static final int ENTRY_SIZE = 48;
+    static final int META_SIZE         = 20;
+    static final int BLOCK_HEADER_SIZE = 12;
 
-    static final int STATE_OUTPUT_MASK  = 0b0001;
-    static final int STATE_WAITING_MASK = 0b0010;
-    static final int STATE_INPUT_MASK   = 0b0100;
-    static final int STATE_LOCKED       = 0b1000;
+    static final int ENTRY_HEADER_SIZE =  8;
+    static final int QUEUE_SIZE        = 32;
+    static final int ENTRY_SIZE        = ENTRY_HEADER_SIZE + QUEUE_SIZE * 3;
 
     final Arena         arena;
     final MemorySegment segment;
@@ -77,112 +75,7 @@ public final class BufferedTransferSegment {
         initMeta();
     }
 
-    // -- Entries ---
-    void setTrgId(int blockOffset, int entry, int value) {
-        long offset = blockOffset + entry * ENTRY_SIZE;
-        segment.set(ValueLayout.JAVA_INT, offset, value);
-    }
-
-    int getTrgId(int blockOffset, int entry) {
-        long offset = blockOffset + entry * ENTRY_SIZE;
-        return segment.get(ValueLayout.JAVA_INT, offset);
-    }
-
-    void setTrgType(int blockOffset, int entry, int value) {
-        long offset = blockOffset + entry * ENTRY_SIZE + 4;
-        segment.set(ValueLayout.JAVA_INT, offset, value);
-    }
-
-    int getTrgType(int blockOffset, int entry) {
-        long offset = blockOffset + entry * ENTRY_SIZE + 4;
-        return segment.get(ValueLayout.JAVA_INT, offset);
-    }
-
-    public boolean offerStimulus(int blockOffset, int entry, float value) {
-        int offset = blockOffset + entry * ENTRY_SIZE + 8;
-        return BufferedTransferHelper.offer(segment, offset, value);
-    }
-
-    float pollStimulus(int blockOffset, int entry) {
-        int offset = blockOffset + entry * ENTRY_SIZE + 8;
-        return BufferedTransferHelper.poll(segment, offset);
-    }
-
-    public boolean offerFbTime(int blockOffset, int entry, float value) {
-        int offset = blockOffset + entry * ENTRY_SIZE + 24;
-        return BufferedTransferHelper.offer(segment, offset, value);
-    }
-
-    float pollFbTime(int blockOffset, int entry) {
-        int offset = blockOffset + entry * ENTRY_SIZE + 24;
-        return BufferedTransferHelper.poll(segment, offset);
-    }
-
-    public boolean offerFbValue(int blockOffset, int entry, float value) {
-        int offset = blockOffset + entry * ENTRY_SIZE + 40;
-        return BufferedTransferHelper.offer(segment, offset, value);
-    }
-
-    float pollFbValue(int blockOffset, int entry) {
-        int offset = blockOffset + entry * ENTRY_SIZE + 40;
-        return BufferedTransferHelper.poll(segment, offset);
-    }
-
-    // --- Block ---
-
-    // returns the offset, which ist an index of receptor view
-    public int allocateBlock(int entries, int srcId, int srcType) {
-        int endBlock = getEndOffset();
-        setEndOffset(endBlock + BLOCK_SIZE + entries * ENTRY_SIZE);
-        int numBlocks = getNumBlocks();
-        setNumBlocks(numBlocks + 1);
-
-        setEntries(endBlock, entries);
-        setSrcId(endBlock, srcId);
-        setSrcType(endBlock, srcType);
-
-        return endBlock;
-    }
-
-    public int getEntries(int blockOffset) {
-        return segment.get(ValueLayout.JAVA_INT, blockOffset + 8);
-    }
-
-    void setSrcType(int blockOffset, int value) {
-        segment.set(ValueLayout.JAVA_INT, blockOffset, value);
-    }
-
-    int getSrcType(int blockOffset) {
-        return segment.get(ValueLayout.JAVA_INT, blockOffset);
-    }
-
-    void setSrcId(int blockOffset, int value) {
-        segment.set(ValueLayout.JAVA_INT, blockOffset + 4, value);
-    }
-
-    int getSrcId(int blockOffset) {
-        return segment.get(ValueLayout.JAVA_INT, blockOffset + 4);
-    }
-
-    void setEntries(int blockOffset, int value) {
-        segment.set(ValueLayout.JAVA_INT, blockOffset + 8, value);
-    }
-
-    void close() {
-        if (arena != null) {
-            arena.close();
-        }
-    }
-
-    // --- Meta ---
-
-    private void initMeta() {
-        setNumBlocks(0);
-        setStartOffset(META_SIZE);
-        setBlockSize(BLOCK_SIZE);
-        setEntrySize(ENTRY_SIZE);
-        setEndOffset(META_SIZE);
-    }
+    // --- META ---
 
     void setNumBlocks(int value) {
         segment.set(ValueLayout.JAVA_INT, 0L, value);
@@ -200,15 +93,11 @@ public final class BufferedTransferSegment {
         return segment.get(ValueLayout.JAVA_INT, 4L);
     }
 
-    void setBlockSize(int value) {
+    void setBlockHeaderSize(int value) {
         segment.set(ValueLayout.JAVA_INT, 8L, value);
     }
 
-    int getBlockSize() {
-        return segment.get(ValueLayout.JAVA_INT, 8L);
-    }
-
-    int getHeaderSize() {
+    int getBlockHeaderSize() {
         return segment.get(ValueLayout.JAVA_INT, 8L);
     }
 
@@ -227,4 +116,119 @@ public final class BufferedTransferSegment {
     int getEndOffset() {
         return segment.get(ValueLayout.JAVA_INT, 16);
     }
+
+    private void initMeta() {
+        setNumBlocks(0);
+        setStartOffset(META_SIZE);
+        setBlockHeaderSize(BLOCK_HEADER_SIZE);
+        setEntrySize(ENTRY_SIZE);
+        setEndOffset(META_SIZE);
+    }
+
+    // --- Block ---
+
+    // returns the offset, which ist an index of receptor view
+    public int allocateBlock(int entries, int srcId, int srcType) {
+        int endBlock = getEndOffset();
+        setEndOffset(endBlock + BLOCK_HEADER_SIZE + entries * ENTRY_SIZE);
+        int numBlocks = getNumBlocks();
+        setNumBlocks(numBlocks + 1);
+
+        setSrcId(endBlock, srcId);
+        setSrcType(endBlock, srcType);
+        setEntries(endBlock, entries);
+
+        return endBlock;
+    }
+
+
+    void setSrcId(int blockOffset, int value) {
+        segment.set(ValueLayout.JAVA_INT, blockOffset + 4, value);
+    }
+
+    int getSrcId(int blockOffset) {
+        return segment.get(ValueLayout.JAVA_INT, blockOffset + 4);
+    }
+
+    void setSrcType(int blockOffset, int value) {
+        segment.set(ValueLayout.JAVA_INT, blockOffset + 8, value);
+    }
+
+    int getSrcType(int blockOffset) {
+        return segment.get(ValueLayout.JAVA_INT, blockOffset + 8);
+    }
+
+    void setEntries(int blockOffset, int value) {
+        segment.set(ValueLayout.JAVA_INT, blockOffset + 12, value);
+    }
+
+    public int getEntries(int blockOffset) {
+        return segment.get(ValueLayout.JAVA_INT, blockOffset + 12);
+    }
+
+    // --- Enty Header ---
+
+
+    void setTrgId(int blockOffset, int entry, int value) {
+        int offset = blockOffset + BLOCK_HEADER_SIZE + entry * ENTRY_SIZE;
+        segment.set(ValueLayout.JAVA_INT, offset, value);
+    }
+
+    int getTrgId(int blockOffset, int entry) {
+        int offset = blockOffset + BLOCK_HEADER_SIZE + entry * ENTRY_SIZE;
+        return segment.get(ValueLayout.JAVA_INT, offset);
+    }
+
+    void setTrgType(int blockOffset, int entry, int value) {
+        int offset = blockOffset + BLOCK_HEADER_SIZE + entry * ENTRY_SIZE + 4;
+        segment.set(ValueLayout.JAVA_INT, offset, value);
+    }
+
+    int getTrgType(int blockOffset, int entry) {
+        int offset = blockOffset + BLOCK_HEADER_SIZE + entry * ENTRY_SIZE + 4;
+        return segment.get(ValueLayout.JAVA_INT, offset);
+    }
+
+    // --- Queues ---
+
+    public boolean offerStimulus(int blockOffset, int entry, float value) {
+        int queueOffset = blockOffset + BLOCK_HEADER_SIZE + ENTRY_HEADER_SIZE + entry * ENTRY_SIZE;
+        return BufferedTransferHelper.offer(segment, queueOffset, value);
+    }
+
+    float pollStimulus(int blockOffset, int entry) {
+        int queueOffset = blockOffset + BLOCK_HEADER_SIZE + ENTRY_HEADER_SIZE+ entry * ENTRY_SIZE;
+        return BufferedTransferHelper.poll(segment, queueOffset);
+    }
+
+    public boolean offerFbTime(int blockOffset, int entry, float value) {
+        int queueOffset = blockOffset + BLOCK_HEADER_SIZE + ENTRY_HEADER_SIZE + QUEUE_SIZE + entry * ENTRY_SIZE;
+        return BufferedTransferHelper.offer(segment, queueOffset, value);
+    }
+
+    float pollFbTime(int blockOffset, int entry) {
+        int queueOffset = blockOffset + BLOCK_HEADER_SIZE + ENTRY_HEADER_SIZE + QUEUE_SIZE + entry * ENTRY_SIZE;
+        return BufferedTransferHelper.poll(segment, queueOffset);
+    }
+
+    public boolean offerFbValue(int blockOffset, int entry, float value) {
+        int queueOffset = blockOffset + BLOCK_HEADER_SIZE + ENTRY_HEADER_SIZE + 2 * QUEUE_SIZE + entry * ENTRY_SIZE;
+        return BufferedTransferHelper.offer(segment, queueOffset, value);
+    }
+
+    float pollFbValue(int blockOffset, int entry) {
+        int queueOffset = blockOffset + BLOCK_HEADER_SIZE + ENTRY_HEADER_SIZE + 2 * QUEUE_SIZE + entry * ENTRY_SIZE;
+        return BufferedTransferHelper.poll(segment, queueOffset);
+    }
+
+    void close() {
+        if (arena != null) {
+            arena.close();
+        }
+    }
+
+
+
+
+
 }
