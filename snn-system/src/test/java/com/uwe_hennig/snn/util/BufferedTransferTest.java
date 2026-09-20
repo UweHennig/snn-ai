@@ -100,12 +100,9 @@ public class BufferedTransferTest {
             Queue<Float> stimulusQ = new LinkedList<>();
 
             for (int i = 0; i < 3; i++) {
-                ts.offerFbTime(blockOffset, 0, 10f);
-                fbTimeQ.offer(10f);
-                ts.offerFbTime(blockOffset, 0, 20f);
-                fbTimeQ.offer(20f);
-                ts.offerFbTime(blockOffset, 0, 30f);
-                fbTimeQ.offer(30f);
+                ts.offerFbTime(blockOffset, 0, 10f); fbTimeQ.offer(10f);
+                ts.offerFbTime(blockOffset, 0, 20f); fbTimeQ.offer(20f);
+                ts.offerFbTime(blockOffset, 0, 30f); fbTimeQ.offer(30f);
                 assertEquals(fbTimeQ.poll(), ts.pollFbTime(blockOffset, 0));
                 assertEquals(fbTimeQ.poll(), ts.pollFbTime(blockOffset, 0));
                 assertEquals(fbTimeQ.poll(), ts.pollFbTime(blockOffset, 0));
@@ -287,8 +284,8 @@ public class BufferedTransferTest {
             System.out.printf("Drop Misses: %,11d (%,3.2f%%)%n", totalDropMiss, 100f * totalDropMiss / totalOps);
             System.out.printf("Read Misses: %,11d (%,3.2f%%)%n", totalReadMiss, 100f * totalReadMiss / totalOps);
 
-            System.out.printf("Throughput : %,14.2f ops/sec%n", avgOpsPerSec);
-            System.out.printf("Latency    : %,14.2f ns/op%n", 1_000_000_000f / avgOpsPerSec);
+            System.out.printf("Throughput : %,14.2f ops/sec%n", avgOpsPerSec / 2f);
+            System.out.printf("Latency    : %,14.2f ns/op%n", (1_000_000_000f / avgOpsPerSec) / 2f);
 
         } catch (InterruptedException e) {
             e.printStackTrace();
