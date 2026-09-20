@@ -7,10 +7,16 @@ import static com.uwe_hennig.snn.util.BufferedTransferSegment.EMTPY_VALUE;
 import static com.uwe_hennig.snn.util.BufferedTransferSegment.ENTRY_SIZE;
 import static com.uwe_hennig.snn.util.BufferedTransferSegment.META_SIZE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -197,12 +203,112 @@ public class BufferedTransferTest {
         ts.close();
     }
 
+    @Test
+    @DisplayName("BufferedTransfer Async Worst-Case Random Scatter-Shot")
+    public void testAsync() {
+        System.setProperty("snn.logging", "true");
+        final int numThreads = 2;
+        final int entries = 50;
+        final int blocks = 5;
+        final int duration = 10;
+
+        BufferedTransferSegment model = new BufferedTransferSegment(1024*1024);
+        int[] blockArray = new int[blocks];
+
+        for (int i = 0; i < blocks; i++) {
+            blockArray[i] = model.allocateBlock(entries, i, i);
+        }
+
+        AtomicBoolean running = new AtomicBoolean(true);
+        AtomicLong writeOp = new AtomicLong();
+        AtomicLong readOp = new AtomicLong();
+        AtomicLong readMiss= new AtomicLong();
+        AtomicLong dropMiss= new AtomicLong();
+
+        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+        //ExecutorService executor = Executors.newFixedThreadPool(2);
+
+        for (int i = 0; i < numThreads; i++) {
+            executor.submit(() -> {
+                ThreadLocalRandom rand = ThreadLocalRandom.current();
+                while (running.get()) {
+                    int randBlock = rand.nextInt(blockArray.length);
+                    int randEntry = rand.nextInt(entries);
+                    int block = blockArray[randBlock];
+
+                    boolean result = model.offerStimulus(block, randEntry, rand.nextFloat());
+                    writeOp.incrementAndGet();
+
+                    if (!result) {
+                        dropMiss.incrementAndGet();
+                    } else {
+                        float value = model.pollStimulus(block, randEntry);
+                        Blackhole.consume(value);
+                        if (Float.isNaN(value)) {
+                            readMiss.incrementAndGet();
+                        }
+                        readOp.incrementAndGet();
+                    }
+                }
+            });
+        }
+        Blackhole.end();
+
+        long totalWriteOps = 0;
+        long totalReadOps = 0;
+        long totalMisses = 0;
+
+        long totalDropMiss = 0;
+        long totalReadMiss = 0;
+
+        try {
+            for (int sec = 1; sec <= duration; sec++) {
+                Thread.sleep(1000);
+
+                totalWriteOps += writeOp.getAndSet(0);
+                totalReadOps += readOp.getAndSet(0);
+                totalDropMiss += dropMiss.getAndSet(0);
+                totalReadMiss += readMiss.getAndSet(0);
+                totalMisses = totalDropMiss + totalReadMiss;
+
+                System.out.printf("\tSecond %,d: %,11d reads%n", sec, totalReadOps);
+                System.out.printf("\tSecond %,d: %,11d writes%n", sec, totalWriteOps);
+                System.out.printf("\tSecond %,d: %,11d misses%n%n", sec, totalMisses);
+            }
+            running.set(false);
+            executor.shutdown();
+            executor.awaitTermination(1, TimeUnit.SECONDS);
+            long totalOps = totalWriteOps + totalReadOps;
+            double avgOpsPerSec = (double) totalOps / duration;
+
+            System.out.println();
+            System.out.printf("Reads      : %,11d (%,3.2f%%)%n", totalReadOps, 100f * totalReadOps / totalReadOps);
+            System.out.printf("Writes     : %,11d (%,3.2f%%)%n", totalWriteOps, 100f * totalWriteOps / totalReadOps);
+            System.out.printf("Drop Misses: %,11d (%,3.2f%%)%n", totalDropMiss, 100f * totalDropMiss / totalOps);
+            System.out.printf("Read Misses: %,11d (%,3.2f%%)%n", totalReadMiss, 100f * totalReadMiss / totalOps);
+
+            System.out.printf("Throughput : %,14.2f ops/sec%n", avgOpsPerSec);
+            System.out.printf("Latency    : %,14.2f ns/op%n", 1_000_000_000f / avgOpsPerSec);
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            fail(e.getLocalizedMessage());
+        } finally {
+            System.setProperty("snn.logging", "false");
+            model.close();
+        }
+    }
+
     public final class Blackhole {
         private static long         liveness;
         public static volatile long SINK;
 
         public static void consume(float f) {
             liveness += Float.floatToRawIntBits(f);
+        }
+
+        public static void consume(boolean b) {
+            liveness += 1;
         }
 
         public static void end() {

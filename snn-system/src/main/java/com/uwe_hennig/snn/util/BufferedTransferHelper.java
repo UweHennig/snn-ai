@@ -9,13 +9,13 @@ import java.lang.invoke.VarHandle;
 
 import com.uwe_hennig.snn.util.logging.SNNLogger;
 
-//// State-Layout (ein int, gepackt):
+//// State-Layout (one int packed):
 ///
 ///    Bit  0-1   tail        (Ringpuffer-Index 0..2)
 ///
 ///    Bit  2-3   head        (Ringpuffer-Index 0..2)
 ///
-///    Bit  4-5   count       (Anzahl belegter Slots 0..3)
+///    Bit  4-5   count       (Number of occupied Slots 0..3)
 ///
 ///    Bit  6-7   slot[0]     (Status Slot 0)
 ///
@@ -59,7 +59,7 @@ public final class BufferedTransferHelper {
 
         do {
             oldState = (int) INT_HANDLE.getVolatile(segment, queueOffset);
-            log.debug(() ->  debugState("OFFER-BEGIN:", segment, queueOffset));
+            //log.debug(() ->  debugState("OFFER-BEGIN:", segment, queueOffset));
 
             int count = count(oldState);
             if (count == SLOTS) {
@@ -80,6 +80,7 @@ public final class BufferedTransferHelper {
         } while (!success && retry-- > 0);
 
         if (!success) {
+            //log.debug(() ->  debugState("OFFER-MISSES:", segment, queueOffset));
             return false;
         }
 
@@ -93,14 +94,14 @@ public final class BufferedTransferHelper {
             n = withSlotStatus(s, tail, SLOT_READY);
         } while (!INT_HANDLE.compareAndSet(segment, queueOffset, s, n) && retry2-- > 0);
 
-        log.debug(() -> debugState("OFFER-END:", segment, queueOffset));
+        //log.debug(() -> debugState("OFFER-END:", segment, queueOffset));
 
         return true;
     }
 
     /// poll
     public static float poll(MemorySegment segment, long queueOffset) {
-        int retry = 2;
+        int retry = 5;
         int oldState, newState;
         int head;
         float value;
@@ -108,7 +109,7 @@ public final class BufferedTransferHelper {
 
         do {
             oldState = (int) INT_HANDLE.getVolatile(segment, queueOffset);
-            log.debug(() -> debugState("POLL-BEGIN:", segment, queueOffset));
+            //log.debug(() -> debugState("POLL-BEGIN:", segment, queueOffset));
 
             int c = count(oldState);
             if (c == 0) {
@@ -133,7 +134,7 @@ public final class BufferedTransferHelper {
             return EMPTY;
         }
 
-        log.debug(() ->  debugState("POLL-END:", segment, queueOffset));
+        //log.debug(() ->  debugState("POLL-END:", segment, queueOffset));
 
         return value;
     }
@@ -185,6 +186,7 @@ public final class BufferedTransferHelper {
 
     // ---- Debug fields ----
 
+    @SuppressWarnings("unused")
     private static String debugState(String phase, MemorySegment seg, long off) {
         int s = (int) INT_HANDLE.getVolatile(seg, off);
         StringBuilder sb = new StringBuilder();
