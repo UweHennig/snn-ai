@@ -11,10 +11,12 @@ import com.uwe_hennig.snn.util.logging.SNNLogger;
 
 /// BufferedTransferHelper
 ///
+/// Status:
+/// | COUNT | HEAD | TAIL | = | bx00 | bx00 | bx00 |
+///
 /// @author Uwe Hennig
 public final class BufferedTransferHelper {
-    private static final int MASK_TAIL  = 0x3;
-    private static final int MASK_HEAD  = 0xC;
+    private static final int BIT_MASK   =  0x3;
     private static final int META_CLEAR = ~0x3F;
 
     public static final SNNLogger log = new SNNLogger();
@@ -28,12 +30,9 @@ public final class BufferedTransferHelper {
         int retry = 20;
         do {
             int oldStatus = (int) INT_HANDLE.getVolatile(segment, queueOffset);
-            int tail  = oldStatus & MASK_TAIL;
-            int head  = (oldStatus >> 2) & MASK_HEAD;
-
-            tail  = oldStatus & 0x3;
-            head  = (oldStatus >> 2) & 0x3;
-            int count = (oldStatus >> 4) & 0x3;
+            int tail  = oldStatus & BIT_MASK;
+            int head  = (oldStatus >> 2) & BIT_MASK;
+            int count = (oldStatus >> 4) & BIT_MASK;
 
             if (count >= 3) {
                 return false;
@@ -44,11 +43,12 @@ public final class BufferedTransferHelper {
             int newStatus = (oldStatus & META_CLEAR) | (nextCount << 4) | (head << 2) | nextTail;
 
             if (INT_HANDLE.compareAndSet(segment, queueOffset, oldStatus, newStatus)) {
-                long dataOffset = queueOffset + 4L + (tail * 4L);
+                long dataOffset = queueOffset + (tail * 4L) + 4L;
                 segment.set(ValueLayout.JAVA_FLOAT, dataOffset, value);
                 return true;
             }
         } while (retry-- > 0);
+
         return false;
     }
 
@@ -57,15 +57,15 @@ public final class BufferedTransferHelper {
         int retry = 20;
         do {
             int oldStatus = (int) INT_HANDLE.getVolatile(segment, queueOffset);
-            int tail  = oldStatus & 0x3;
-            int head  = (oldStatus >> 2) & 0x3;
-            int count = (oldStatus >> 4) & 0x3;
+            int tail  = oldStatus & BIT_MASK;
+            int head  = (oldStatus >> 2) & BIT_MASK;
+            int count = (oldStatus >> 4) & BIT_MASK;
 
             if (count == 0) {
                 return Float.NaN; // EMPTY
             }
 
-            long dataOffset = queueOffset + 4L + (head * 4L);
+            long dataOffset = queueOffset + (head * 4L) + 4L;
             float value = segment.get(ValueLayout.JAVA_FLOAT, dataOffset);
 
             int nextHead  = (head + 1) % 3;
@@ -76,6 +76,7 @@ public final class BufferedTransferHelper {
                 return value;
             }
         } while (retry-- > 0);
+
         return Float.NaN;
     }
 
@@ -84,12 +85,12 @@ public final class BufferedTransferHelper {
     @SuppressWarnings("unused")
     private static String debugState(String phase, MemorySegment seg, long off) {
         int status = (int) INT_HANDLE.getVolatile(seg, off);
-        int tail  = status & 0x3;
-        int head  = (status >> 2) & 0x3;
-        int count = (tail - head + 3) % 3;
+        int tail  = status & BIT_MASK;
+        int head  = (status >> 2) & BIT_MASK;
+        int count = (status >> 4) & BIT_MASK;
 
         StringBuilder sb = new StringBuilder();
-        sb.append(String.format("%-12s head=%d tail=%d count=%d ", phase, head, tail, count));
+        sb.append(String.format("%-12s tail=%d head=%d count=%d ", phase, tail, head, count));
         return sb.toString();
     }
 
