@@ -32,7 +32,7 @@ public final class AxonModel {
         MemoryLayout.paddingLayout(4),
         JAVA_INT.withName("fiedlId"),
         JAVA_INT.withName("neuronId"),
-        JAVA_INT.withName("synapsesRef"),
+        JAVA_INT.withName("blockId"),
         JAVA_INT.withName("modulatorId")
     ).withByteAlignment(8);
 
@@ -43,7 +43,7 @@ public final class AxonModel {
     static final VarHandle VH_NEURON_ID =
         LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("neuronId"));
     static final VarHandle VH_SYNAPSES_REF =
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("synapsesRef"));
+        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("blockId"));
     static final VarHandle VH_MODULATOR_ID =
         LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("modulatorId"));
     // @formatter:on

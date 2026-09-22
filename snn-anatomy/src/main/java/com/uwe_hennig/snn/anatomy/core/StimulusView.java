@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * @author Uwe Hennig
  */
+@Deprecated
 public class StimulusView {
     private final StimulusModel model;
 
@@ -20,6 +21,7 @@ public class StimulusView {
     private final long          TTL_NANO;
     private final AtomicInteger nextSearchStart = new AtomicInteger(0);
 
+    @Deprecated
     public StimulusView(StimulusModel model, long ttl) {
         assert model != null : "Model must not bei null!";
 
@@ -30,15 +32,18 @@ public class StimulusView {
         TTL_NANO = ttl;
     }
 
+    @Deprecated
     public StimulusModel getModel() {
         return model;
     }
 
+    @Deprecated
     public int claimSingleStimulus(int stimulusType, int targetId, int targetType, float value, long expiry) {
         // TODO
         return 0;
     }
 
+    @Deprecated
     public int claimMatrixStimulus(int eventType, int targetIndex, int targetType, long expiry) {
         // TODO
         return 0;
@@ -74,6 +79,7 @@ public class StimulusView {
         return -1;
     }
 
+    @Deprecated
     public void invalidate(int index) {
         try {
             long now = System.nanoTime(); // TODO check
@@ -84,26 +90,32 @@ public class StimulusView {
         }
     }
 
+    @Deprecated
     public float getValue(int index) {
         return model.getValue(index);
     }
 
+    @Deprecated
     public int getTargetType(int index) {
         return model.getTargetType(index);
     }
 
+    @Deprecated
     public int getStimulusType(int index) {
         return model.getStimulusType(index);
     }
 
+    @Deprecated
     public int getTransferType(int index) {
         return model.getTransferType(index);
     }
 
+    @Deprecated
     public long getExpiry(int index) {
         return model.getExpiry(index);
     }
 
+    @Deprecated
     public int getTargetRef(int index) {
         return model.getTargetRef(index);
     }

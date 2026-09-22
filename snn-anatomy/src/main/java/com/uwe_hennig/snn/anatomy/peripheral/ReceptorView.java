@@ -6,7 +6,6 @@
 package com.uwe_hennig.snn.anatomy.peripheral;
 
 import com.uwe_hennig.snn.util.BufferedTransferSegment;
-import com.uwe_hennig.snn.util.MatrixModel;
 
 /**
  * ReceptorView
