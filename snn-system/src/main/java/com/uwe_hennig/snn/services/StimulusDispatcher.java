@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.LockSupport;
 
 import com.uwe_hennig.snn.contracts.core.StimulusType;
 import com.uwe_hennig.snn.util.BufferedTransferSegment;
@@ -14,11 +15,12 @@ import com.uwe_hennig.snn.util.IntQueue;
 
 /// StimulusDispatcher
 ///
-/// The StimulusDispatcher retrieves an offset from the queue, locates the corresponding block in the
-/// BufferTransferSegment, and transfers the values found there along the call graph.
+/// The StimulusDispatcher retrieves an offset from the offset queue, locates the corresponding block in the
+/// BufferTransferSegment, and transfers the values found there along the call graph. Once processing is complete, the
+/// offset is placed back into the offset queue.
 ///
 /// @author Uwe Hennig
-public class StimulusDispatcher {
+public final class StimulusDispatcher {
     private static StimulusDispatcher INSTANCE;
 
     private final BufferedTransferSegment buffer;
@@ -55,11 +57,12 @@ public class StimulusDispatcher {
             executor.submit(() -> {
                 try {
                     while (isRunning.get() && !Thread.currentThread().isInterrupted()) {
-                        if (bufferOffsets.isEmpty()) {
-                            Thread.onSpinWait();
-                        }
                         int offset = bufferOffsets.poll();
-                        dispatch(offset);
+                        if (offset >= 0) {
+                            dispatch(offset);
+                        } else {
+                            LockSupport.parkNanos(1);
+                        }
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -110,7 +113,7 @@ public class StimulusDispatcher {
                 transfer(StimulusType.TIME_FEEDBACK, srcId, srcType, trgId, trgType, fbTime);
             }
 
-            float fbValue= buffer.pollFbValue(offset, entry);
+            float fbValue = buffer.pollFbValue(offset, entry);
             if (!Float.isNaN(fbValue)) {
                 transfer(StimulusType.VALUE_FEEDBACK, srcId, srcType, trgId, trgType, fbValue);
             }
