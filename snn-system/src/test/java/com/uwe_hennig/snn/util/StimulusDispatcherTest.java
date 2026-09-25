@@ -41,27 +41,29 @@ public class StimulusDispatcherTest {
             ts.setTrgId(blockA, 1, 60);
             ts.setTrgType(blockA, 1, 70);
 
-            ts.offerFbTime(blockA, 0, 1.0f);
-            ts.offerFbValue(blockA, 0, 2.0f);
-            ts.offerStimulus(blockA, 0, 3.0f);
-            ts.offerFbTime(blockA, 1, 4.0f);
-            ts.offerFbValue(blockA, 1, 5.0f);
-            ts.offerStimulus(blockA, 1, 6.0f);
-
-
             ts.setTrgId(blockB, 0, 80);
             ts.setTrgType(blockB, 0, 90);
             ts.setTrgId(blockB, 1, 100);
             ts.setTrgType(blockB, 1, 110);
 
-            ts.offerFbTime(blockA, 0, 7.0f);
-            ts.offerFbValue(blockA, 0, 8.0f);
-            ts.offerStimulus(blockA, 0, 9.0f);
-            ts.offerFbTime(blockA, 1, 10.0f);
-            ts.offerFbValue(blockA, 1, 11.0f);
-            ts.offerStimulus(blockA, 1, 12.0f);
-
             dispatcher.start();
+            for (int i = 0; i < 100; i += 10) {
+                ts.offerFbTime(blockA, 0, i);
+                ts.offerFbValue(blockA, 0, i + 1.0f);
+                ts.offerStimulus(blockA, 0, i + 2.0f);
+                ts.offerFbTime(blockA, 1, i + 3.0f);
+                ts.offerFbValue(blockA, 1, i + 4.0f);
+                ts.offerStimulus(blockA, 1, i + 5.0f);
+
+                ts.offerFbTime(blockB, 0, i + 6.0f);
+                ts.offerFbValue(blockB, 0, i + 7.0f);
+                ts.offerStimulus(blockB, 0, i + 8.0f);
+                ts.offerFbTime(blockB, 1, i + 9.0f);
+                ts.offerFbValue(blockB, 1, i + 10.0f);
+                ts.offerStimulus(blockB, 1, i + 11.0f);
+
+                Thread.sleep(Duration.ofMillis(1L));
+            }
             Thread.sleep(Duration.ofSeconds(2L));
 
             dispatcher.stop(100);
@@ -71,7 +73,7 @@ public class StimulusDispatcherTest {
             fail(e.getLocalizedMessage());
         } finally {
             if (dispatcher != null) {
-                dispatcher.stop(1000);
+                dispatcher.stop(100);
             }
             if (ts != null) {
                 ts.close();
@@ -81,7 +83,6 @@ public class StimulusDispatcherTest {
             }
         }
     }
-
 
     public final class Blackhole {
         private static long         liveness;
@@ -105,7 +106,6 @@ public class StimulusDispatcherTest {
             liveness = 0L;
         }
     }
-
 
     @BeforeEach
     void setUp(TestInfo info) {
