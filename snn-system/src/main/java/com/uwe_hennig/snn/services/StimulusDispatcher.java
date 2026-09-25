@@ -3,6 +3,7 @@
 /// All rights reserved.
 package com.uwe_hennig.snn.services;
 
+import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -12,6 +13,7 @@ import java.util.concurrent.locks.LockSupport;
 import com.uwe_hennig.snn.contracts.core.StimulusType;
 import com.uwe_hennig.snn.util.BufferedTransferSegment;
 import com.uwe_hennig.snn.util.IntQueue;
+import com.uwe_hennig.snn.util.logging.SNNLogger;
 
 /// StimulusDispatcher
 ///
@@ -125,8 +127,7 @@ public final class StimulusDispatcher {
     }
 
     private void transfer(StimulusType type, int srcId, int srcType, int trgId, int trgType, float value) {
-        // TODO
-        System.out.println(String.format("%3d -> %3d (%3.2f)", srcId, trgId, value));
+        SNNLogger.debug(() -> String.format(Locale.ENGLISH, "%3d -> %3d (%3.2f)", srcId, trgId, value));
     }
 
     public static StimulusDispatcher instance() {

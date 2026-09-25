@@ -102,7 +102,6 @@ public class WeightMain {
         if (model != null) {
             model.close();
         }
-        System.out.println("\nclosed!");
     }
 
     private static void sleep() {

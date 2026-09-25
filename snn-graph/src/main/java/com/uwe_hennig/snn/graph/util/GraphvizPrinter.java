@@ -22,10 +22,8 @@ import com.uwe_hennig.snn.util.logging.SNNLogger;
  * @author Uwe Hennig
  */
 public class GraphvizPrinter {
-    public static final SNNLogger log = new SNNLogger();
-
     public static void printGraph(GenerationContext context, String comment) {
-        log.debug(() -> renderToString(context, comment));
+        SNNLogger.debug(() -> renderToString(context, comment));
     }
 
     public static void rewriteGraphFile(String filename, GenerationContext context, String comment) {

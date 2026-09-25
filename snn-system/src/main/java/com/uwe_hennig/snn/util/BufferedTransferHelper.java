@@ -7,8 +7,6 @@ import java.lang.foreign.MemorySegment;
 import java.lang.foreign.ValueLayout;
 import java.lang.invoke.VarHandle;
 
-import com.uwe_hennig.snn.util.logging.SNNLogger;
-
 /// BufferedTransferHelper
 ///
 /// Status:
@@ -19,7 +17,6 @@ public final class BufferedTransferHelper {
     private static final int BIT_MASK   =  0x3;
     private static final int META_CLEAR = ~0x3F;
 
-    public static final SNNLogger log = new SNNLogger();
     private static final VarHandle INT_HANDLE = ValueLayout.JAVA_INT.varHandle();
 
     private BufferedTransferHelper() {

@@ -3,9 +3,11 @@
 /// All rights reserved.
 package com.uwe_hennig.snn.util;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.time.Duration;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -13,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
 import com.uwe_hennig.snn.services.StimulusDispatcher;
+import com.uwe_hennig.snn.util.logging.SNNLogger;
 
 /// StimulusDispatcherTest
 ///
@@ -21,6 +24,11 @@ public class StimulusDispatcherTest {
     @Test
     @DisplayName("StimulusDispatcherTest")
     public void testStimulusDispatcher() {
+        AtomicLong count = new AtomicLong();
+
+        SNNLogger.setActive(true);
+        SNNLogger.setCallback(_ -> count.incrementAndGet());
+
         BufferedTransferSegment ts = null;
         IntQueue queue = null;
         StimulusDispatcher dispatcher = null;
@@ -48,6 +56,7 @@ public class StimulusDispatcherTest {
 
             dispatcher.start();
             for (int i = 0; i < 100; i += 10) {
+                System.out.println(i);
                 ts.offerFbTime(blockA, 0, i);
                 ts.offerFbValue(blockA, 0, i + 1.0f);
                 ts.offerStimulus(blockA, 0, i + 2.0f);
@@ -62,11 +71,13 @@ public class StimulusDispatcherTest {
                 ts.offerFbValue(blockB, 1, i + 10.0f);
                 ts.offerStimulus(blockB, 1, i + 11.0f);
 
-                Thread.sleep(Duration.ofMillis(1L));
+                // very bad time, because of StringFormatter in StimulusDispatcher!
+                Thread.sleep(Duration.ofMillis(5L));
             }
-            Thread.sleep(Duration.ofSeconds(2L));
-
+            Thread.sleep(Duration.ofSeconds(1L));
             dispatcher.stop(100);
+            // expected should be 120, but depends on machine performance
+            assertTrue(count.get() > 90, "invalid count!");
 
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -81,6 +92,8 @@ public class StimulusDispatcherTest {
             if (queue != null) {
                 queue.close();
             }
+            SNNLogger.setActive(false);
+            SNNLogger.setCallback(null);
         }
     }
 
