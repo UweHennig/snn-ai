@@ -12,11 +12,12 @@ import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SequenceLayout;
 import java.lang.foreign.ValueLayout;
 import java.lang.invoke.VarHandle;
+import java.util.concurrent.locks.LockSupport;
 
 /**
- * IntQueue
- * is a FIFO integer queue implemented with arena off heap. The queue is designed for positive integers.
- * TODO  Here we a  "Check-then-Act" problem!
+ * IntQueue is a FIFO integer queue implemented with arena off heap. The queue is designed for positive integers. TODO
+ * Here we a "Check-then-Act" problem!
+ *
  * @author Uwe Hennig
  */
 public class IntQueue {
@@ -27,12 +28,8 @@ public class IntQueue {
     private final MemorySegment queuePtr;
     private final MemorySegment queueSegment;
 
-    private static final GroupLayout LAYOUT = MemoryLayout.structLayout(
-        ValueLayout.JAVA_INT.withName("lock"),
-        ValueLayout.JAVA_INT.withName("head"),
-        ValueLayout.JAVA_INT.withName("tail"),
-        MemoryLayout.paddingLayout(4)
-    );
+    private static final GroupLayout LAYOUT = MemoryLayout.structLayout(ValueLayout.JAVA_INT.withName("lock"), ValueLayout.JAVA_INT.withName("head"),
+        ValueLayout.JAVA_INT.withName("tail"), MemoryLayout.paddingLayout(4));
 
     private static final VarHandle VH_LOCK = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("lock"));
     private static final VarHandle VH_HEAD = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("head"));
@@ -43,7 +40,8 @@ public class IntQueue {
     /**
      * Creates a new IntQueue with dynamic capacity.
      *
-     * @param capacity The desired capacity (MUST be a power of two, e.g., 1024, 4096, 65536).
+     * @param capacity
+     *            The desired capacity (MUST be a power of two, e.g., 1024, 4096, 65536).
      */
     public IntQueue(long capacity) {
         if ((capacity & (capacity - 1)) != 0) {
@@ -82,11 +80,9 @@ public class IntQueue {
             if (spins < 64) {
                 Thread.onSpinWait();
                 spins++;
+            } else {
+                LockSupport.parkNanos(1);
             }
-//          For platform threads only – not required for virtual threads
-//          else {
-//              LockSupport.parkNanos(1);
-//          }
         }
     }
 

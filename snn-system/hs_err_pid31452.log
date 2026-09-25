@@ -1,0 +1,43 @@
+#
+# A fatal error has been detected by the Java Runtime Environment:
+#
+#  EXCEPTION_ACCESS_VIOLATION (0xc0000005) at pc=0x00007fffd4927556, pid=31452, tid=34472
+#
+# JRE version: Java(TM) SE Runtime Environment (27.0+35) (build 27+35-2325)
+# Java VM: Java HotSpot(TM) 64-Bit Server VM (27+35-2325, mixed mode, sharing, tiered, compressed oops, compact obj headers, g1 gc, windows-amd64)
+# Problematic frame:
+# C  [jdwp.dll+0x17556]
+#
+# No core dump will be written. Minidumps are not enabled by default on client versions of Windows
+#
+# If you would like to submit a bug report, please visit:
+#   https://bugreport.java.com/bugreport/crash.jsp
+# The crash happened outside the Java Virtual Machine in native code.
+# See problematic frame for where to report the bug.
+#
+
+---------------  S U M M A R Y ------------
+
+Command Line: -XX:+ShowCodeDetailsInExceptionMessages -agentlib:jdwp=transport=dt_socket,suspend=y,address=localhost:56915 -ea --enable-final-field-mutation=ALL-UNNAMED -javaagent:C:\dev\tools\jee-2025-092\eclipse\configuration\org.eclipse.osgi\2653\0\.cp\lib\javaagent-shaded.jar -Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8 org.eclipse.jdt.internal.junit.runner.RemoteTestRunner -version 3 -port 56189 -testLoaderClass org.eclipse.jdt.internal.junit6.runner.JUnit6TestLoader -loaderpluginname org.eclipse.jdt.junit6.runtime -classNames com.uwe_hennig.snn.util.StimulusDispatcherTest
+
+Host: 13th Gen Intel(R) Core(TM) i9-13980HX, 32 cores, 63G,  Windows 11 , 64 bit Build 26100 (10.0.26100.9444)
+Time: Tue Sep 22 21:30:02 2026 Mitteleuropäische Sommerzeit elapsed time: 367.741492 seconds (0d 0h 6m 7s)
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x000001ef3f1c3c70):  JavaThread "JDWP Command Reader" daemon [_thread_in_native, id=34472, stack(0x0000009ed9d00000,0x0000009ed9e00000) (1024K)]
+
+Stack: [0x0000009ed9d00000,0x0000009ed9e00000],  sp=0x0000009ed9dffab0,  free space=1022k
+Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+C  [dbgcore.DLL+0x17556]  (no source info available)
+C  [bcryptPrimitives.dll+0xe4e9]  (no source info available)
+C  [jdwp.dll+0x27d97]  (no source info available)
+C  [UMPDC.dll+0x25d1]  (no source info available)
+C  [jvm.dll+0x234fd]  (no source info available)
+C  [ntdll.dll+0x10188]  (no source info available)
+V  [jvm.dll+0x5d24ce]  (no source info available)
+V  [jvm.dll+0x4b6a51]  (no source info available)
+V  [jvm.dll+0x8a91a9]  (no source info available)
+V  [jvm.dll+0x724758]  (no source info available)
+C  [ucrtbase.dll+0x2cd30]  (no source info available)
+C

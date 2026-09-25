@@ -3,9 +3,12 @@
 /// All rights reserved.
 package com.uwe_hennig.snn.util;
 
+import static com.uwe_hennig.snn.util.BufferedTransferSegment.BLOCK_HEADER_SIZE;
 import static com.uwe_hennig.snn.util.BufferedTransferSegment.EMTPY_VALUE;
+import static com.uwe_hennig.snn.util.BufferedTransferSegment.ENTRY_HEADER_SIZE;
 import static com.uwe_hennig.snn.util.BufferedTransferSegment.ENTRY_SIZE;
 import static com.uwe_hennig.snn.util.BufferedTransferSegment.META_SIZE;
+import static com.uwe_hennig.snn.util.BufferedTransferSegment.NUM_QUEUE_ELEMENTS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -29,28 +32,29 @@ import org.junit.jupiter.api.TestInfo;
 public class BufferedTransferTest {
     @Test
     @DisplayName("BufferedTransfer data test")
-    public void testData() {
+    public void testMetaData() {
+        final int entries = 2;
         final int srcId = 10;
         final int srcType = 20;
 
         BufferedTransferSegment ts = new BufferedTransferSegment(1048576);
 
-        int blockOffset = ts.allocateBlock(1, srcId, srcType);
+        int blockOffset = ts.allocateBlock(entries, srcId, srcType);
+
+        int magic = ts.getMagic();
+        assertEquals(0x42545331, magic, "invalid magic");
+        assertEquals(BLOCK_HEADER_SIZE, ts.getBlockHeaderSize(), "invalid BLOCK_HEADER_SIZE");
+        assertEquals(ENTRY_SIZE, ts.getEntrySize(), "invalid ENTRY_SIZE");
+        assertEquals(ENTRY_HEADER_SIZE, ts.getEntryHeaderSize(), "invalid ENTRY_HEADER_SIZE");
+        assertEquals(NUM_QUEUE_ELEMENTS, ts.getNumQueueElments(), "invalid NUM_QUEUE_ELEMENTS");
+        assertEquals(1, ts.getNumBlocks(), "invalid numBlocks");
         assertEquals(META_SIZE, blockOffset, "invalid start of initial block");
-        int value = ts.getNumBlocks();
-        assertEquals(1, value, "invalid num blocks");
 
-        value = ts.getStartOffset();
-        assertEquals(META_SIZE, value, "invalid stored start offset");
+        assertEquals(srcId, ts.getSrcId(blockOffset), "invalid stored source id");
+        assertEquals(srcType, ts.getSrcType(blockOffset), "invalid stored source type");
 
-        value = ts.getEntrySize();
-        assertEquals(ENTRY_SIZE, value, "invalid stored entry size");
-
-        value = ts.getSrcId(blockOffset);
-        assertEquals(srcId, value, "invalid stored source id");
-
-        value = ts.getSrcType(blockOffset);
-        assertEquals(srcType, value, "invalid stored source type");
+        int expectedOffset = blockOffset + entries * ENTRY_SIZE + BLOCK_HEADER_SIZE;
+        assertEquals(expectedOffset, ts.getEndOffset(), "invalid start of next block");
 
         ts.close();
     }
@@ -58,30 +62,112 @@ public class BufferedTransferTest {
     @Test
     @DisplayName("BufferedTransfer data test")
     public void testSimpleEntry() {
-        final int srcId = 10;
-        final int srcType = 20;
+        final int srcIdA = 10;
+        final int srcTypeA = 20;
+
+        final int srcIdB = 30;
+        final int srcTypeB = 40;
 
         BufferedTransferSegment ts = new BufferedTransferSegment(1048576);
-        int blockOffset = ts.allocateBlock(2, srcId, srcType);
+        int blockOffsetA = ts.allocateBlock(2, srcIdA, srcTypeA);
+        int blockOffsetB = ts.allocateBlock(2, srcIdB, srcTypeB);
 
-        ts.setTrgId(blockOffset, 0, 30);
-        ts.setTrgId(blockOffset, 1, 40);
+        // --- A
+        ts.setTrgId(blockOffsetA, 0, 11);
+        ts.setTrgId(blockOffsetA, 1, 22);
 
-        ts.setTrgType(blockOffset, 0, 50);
-        ts.setTrgType(blockOffset, 1, 60);
+        ts.setTrgType(blockOffsetA, 0, 13);
+        ts.setTrgType(blockOffsetA, 1, 24);
+
+        ts.offerStimulus(blockOffsetA, 0, 10.1f);
+        ts.offerStimulus(blockOffsetA, 1, 20.2f);
+
+        ts.offerFbTime(blockOffsetA, 0, 10.3f);
+        ts.offerFbTime(blockOffsetA, 1, 20.4f);
+
+        ts.offerFbValue(blockOffsetA, 0, 10.5f);
+        ts.offerFbValue(blockOffsetA, 1, 20.6f);
+
+        // --- B
+        ts.setTrgId(blockOffsetB, 0, 31);
+        ts.setTrgId(blockOffsetB, 1, 42);
+
+        ts.setTrgType(blockOffsetB, 0, 33);
+        ts.setTrgType(blockOffsetB, 1, 44);
+
+        ts.offerStimulus(blockOffsetB, 0, 30.1f);
+        ts.offerStimulus(blockOffsetB, 1, 40.2f);
+
+        ts.offerFbTime(blockOffsetB, 0, 30.3f);
+        ts.offerFbTime(blockOffsetB, 1, 40.4f);
+
+        ts.offerFbValue(blockOffsetB, 0, 30.5f);
+        ts.offerFbValue(blockOffsetB, 1, 40.6f);
 
         int value;
-        value = ts.getTrgId(blockOffset, 0);
-        assertEquals(30, value, "invalid target identifier for entry 0");
+        float fvalue;
 
-        value = ts.getTrgId(blockOffset, 1);
-        assertEquals(40, value, "invalid target identifier for entry 1");
+        // --- asserts A
+        value = ts.getTrgId(blockOffsetA, 0);
+        assertEquals(11, value, "invalid A0");
 
-        value = ts.getTrgType(blockOffset, 0);
-        assertEquals(50, value, "invalid target type for entry 0");
+        value = ts.getTrgId(blockOffsetA, 1);
+        assertEquals(22, value, "invalid A1");
 
-        value = ts.getTrgType(blockOffset, 1);
-        assertEquals(60, value, "invalid target type for entry 1");
+        value = ts.getTrgType(blockOffsetA, 0);
+        assertEquals(13, value, "invalid A2");
+
+        value = ts.getTrgType(blockOffsetA, 1);
+        assertEquals(24, value, "invalid A3");
+
+        fvalue = ts.pollStimulus(blockOffsetA, 0);
+        assertEquals(10.1f, fvalue, "invalid A4");
+
+        fvalue = ts.pollStimulus(blockOffsetA, 1);
+        assertEquals(20.2f, fvalue, "invalid A5");
+
+        fvalue = ts.pollFbTime(blockOffsetA, 0);
+        assertEquals(10.3f, fvalue, "invalid A6");
+
+        fvalue = ts.pollFbTime(blockOffsetA, 1);
+        assertEquals(20.4f, fvalue, "invalid A7");
+
+        fvalue = ts.pollFbValue(blockOffsetA, 0);
+        assertEquals(10.5f, fvalue, "invalid A8");
+
+        fvalue = ts.pollFbValue(blockOffsetA, 1);
+        assertEquals(20.6f, fvalue, "invalid A9");
+
+        // --- asserts B
+        value = ts.getTrgId(blockOffsetB, 0);
+        assertEquals(31, value, "invalid B0");
+
+        value = ts.getTrgId(blockOffsetB, 1);
+        assertEquals(42, value, "invalid B1");
+
+        value = ts.getTrgType(blockOffsetB, 0);
+        assertEquals(33, value, "invalid B2");
+
+        value = ts.getTrgType(blockOffsetB, 1);
+        assertEquals(44, value, "invalid B3");
+
+        fvalue = ts.pollStimulus(blockOffsetB, 0);
+        assertEquals(30.1f, fvalue, "invalid B4");
+
+        fvalue = ts.pollStimulus(blockOffsetB, 1);
+        assertEquals(40.2f, fvalue, "invalid B5");
+
+        fvalue = ts.pollFbTime(blockOffsetB, 0);
+        assertEquals(30.3f, fvalue, "invalid B6");
+
+        fvalue = ts.pollFbTime(blockOffsetB, 1);
+        assertEquals(40.4f, fvalue, "invalid B7");
+
+        fvalue = ts.pollFbValue(blockOffsetB, 0);
+        assertEquals(30.5f, fvalue, "invalid B8");
+
+        fvalue = ts.pollFbValue(blockOffsetB, 1);
+        assertEquals(40.6f, fvalue, "invalid B9");
 
         ts.close();
     }

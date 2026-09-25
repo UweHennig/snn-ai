@@ -60,6 +60,7 @@ public final class StimulusDispatcher {
                         int offset = bufferOffsets.poll();
                         if (offset >= 0) {
                             dispatch(offset);
+                            bufferOffsets.offer(offset);
                         } else {
                             LockSupport.parkNanos(1);
                         }
@@ -125,6 +126,7 @@ public final class StimulusDispatcher {
 
     private void transfer(StimulusType type, int srcId, int srcType, int trgId, int trgType, float value) {
         // TODO
+        System.out.println(String.format("%3d -> %3d (%3.2f)", srcId, trgId, value));
     }
 
     public static StimulusDispatcher instance() {
