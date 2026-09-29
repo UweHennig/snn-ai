@@ -68,11 +68,14 @@
                 <artifactId>snn-util</artifactId>
                 <version>${snn-version}</version>
             </dependency>
+            <!--
+                TODO enable this after refactoring
             <dependency>
                 <groupId>com.uwe-hennig</groupId>
                 <artifactId>snn-analytics</artifactId>
                 <version>${snn-version}</version>
             </dependency>
+            -->
             <!-- Source: https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupite -->
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
@@ -98,7 +101,9 @@
         <module>snn-learning</module>
         <module>snn-graph</module>
         <module>snn-util</module>
+        <!-- TODO enable this after refactoring
         <module>snn-analytics</module>
+        -->
 	</modules>
 	
     <build>

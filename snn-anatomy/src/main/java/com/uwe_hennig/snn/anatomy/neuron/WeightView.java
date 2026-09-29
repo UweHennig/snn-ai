@@ -5,109 +5,102 @@
  */
 package com.uwe_hennig.snn.anatomy.neuron;
 
-/**
- * WeightView
- *
- * @author Uwe Hennig
- */
+/// WeightView
+///
+/// @author Uwe Hennig
 public final class WeightView {
-    private final WeightModel model;
-    private final int index;
-
-    public WeightView(WeightModel model, int index) {
-        this.model = model;
-        this.index = index;
+    private WeightView() {
     }
 
     // ----- Domain Logic -----
 
     // The method is called only by the dendrite corresponding to the stimulus type
-    public float applyStimulus(float potential, float currentTime) {
+    public static float applyStimulus(WeightModel model, int offset, float potential, float currentTime) {
         try {
-            float preSynapticTime = model.getPostSynapticTime(index);
+            float preSynapticTime = model.getPostSynapticTime(offset);
 
             // swap time
-            model.setPreSynapticTime(index, preSynapticTime);
-            model.setPostSynapticTime(index, currentTime);
+            model.setPreSynapticTime(offset, preSynapticTime);
+            model.setPostSynapticTime(offset, currentTime);
 
-            float newPotential = model.getWeight(index) * potential;
+            float newPotential = model.getWeight(offset) * potential;
 
             return newPotential;
         } finally {
-            model.writeUnlock(index);
+            model.writeUnlock(offset);
         }
     }
 
     // The method is called only by the dendrite corresponding to the stimulus type
-    public int applyFeedback(float deltaTimeFeedback) {
-        model.writeLock(index);
+    public static int applyFeedback(WeightModel model, int offset, float deltaTimeFeedback) {
+        model.writeLock(offset);
         try {
-            float preSynapticTime = model.getPreSynapticTime(index);
-            float postSynapticTime = model.getPostSynapticTime(index);
+            float preSynapticTime = model.getPreSynapticTime(offset);
+            float postSynapticTime = model.getPostSynapticTime(offset);
 
             float dt = Math.max(postSynapticTime - preSynapticTime, 0);
-            float deltaWeight = deltaWeight(deltaTimeFeedback) + deltaHebbWeight(deltaTimeFeedback, dt);
+            float deltaWeight = deltaWeight(model, offset, deltaTimeFeedback) + deltaHebbWeight(model, offset, deltaTimeFeedback, dt);
 
-            float weight = Math.clamp(deltaWeight + model.getWeight(index), 0f, 1f);
-            model.setWeight(index, weight);
+            float weight = Math.clamp(deltaWeight + model.getWeight(offset), 0f, 1f);
+            model.setWeight(offset, weight);
 
-            return index;
+            return offset;
         } catch (Exception e) {
             return -1;
         } finally {
-            model.writeUnlock(index);
+            model.writeUnlock(offset);
         }
     }
 
-    public float getWeight() {
+    public float getWeight(WeightModel model, int offset) {
         try {
-            model.readLock(index);
-            return model.getWeight(index);
+            model.readLock(offset);
+            return model.getWeight(offset);
         } finally {
-            model.readUnlock(index);
+            model.readUnlock(offset);
         }
     }
 
     // ----- convenience -----
 
-    float deltaWeight(float deltaTimeFeedback) {
-        float timeLimit = model.getTimeLimit(index);
+    static float deltaWeight(WeightModel model, int offset, float deltaTimeFeedback) {
+        float timeLimit = model.getTimeLimit(offset);
         float phase = Math.clamp(Math.abs(deltaTimeFeedback / timeLimit), 0f, 1f);
         float effect = 1 - phase * phase * phase;
-        float weightScale = model.getWeightScale(index);
+        float weightScale = model.getWeightScale(offset);
 
         return weightScale * effect * Math.signum(deltaTimeFeedback);
     }
 
-    float deltaHebbWeight(float deltaTimeFeedback, float dt) {
-        float hebbTimeRange = model.getHebbTimeRange(index);
+    static float deltaHebbWeight(WeightModel model, int offset, float deltaTimeFeedback, float dt) {
+        float hebbTimeRange = model.getHebbTimeRange(offset);
         if (dt >= hebbTimeRange || hebbTimeRange == 0) {
             return 0.0f;
         }
         float proximity = 1f - (dt / hebbTimeRange);
-        float hebbScale = model.getHebbScale(index);
+        float hebbScale = model.getHebbScale(offset);
 
         return proximity * hebbScale * Math.signum(deltaTimeFeedback);
     }
 
-    public void initDefaultValues() {
-        model.writeLock(index);
+    public void initDefaultValues(WeightModel model, int offset) {
+        model.writeLock(offset);
         try {
-            if (model.getWeightScale(index) == 0.0f) {
-                model.setWeightScale(index, 0.01f);
+            if (model.getWeightScale(offset) == 0.0f) {
+                model.setWeightScale(offset, 0.01f);
             }
-            if (model.getHebbScale(index) == 0.0f) {
-                model.setHebbScale(index, 0.005f);
+            if (model.getHebbScale(offset) == 0.0f) {
+                model.setHebbScale(offset, 0.005f);
             }
-            if (model.getTimeLimit(index) == 0.0f) {
-                model.setTimeLimit(index, 200f);
+            if (model.getTimeLimit(offset) == 0.0f) {
+                model.setTimeLimit(offset, 200f);
             }
-            if (model.getHebbTimeRange(index) == 0.0f) {
-                model.setHebbTimeRange(index, 1f);
+            if (model.getHebbTimeRange(offset) == 0.0f) {
+                model.setHebbTimeRange(offset, 1f);
             }
-            model.setWeight(index, 0.50f);
+            model.setWeight(offset, 0.50f);
         } finally {
-            model.writeUnlock(index);
+            model.writeUnlock(offset);
         }
     }
 }

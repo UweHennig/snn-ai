@@ -16,13 +16,11 @@ import java.lang.foreign.MemorySegment;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 
-/**
- * WeightPersistence
- *
- * @author Uwe Hennig
- */
+/// WeightPersistence
+///
+/// @author Uwe Hennig
 public final class WeightPersistence {
-    static void save(WeightModel model, Path file) throws IOException {
+    public static void save(WeightModel model, Path file) throws IOException {
         try (FileChannel channel = FileChannel.open(file, CREATE, READ, WRITE, TRUNCATE_EXISTING)) {
             int size = (int) model.segment.byteSize();
 
@@ -34,18 +32,7 @@ public final class WeightPersistence {
         }
     }
 
-    static WeightModel load(Path file) throws IOException {
-        try (FileChannel channel = FileChannel.open(file, READ)) {
-            int size = (int) channel.size();
-            int capacity = size / (int) WeightModel.LAYOUT.byteSize();
-            WeightModel model = new WeightModel(capacity);
-
-            try (Arena tempArena = Arena.ofConfined()) {
-                MemorySegment mappedFile = channel.map(FileChannel.MapMode.READ_ONLY, 0, size, tempArena);
-                model.segment.copyFrom(mappedFile);
-            }
-
-            return model;
-        }
+    public static WeightModel load(Path file) throws IOException {
+        return new WeightModel(file);
     }
 }

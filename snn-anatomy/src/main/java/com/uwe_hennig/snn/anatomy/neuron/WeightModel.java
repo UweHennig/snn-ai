@@ -5,202 +5,176 @@
  */
 package com.uwe_hennig.snn.anatomy.neuron;
 
-import static java.lang.foreign.ValueLayout.JAVA_FLOAT;
-import static java.lang.foreign.ValueLayout.JAVA_INT;
-
+import java.io.IOException;
 import java.lang.foreign.Arena;
-import java.lang.foreign.GroupLayout;
-import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
-import java.lang.foreign.SequenceLayout;
-import java.lang.invoke.VarHandle;
-import java.util.concurrent.locks.LockSupport;
+import java.lang.foreign.ValueLayout;
+import java.nio.channels.FileChannel;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 
-/**
- * WeightModel
- *
- * @author Uwe Hennig
- */
-public final class WeightModel {
+/// WeightModel
+/// ```
+/// ┌─────────────────────────────────┐
+/// │ MetaInfo                        │
+/// │  00: magic           : int      │
+/// │  04: version         : int      │
+/// │  08: metaSize        : int      │
+/// │  12: capacity        : int      │
+/// │  16: entrySize       : int      │
+/// │  20: numEntries      : int      │
+/// │  24: endOffset       : int      │
+/// ├─────────────────────────────────┤
+/// │ Entry 0                         │
+/// │  28: lock            : int      │
+/// │  32: weight          : float    │
+/// │  36: preSynapticTime : float    │
+/// │  40: postSynapticTime: float    │
+/// │  44: hebbTimeRange   : float    │
+/// │  48: weightScale     : float    │
+/// │  52: hebbScale       : float    │
+/// │  56: timeLimit       : float    │
+/// ├─────────────────────────────────┤
+/// │ Entry 1                         │
+/// │  60: lock            : int      │
+/// │  64: weight          : float    │
+/// │  68: preSynapticTime : float    │
+/// │  72: postSynapticTime: float    │
+/// │  76: hebbTimeRange   : float    │
+/// │  80: weightScale     : float    │
+/// │  84: hebbScale       : float    │
+/// │  88: timeLimit       : float    │
+/// ├─────────────────────────────────┤
+/// │ ...                             │
+/// └─────────────────────────────────┘
+/// ```
+///
+/// @author Uwe Hennig
+///
+public final class WeightModel extends MetaDataAccessor {
+    static final int MAGIC      = ('D' << 24) | ('W' << 16) | ('_' << 8) | '1';
+    static final int VALUE_SIZE = 4;
+    static final int META_SIZE  = 28;
+    static final int ENTRY_SIZE = 64;
+
     final static long TIMEOUT_NS = 200_000;
 
-    final int   capacity;
-    final Arena arena;
-
-    SequenceLayout sequenceLayout;
-    MemorySegment  segment;
-
-    // @formatter:off
-    static final GroupLayout LAYOUT = MemoryLayout.structLayout(
-        JAVA_INT.withName("lock"),
-        JAVA_FLOAT.withName("weight"),
-        JAVA_FLOAT.withName("preSynapticTime"),
-        JAVA_FLOAT.withName("postSynapticTime"),
-        JAVA_FLOAT.withName("hebbTimeRange"),
-        JAVA_FLOAT.withName("weightScale"),
-        JAVA_FLOAT.withName("hebbScale"),
-        JAVA_FLOAT.withName("timeLimit")
-    ).withByteAlignment(8);
-
-    static final VarHandle VH_LOCK               = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("lock"));
-
-    static final VarHandle VH_WEIGHT             = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("weight"));
-    static final VarHandle VH_PRE_SYNAPTIC_TIME  = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("preSynapticTime"));
-    static final VarHandle VH_POST_SYNAPTIC_TIME = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("postSynapticTime"));
-
-    static final VarHandle VH_HEBB_TIME_RANGE = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("hebbTimeRange"));
-    static final VarHandle VH_HEBB_SCALE      = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("hebbScale"));
-    static final VarHandle VH_WEIGHT_SCALE    = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("weightScale"));
-    static final VarHandle VH_TIME_LIMIT      = LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("timeLimit"));
-    // @formatter:on
+    final int           capacity;
+    final Arena         arena;
+    final MemorySegment segment;
 
     // ----- public -----
 
     public WeightModel(int capacity) {
-        assert capacity > 0 : "invalid capacity";
+        assert capacity >= META_SIZE + ENTRY_SIZE : "'capacity' must be able to contain at least one entry";
 
         this.capacity = capacity;
         this.arena = Arena.ofShared();
+        this.segment = arena.allocate(capacity);
+        initMeta();
+    }
 
-        this.sequenceLayout = MemoryLayout.sequenceLayout(capacity, LAYOUT);
-        this.segment = arena.allocate(sequenceLayout);
+    public WeightModel(Path filePath) throws IOException {
+        this.arena = Arena.ofShared();
+        try (FileChannel channel = FileChannel.open(filePath, StandardOpenOption.READ)) {
+            this.capacity = (int) channel.size();
+            this.segment = arena.allocate(this.capacity);
+            channel.read(this.segment.asByteBuffer());
+        }
+    }
+
+    public static int calculateSize(int entries) {
+        return META_SIZE + ENTRY_SIZE * entries;
+    }
+
+    @Override
+    protected MemorySegment getSegment() {
+        return segment;
     }
 
     public void close() {
-        arena.close();
-    }
-
-    public int getCapacity() {
-        return capacity;
-    }
-
-    // ----- lock/unlock -----
-
-    private static final int WRITER_WAITING = 0x40000000; // Bit 30
-    private static final int WRITER_ACTIVE  = 0xFFFFFFFF; // -1
-
-    void writeLock(int index) {
-        int spins = 0;
-        // set the WRITER_WAITING flag to indicate a write request
-        while (true) {
-            int current = (int) VH_LOCK.getVolatile(segment, 0L, index);
-            if ((current & WRITER_WAITING) == 0) {
-                if (VH_LOCK.compareAndSet(segment, 0L, index, current, current | WRITER_WAITING)) {
-                    break;
-                }
-            } else {
-                break;
-            }
-            backoff(spins++);
-        }
-
-        // set the lock
-        spins = 0;
-        while (true) {
-            int current = (int) VH_LOCK.getVolatile(segment, 0L, index);
-
-            // no reader active and write flag is set or initial state.
-            if (current == WRITER_WAITING || current == 0) {
-                if (VH_LOCK.compareAndSet(segment, 0L, index, current, WRITER_ACTIVE)) {
-                    return;
-                }
-            }
-
-            backoff(spins++);
+        if (arena != null) {
+            arena.close();
         }
     }
 
-    void writeUnlock(int index) {
-        VH_LOCK.setRelease(segment, 0L, index, 0);
+    // ----- meta -----
+
+    void initMeta() {
+        setMagic(MAGIC);
+        setVersion(1);
+        setMetaSize(META_SIZE);
+        setCapacity(capacity);
+        setEntrySize(ENTRY_SIZE);
+        setNumEntries(0);
+        setEndOffset(META_SIZE);
     }
 
-    boolean readLock(int index) {
-        int spins = 0;
-        while (true) {
-            int current = (int) VH_LOCK.getVolatile(segment, 0L, index);
+    public int alloc() {
+        int newOffset = getEndOffset();
+        setEndOffset(newOffset + ENTRY_SIZE);
 
-            // give priority to the writers
-            if (current < 0 || (current & WRITER_WAITING) != 0) {
-                backoff(spins++);
-                continue;
-            }
+        int numEntries = getNumEntries();
+        setNumEntries(numEntries + 1);
 
-            // increment reader counter
-            if (VH_LOCK.compareAndSet(segment, 0L, index, current, current + 1)) {
-                return true;
-            }
-        }
-    }
-
-    void readUnlock(int index) {
-       // decrement reader counter
-       VH_LOCK.getAndAdd(segment, 0L, index, -1);
-    }
-
-    void backoff(int spins) {
-        if (spins < 64) {
-            Thread.onSpinWait();
-        } else {
-            LockSupport.parkNanos(1);
-        }
+        return newOffset;
     }
 
     // ----- getter/setter -----
 
-    float getWeight(int index) {
-        return (float) VH_WEIGHT.get(segment, 0L, index);
+    float getWeight(int offset) {
+        return segment.get(ValueLayout.JAVA_FLOAT, offset + 4L);
     }
 
-    void setWeight(int index, float weight) {
-        VH_WEIGHT.set(segment, 0L, index, weight);
+    void setWeight(int offset, float weight) {
+        segment.set(ValueLayout.JAVA_FLOAT, offset + 4L, weight);
     }
 
-    float getPreSynapticTime(int index) {
-        return (float) VH_PRE_SYNAPTIC_TIME.get(segment, 0L, index);
+    float getPreSynapticTime(int offset) {
+        return segment.get(ValueLayout.JAVA_FLOAT, offset + 8L);
     }
 
-    void setPreSynapticTime(int index, float timestamp) {
-        VH_PRE_SYNAPTIC_TIME.set(segment, 0L, index, timestamp);
+    void setPreSynapticTime(int offset, float timestamp) {
+        segment.set(ValueLayout.JAVA_FLOAT, offset + 8L, timestamp);
     }
 
-    float getPostSynapticTime(int index) {
-        return (float) VH_POST_SYNAPTIC_TIME.get(segment, 0L, index);
+    float getPostSynapticTime(int offset) {
+        return segment.get(ValueLayout.JAVA_FLOAT, offset + 12L);
     }
 
-    void setPostSynapticTime(int index, float timestamp) {
-        VH_POST_SYNAPTIC_TIME.set(segment, 0L, index, timestamp);
+    void setPostSynapticTime(int offset, float timestamp) {
+        segment.set(ValueLayout.JAVA_FLOAT, offset + 12L, timestamp);
     }
 
-    float getHebbTimeRange(int index) {
-        return (float) VH_HEBB_TIME_RANGE.get(segment, 0L, index);
+    float getHebbTimeRange(int offset) {
+        return segment.get(ValueLayout.JAVA_FLOAT, offset + 16L);
     }
 
-    void setHebbTimeRange(int index, float time) {
-        VH_HEBB_TIME_RANGE.set(segment, 0L, index, time);
+    void setHebbTimeRange(int offset, float time) {
+        segment.set(ValueLayout.JAVA_FLOAT, offset + 16L, time);
     }
 
-    float getHebbScale(int index) {
-        return (float) VH_HEBB_SCALE.get(segment, 0L, index);
+    float getWeightScale(int offset) {
+        return segment.get(ValueLayout.JAVA_FLOAT, offset + 20L);
     }
 
-    void setHebbScale(int index, float timeRange) {
-        VH_HEBB_SCALE.set(segment, 0L, index, timeRange);
+    void setWeightScale(int offset, float timeRange) {
+        segment.set(ValueLayout.JAVA_FLOAT, offset + 20L, timeRange);
     }
 
-    float getWeightScale(int index) {
-        return (float) VH_WEIGHT_SCALE.get(segment, 0L, index);
+    float getHebbScale(int offset) {
+        return segment.get(ValueLayout.JAVA_FLOAT, offset + 24L);
     }
 
-    void setWeightScale(int index, float timeRange) {
-        VH_WEIGHT_SCALE.set(segment, 0L, index, timeRange);
+    void setHebbScale(int offset, float timeRange) {
+        segment.set(ValueLayout.JAVA_FLOAT, offset + 24L, timeRange);
     }
 
-    float getTimeLimit(int index) {
-        return (float) VH_TIME_LIMIT.get(segment, 0L, index);
+    float getTimeLimit(int offset) {
+        return segment.get(ValueLayout.JAVA_FLOAT, offset + 28L);
     }
 
-    void setTimeLimit(int index, float timeRange) {
-        VH_TIME_LIMIT.set(segment, 0L, index, timeRange);
+    void setTimeLimit(int offset, float timeRange) {
+        segment.set(ValueLayout.JAVA_FLOAT, offset + 28L, timeRange);
     }
-
 }

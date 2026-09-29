@@ -30,15 +30,15 @@ public final class SnnReceptorImpl implements SnnReceptor {
     }
 
     @Override
-    public void perceive(StimulusType stimulusType, float[][] values) {
+    public void perceive(int stimulusType, float[][] values) {
         switch (stimulusType) {
-            case STIMULUS:
+            case StimulusType.STIMULUS:
                 view.transferStimulus(values);
             break;
-            case TIME_FEEDBACK:
+            case StimulusType.TIME_FEEDBACK:
                 view.transferFbTime(values);
             break;
-            case VALUE_FEEDBACK:
+            case StimulusType.VALUE_FEEDBACK:
                 view.transferFbValue(values);
             break;
         }

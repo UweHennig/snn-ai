@@ -1,25 +1,25 @@
-/**
- * @(#)StimulusType.java
- * Copyright (c) 2026 Uwe Hennig
- * All rights reserved.
- */
+/// @(#)StimulusType.java
+/// Copyright (c) 2026 Uwe Hennig
+/// All rights reserved.
 package com.uwe_hennig.snn.contracts.core;
 
-/**
- * StimulusType
- *
- * @author Uwe Hennig
- */
-public enum StimulusType {
-    STIMULUS(0), TIME_FEEDBACK(1), VALUE_FEEDBACK(2);
+/// StimulusType
+///
+/// @author Uwe Hennig
+public final class StimulusType {
+    public static final int STIMULUS       = 1 << 0;
+    public static final int TIME_FEEDBACK  = 1 << 1;
+    public static final int VALUE_FEEDBACK = 1 << 2;
 
-    private final int code;
-
-    StimulusType(int code) {
-        this.code = code;
+    public static boolean isStimulus(int value) {
+        return (value & STIMULUS) > 0;
     }
 
-    public int code() {
-        return code;
+    public static boolean isTimeFeedback(int value) {
+        return (value & TIME_FEEDBACK) > 0;
+    }
+
+    public static boolean isValueFeedback(int value) {
+        return (value & VALUE_FEEDBACK) > 0;
     }
 }

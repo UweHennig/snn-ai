@@ -21,15 +21,15 @@ import com.uwe_hennig.snn.anatomy.allocator.SynapseModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.ThresholdModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.WeightModelManager;
 import com.uwe_hennig.snn.anatomy.neuron.AxonView;
+import com.uwe_hennig.snn.anatomy.neuron.DendritModel;
 import com.uwe_hennig.snn.anatomy.neuron.DendritView;
 import com.uwe_hennig.snn.anatomy.neuron.ModulatorView;
-import com.uwe_hennig.snn.anatomy.neuron.NeuronView;
 import com.uwe_hennig.snn.anatomy.neuron.PlasticityView;
 import com.uwe_hennig.snn.anatomy.neuron.PotentialView;
 import com.uwe_hennig.snn.anatomy.neuron.SomaView;
 import com.uwe_hennig.snn.anatomy.neuron.SynapseView;
 import com.uwe_hennig.snn.anatomy.neuron.ThresholdView;
-import com.uwe_hennig.snn.anatomy.neuron.WeightView;
+import com.uwe_hennig.snn.anatomy.neuron.WeightModel;
 import com.uwe_hennig.snn.cerebro.contracts.NeuronBuilder;
 import com.uwe_hennig.snn.cerebro.contracts.NeuronGraph;
 
@@ -98,40 +98,46 @@ public class NeuronBuilderImpl implements NeuronBuilder {
 
         // dendrit
         int[] dendritArray = new int[dendrites];
-        List<Dendrit> dendritList = new ArrayList<>(dendrites);
+        int[] weightArray = new int[dendrites];
 
         for (int i = 0; i < dendrites; i++) {
-            Dendrit dendrit = createDendrit(soma.getViewId());
-            dendritList.add(dendrit);
-            dendritArray[i] = dendrit.getViewId();
+            int weighOffset = createWeight();
+            int dendritOffset = createDendrit(soma.getViewId(), weighOffset);
+            dendritArray[i] = dendritOffset;
+            weightArray[i] = weighOffset;
         }
 
-        int dendritRef = DendritListManager.instance().nextId();
-        DendritListManager.instance().getModel().put(dendritRef, dendritArray);
-
-        // neuron
+        // TODO neuron
         this.neuronId = NeuronModelManager.instance().nextId();
-        NeuronView.setRefs(neuronId, fieldId, dendritRef, somaId, axonId, synapsesRef);
+        //NeuronView.setRefs(neuronId, fieldId, dendritRef, somaId, axonId, synapsesRef);
 
-        return new NeuronGraph(fieldId, neuronId, soma, axon, dendritList, synapseList);
+        // TODO
+        return new NeuronGraph(fieldId, neuronId, soma, axon, null /* dendritList */, synapseList);
     }
 
     // -- convenient --
 
-    private Dendrit createDendrit(int somaId) {
+    private int createWeight() {
+        // TODO
+        WeightModelManager wmm = WeightModelManager.instance();
+        WeightModel model = wmm.getModel();
+        int weightOffset = model.alloc();
+        return weightOffset;
+    }
+
+    private int createDendrit(int somaId, int weightId) {
         try {
             DendritModelManager dmm = DendritModelManager.instance();
-            int dendritId = dmm.nextId();
-            DendritView.setStructure(dendritId, fieldId, neuronId, somaId);
+            DendritModel model = dmm.getModel();
+            int dendritOffset = model.alloc(fieldId, neuronId, somaId, weightId);
 
-            WeightModelManager wmm = WeightModelManager.instance();
-            WeightView weightView = wmm.createView();
+            DendritView.setStructure(model, dendritOffset, fieldId, neuronId, somaId, weightId);
 
-            return new Dendrit(dendritId, weightView);
+            return dendritOffset;
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("Exception in createDendrit " + e.getLocalizedMessage());
-            return null;
+            return -1;
         }
     }
 

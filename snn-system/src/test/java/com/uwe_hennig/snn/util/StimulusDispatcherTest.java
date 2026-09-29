@@ -77,6 +77,7 @@ public class StimulusDispatcherTest {
             Thread.sleep(Duration.ofSeconds(1L));
             dispatcher.stop(100);
             // expected should be 120, but depends on machine performance
+            System.out.println("count = " + count.get());
             assertTrue(count.get() > 90, "invalid count!");
 
         } catch (InterruptedException e) {

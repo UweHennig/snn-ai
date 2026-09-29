@@ -39,7 +39,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class WeightTest {
     private static final int        NUM_THREADS = 209;
-    private static final int        RW_CAPACITY = 1_000_000;
+    private static final int        RW_ENTRIES  = WeightModel.calculateSize(1_000_000);
     private static final AtomicLong counter     = new AtomicLong();
 
     @Test
@@ -82,7 +82,7 @@ public class WeightTest {
     @Test
     @DisplayName("Lock Test on WeightModel")
     public void testLock() {
-        final int capacity = 1;
+        final int capacity = WeightModel.calculateSize(1);
         final WeightModel model = new WeightModel(capacity);
         checkModel(model, capacity);
 
@@ -151,7 +151,7 @@ public class WeightTest {
     @Test
     @DisplayName("Asynchronous Test on WeightModel")
     public void testAsyncModel() {
-        final int capacity = 10;
+        final int capacity = WeightModel.calculateSize(10);
         final WeightModel model = new WeightModel(capacity);
         checkModel(model, capacity);
 
@@ -188,7 +188,7 @@ public class WeightTest {
     @Test
     @DisplayName("Performance Test on WeightModel")
     public void testPerformance() {
-        final int capacity = 4000;
+        final int capacity = WeightModel.calculateSize(4000);
         final int TEST_DURATION_SECONDS = 10;
         final int NUM_THREADS = 2000;
         System.out.printf("%nProcessors     : %5d", Runtime.getRuntime().availableProcessors());
@@ -261,12 +261,13 @@ public class WeightTest {
     @Order(1)
     @DisplayName("Write to File Test")
     public void testWrite() {
-        final WeightModel model = new WeightModel(RW_CAPACITY);
+        final int capacity = WeightModel.calculateSize(RW_ENTRIES);
+        final WeightModel model = new WeightModel(capacity);
         float values = 0f;
-        System.out.printf("Writing %,d records!%n", RW_CAPACITY);
+        System.out.printf("Writing %,d records!%n", RW_ENTRIES);
 
         try {
-            for (int i = 0; i < RW_CAPACITY; i++) {
+            for (int i = 0; i < RW_ENTRIES; i++) {
                 try {
                     model.writeLock(i);
                     model.setWeight(i, values);
@@ -299,7 +300,7 @@ public class WeightTest {
     public void testRead() {
         WeightModel model = null;
         try {
-            System.out.printf("Read %,d records!%n", RW_CAPACITY);
+            System.out.printf("Read %,d records!%n", RW_ENTRIES);
             Path path = getArenaPath("weight.data");
             assertTrue(path.toFile().exists(), "file not created " + path);
 
@@ -310,7 +311,7 @@ public class WeightTest {
             assertNotNull(model, "Model not created!");
 
             float values = 0f;
-            for (int i = 0; i < RW_CAPACITY; i++) {
+            for (int i = 0; i < RW_ENTRIES; i++) {
                 assertEquals(values, model.getWeight(i));
                 assertEquals(values + 1f, model.getHebbTimeRange(i));
                 values += 2;
@@ -329,16 +330,12 @@ public class WeightTest {
     private void checkModel(WeightModel model, int capacity) {
         System.out.printf("%nModel information");
         System.out.printf("%nCapacity       : %6d", model.capacity);
-        System.out.printf("%nLayout size    : %6d bytes", WeightModel.LAYOUT.byteSize());
         System.out.printf("%nByte size      : %6d bytes", model.segment.byteSize());
-        System.out.printf("%nStructure      : %s%n%n", WeightModel.LAYOUT);
 
         assertNotNull(model.arena, "Arena is null!");
         assertNotNull(model.segment, "Segment is null!");
-        assertNotNull(model.sequenceLayout, "SequenceLayout is null!");
 
         assertEquals(capacity, model.capacity, "Invalid capacity!");
-        assertEquals(WeightModel.LAYOUT.byteSize() * model.capacity, model.segment.byteSize(), "Invalid segment size!");
     }
 
     private static Path getArenaPath(String fileName) {
@@ -358,13 +355,11 @@ public class WeightTest {
     }
 
     public final class Blackhole {
-        private static long liveness;
+        private static long         liveness;
         public static volatile long SINK;
 
-        public static void consume(Object obj) {
-            if (obj != null) {
-                liveness += System.identityHashCode(obj);
-            }
+        public static void consume(float obj) {
+            liveness += System.identityHashCode(obj);
         }
 
         public static void end() {

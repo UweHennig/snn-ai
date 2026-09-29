@@ -1,39 +1,31 @@
-/**
- * @(#)Dendrit.java
- * Copyright (c) 2026 Uwe Hennig
- * All rights reserved.
- */
+/// @(#)Dendrit.java
+/// Copyright (c) 2026 Uwe Hennig
+/// All rights reserved.
 package com.uwe_hennig.snn.cerebro.neuron;
 
+import com.uwe_hennig.snn.anatomy.allocator.DendritModelManager;
+import com.uwe_hennig.snn.anatomy.neuron.DendritModel;
 import com.uwe_hennig.snn.anatomy.neuron.DendritView;
-import com.uwe_hennig.snn.anatomy.neuron.WeightView;
-import com.uwe_hennig.snn.contracts.core.NeuronElement;
-import com.uwe_hennig.snn.contracts.core.NeuronElementType;
-import com.uwe_hennig.snn.contracts.core.ViewIdentity;
 
-/**
- * Dendrit
- *
- * @author Uwe Hennig
- */
-public final class Dendrit extends ViewIdentity implements NeuronElement {
-    private final int viewId;
-    private final WeightView weightView;
-
-    public Dendrit(int viewId, WeightView weightView) {
-        this.viewId = viewId;
-        this.weightView = weightView;
+/// Dendrit
+///
+/// @author Uwe Hennig
+public final class Dendrit {
+    private Dendrit() {
     }
 
-    /**
-     * stimulate uses StimulateService to handle stimulus
-     *
-     * @param stimulusIdentifier
-     */
-    @Override
-    public void stimulate(int stimulusIdentifier) {
+    /// General form of the stimulus method
+    ///
+    /// @param offset memory address of the dendrite segment
+    /// @param srcId is the source identifier
+    /// @param srcType is the type of the source
+    /// @param stimulusType is the stimulus type: FEEDBACK_TIME, FEEDBACK_VALUE, STIMULUS
+    /// @param stimulusValue a float delta or absolute value depending on stimulusType
+    public static void stimulate(int offset, int srcId, int srcType, int stimulusType, float stimulusValue) {
+        DendritModel model = DendritModelManager.instance().getModel();
+
         try {
-            DendritView.writeLock(viewId);
+            DendritView.writeLock(model, offset);
 // TODO
 //            float currentTime = 1000; // TODO Model time
 //
@@ -49,27 +41,7 @@ public final class Dendrit extends ViewIdentity implements NeuronElement {
 //            SnnTransferservice.transfer(stimulusIdentifier);
 
         } finally {
-            DendritView.writeUnlock(viewId);
+            DendritView.writeUnlock(model, offset);
         }
     }
-
-    @Override
-    public NeuronElementType getType() {
-        return NeuronElementType.DENDRIT;
-    }
-
-    @Override
-    public int getNeuronId() {
-        return DendritView.getNeuronId(viewId);
-    }
-
-    public int getTargetId() {
-        return DendritView.getSomaId(viewId);
-    }
-
-    @Override
-    public int getViewId() {
-        return viewId;
-    }
-
 }

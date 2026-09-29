@@ -5,19 +5,21 @@
  */
 package com.uwe_hennig.snn.anatomy.allocator;
 
-import com.uwe_hennig.snn.anatomy.neuron.WeightModel;
-import com.uwe_hennig.snn.anatomy.neuron.WeightView;
+import java.io.IOException;
+import java.nio.file.Path;
 
-/**
- * WeightModelManager
- *
- * @author Uwe Hennig
- */
+import com.uwe_hennig.snn.anatomy.neuron.WeightModel;
+import com.uwe_hennig.snn.anatomy.neuron.WeightPersistence;
+import com.uwe_hennig.snn.util.logging.SNNLogger;
+
+/// WeightModelManager
+///
+/// @author Uwe Hennig
 public class WeightModelManager {
+    private static final String        FILENAME = "weight.snn";
     private static WeightModelManager INSTANCE;
 
     private WeightModel model;
-    private int         nextOffset = 0;
 
     private WeightModelManager(int capacity) {
         this.model = new WeightModel(capacity);
@@ -38,20 +40,6 @@ public class WeightModelManager {
         return INSTANCE;
     }
 
-    public WeightView createView() {
-        if (model.getCapacity() <= nextOffset) {
-            throw new IllegalStateException("Out of off heap weight memory");
-        }
-        WeightView view = new WeightView(model, nextOffset++);
-        view.initDefaultValues();
-
-        return view;
-    }
-
-    public int capacity() {
-        return nextOffset;
-    }
-
     public WeightModel getModel() {
         return model;
     }
@@ -60,16 +48,27 @@ public class WeightModelManager {
         if (INSTANCE != null) {
             INSTANCE.model.close();
             INSTANCE.model = null;
-            INSTANCE.nextOffset = 0;
             INSTANCE = null;
         }
     }
 
     public void save(String folder) {
-        /* TODO: Save model */
+        try {
+            Path path = Path.of(folder).resolve(FILENAME);
+            WeightPersistence.save(model, path);
+        } catch (IOException e) {
+            e.printStackTrace();
+            SNNLogger.error(() -> "Weight not saved!");
+        }
     }
 
     public void load(String folder) {
-        /* TODO Load model */
+        try {
+            Path path = Path.of(folder).resolve(FILENAME);
+            this.model = WeightPersistence.load(path);
+        } catch (IOException e) {
+            e.printStackTrace();
+            SNNLogger.error(() -> "Weight not loaded!");
+        }
     }
 }

@@ -126,7 +126,8 @@ public final class StimulusDispatcher {
         bufferOffsets.offer(offset);
     }
 
-    private void transfer(StimulusType type, int srcId, int srcType, int trgId, int trgType, float value) {
+    private void transfer(int type, int srcId, int srcType, int trgId, int trgType, float value) {
+        // TODO
         SNNLogger.debug(() -> String.format(Locale.ENGLISH, "%3d -> %3d (%3.2f)", srcId, trgId, value));
     }
 

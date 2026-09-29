@@ -1,8 +1,6 @@
-/**
- * @(#)DendritTest.java
- * Copyright (c) 2026 Uwe Hennig
- * All rights reserved.
- */
+///  @(#)DendritTest.java
+///  Copyright (c) 2026 Uwe Hennig
+//   All rights reserved.
 package com.uwe_hennig.snn.anatomy.neuron;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -13,53 +11,55 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
-/**
- * DendritTest
- * @formatter:off
- * @formatter:on
- * @author Uwe Hennig
- */
+///  DendritTest
+///
+///  @author Uwe Hennig
 public class DendritTest {
 
     @Test
     @DisplayName("Simple DendritModel Test")
     public void testDendritModel() {
-        DendritModel model = new DendritModel(1);
-        checkModel(model, 1);
-
-        assertEquals(24, model.sequenceLayout.byteSize());
-        assertEquals(1, model.capacity);
+        final int capacity = 48;
+        DendritModel model = new DendritModel(capacity);
+        checkModel(model, capacity);
+        assertEquals(capacity, model.capacity);
+        int offset = model.alloc(1, 2, 3, 4);
 
         try {
-            model.writeLock(0);
-            model.setFieldId(0, 1);
-            model.setNeuronId(0, 2);
-            model.setSomaId(0, 3);
-            model.setWeightId(0, 4);
+            model.writeLock(offset);
+
+            model.setFieldId(offset, 1);
+            model.setNeuronId(offset, 2);
+            model.setSomaId(offset, 3);
+            model.setWeightId(offset, 4);
         } finally {
-            model.writeUnlock(0);
+            model.writeUnlock(offset);
         }
 
-        assertEquals(1, model.getFiedlId(0));
-        assertEquals(2, model.getNeuronId(0));
-        assertEquals(3, model.getSomaId(0));
-        assertEquals(4, model.getWeighId(0));
+        try {
+            model.readLock(offset);
+
+            assertEquals(1, model.getFiedlId(offset));
+            assertEquals(2, model.getNeuronId(offset));
+            assertEquals(3, model.getSomaId(offset));
+            assertEquals(4, model.getWeighId(offset));
+        } finally {
+            model.readUnlock(offset);
+        }
 
         model.close();
     }
 
     private void checkModel(DendritModel model, int capacity) {
         System.out.println("\nData information");
-        System.out.printf("%nCapacity       : %2d", model.capacity);
-        System.out.printf("%nLayout size    : %2d bytes", DendritModel.LAYOUT.byteSize());
-        System.out.printf("%nByte size      : %2d bytes", model.segment.byteSize());
-        System.out.printf("%nStructure      : %s%n%n", DendritModel.LAYOUT);
+        System.out.printf("%nCapacity   : %2d", model.capacity);
+        System.out.printf("%nEntry size : %2d bytes", model.getEntrySize());
+
         assertNotNull(model.arena, "Arena is null!");
         assertNotNull(model.segment, "Segment is null!");
-        assertNotNull(model.sequenceLayout, "SequenceLayout is null!");
 
         assertEquals(capacity, model.capacity, "Invalid capacity!");
-        assertEquals(DendritModel.LAYOUT.byteSize() * model.capacity, model.segment.byteSize(), "Invalid segment size!");
+        assertEquals(capacity, model.getCapacity(), "Invalid capacity!");
     }
 
     @BeforeEach
