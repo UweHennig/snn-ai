@@ -1,33 +1,34 @@
-/**
- * @(#)ModulatorModelManager.java
- * Copyright (c) 2026 Uwe Hennig
- * All rights reserved.
- */
+/// @(#)ModulatorModelManager.java
+/// Copyright (c) 2026 Uwe Hennig
+/// All rights reserved.
 package com.uwe_hennig.snn.anatomy.allocator;
 
-import com.uwe_hennig.snn.anatomy.neuron.ModulatorModel;
-import com.uwe_hennig.snn.anatomy.neuron.ModulatorView;
+import java.io.IOException;
+import java.nio.file.Path;
 
-/**
- * ModulatorModelManager
- *
- * @author Uwe Hennig
- */
+import com.uwe_hennig.snn.anatomy.neuron.ModulatorModel;
+import com.uwe_hennig.snn.anatomy.neuron.ModulatorPersistence;
+import com.uwe_hennig.snn.util.logging.SNNLogger;
+
+/// ModulatorModelManager
+///
+/// @author Uwe Hennig
+////
 public class ModulatorModelManager {
+    private static final String          FILENAME = "modulator.snn";
     private static ModulatorModelManager INSTANCE;
 
     private ModulatorModel model;
-    private int            nextOffset = 0;
 
-    private ModulatorModelManager(int capacity) {
-        this.model = new ModulatorModel(capacity);
+    private ModulatorModelManager(int size) {
+        this.model = new ModulatorModel(size);
     }
 
-    public static ModulatorModelManager init(int capacity) {
+    public static ModulatorModelManager init(int size) {
         if (INSTANCE == null) {
             synchronized (PlasticityModelManager.class) {
                 if (INSTANCE == null) {
-                    INSTANCE = new ModulatorModelManager(capacity);
+                    INSTANCE = new ModulatorModelManager(size);
                 }
             }
         }
@@ -38,18 +39,6 @@ public class ModulatorModelManager {
         return INSTANCE;
     }
 
-    public ModulatorView createView() {
-        if (model.getCapacity() <= nextOffset) {
-            throw new IllegalStateException("Out of off heap modulator memory");
-        }
-
-        return new ModulatorView(model, nextOffset++);
-    }
-
-    public int capacity() {
-        return nextOffset;
-    }
-
     public ModulatorModel getModel() {
         return model;
     }
@@ -58,16 +47,27 @@ public class ModulatorModelManager {
         if (INSTANCE != null) {
             INSTANCE.model.close();
             INSTANCE.model = null;
-            INSTANCE.nextOffset = 0;
             INSTANCE = null;
         }
     }
 
     public void save(String folder) {
-        /* TODO: Save model */
+        try {
+            Path path = Path.of(folder).resolve(FILENAME);
+            ModulatorPersistence.save(model, path);
+        } catch (IOException e) {
+            e.printStackTrace();
+            SNNLogger.error(() -> "Modulator not saved!");
+        }
     }
 
     public void load(String folder) {
-        /* TODO Load model */
+        try {
+            Path path = Path.of(folder).resolve(FILENAME);
+            this.model = ModulatorPersistence.load(path);
+        } catch (IOException e) {
+            e.printStackTrace();
+            SNNLogger.error(() -> "Modulator not loaded!");
+        }
     }
 }

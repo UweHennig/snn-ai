@@ -1,122 +1,95 @@
-/**
- * @(#)PlasticityView.java
- * Copyright (c) 2026 Uwe Hennig
- * All rights reserved.
- */
+/// @(#)PlasticityView.java
+/// Copyright (c) 2026 Uwe Hennig
+/// All rights reserved.
 package com.uwe_hennig.snn.anatomy.neuron;
 
-/**
- * PlasticityView
- *
- * @author Uwe Hennig
- */
+/// PlasticityView
+///
+/// @author Uwe Hennig
+///
 public final class PlasticityView {
-    private final PlasticityModel model;
-    private final int             index;
-
-    public PlasticityView(PlasticityModel model, int index) {
-        this.model = model;
-        this.index = index;
+    private PlasticityView() {
     }
 
+    // ----- Domain Logic -----
+
     // is always called before others
-    public float updatePlasticityPotential(float currentTime) {
-        model.writeLock(index);
-        try {
-            float lastUpdateTime = model.getLastUpdateTime(index);
-            float elapsed = currentTime - lastUpdateTime;
-            float currentPot = model.getCurrentPotential(index);
+    public static float updatePlasticityPotential(PlasticityModel model, int offset, float currentTime) {
+        float lastUpdateTime = model.getLastUpdateTime(offset);
+        float elapsed = currentTime - lastUpdateTime;
+        float currentPot = model.getCurrentPotential(offset);
 
-            // 1. Apply to dementia
-            float restingPot = model.getRestingPotential(index);
-            float restingTime = model.getRestingTime(index);
-            float restingRate = model.getRestingRate(index);
-            float newPot = update(currentPot, restingPot, restingTime, restingRate, elapsed);
+        // 1. Apply to dementia
+        float restingPot = model.getRestingPotential(offset);
+        float restingTime = model.getRestingTime(offset);
+        float restingRate = model.getRestingRate(offset);
+        float newPot = update(currentPot, restingPot, restingTime, restingRate, elapsed);
 
-            // 2. Apply to learn
-            float targetPot = model.getTargetPotential(index);
-            float targetTime = model.getTargetTime(index);
-            float learnRate = model.getTargetRate(index);
-            newPot = update(newPot, targetPot, targetTime, learnRate, elapsed);
-            model.setCurrentPotential(index, newPot);
-            model.setLastUpdateTime(index, currentTime);
-            return newPot;
-        } finally {
-            model.writeUnlock(index);
-        }
+        // 2. Apply to learn
+        float targetPot = model.getTargetPotential(offset);
+        float targetTime = model.getTargetTime(offset);
+        float learnRate = model.getTargetRate(offset);
+        newPot = update(newPot, targetPot, targetTime, learnRate, elapsed);
+        model.setCurrentPotential(offset, newPot);
+        model.setLastUpdateTime(offset, currentTime);
+        return newPot;
     }
 
     // is called when value adjustments are made
-    public void applyValueFeedback(float deltaValueFeedback, float currentTime) {
+    public static void applyValueFeedback(PlasticityModel model, int offset, float deltaValueFeedback, float currentTime) {
         if (Math.abs(deltaValueFeedback) < 0.001f) {
             return;
         }
 
-        model.writeLock(index);
-        try {
-            float elapsed = currentTime - model.getLastUpdateTime(index);
-            float targetPot = model.getTargetPotential(index);
-            float restingPot = model.getRestingPotential(index);
-            float targetTime = model.getTargetTime(index);
-            float restingTime = model.getRestingTime(index);
-            // targetPot fluctuates between 50mv and 70mV
-            // restingPoot fluctuates between -90mv and -40mV
-            if (deltaValueFeedback > 0) {
-                targetPot = update(targetPot, 90f, targetTime, 3f, elapsed);
-                restingPot = update(restingPot, -40f, restingTime, 3f, elapsed);
-            } else {
-                targetPot = update(targetPot, 50f, targetTime, 3f, elapsed);
-                restingPot = update(restingPot, -90f, restingTime, 3f, elapsed);
-            }
-            model.setTargetPotential(index, targetPot);
-            model.setRestingPotential(index, restingPot);
-            model.setLastUpdateTime(index, currentTime);
-        } finally {
-            model.writeUnlock(index);
+        float elapsed = currentTime - model.getLastUpdateTime(offset);
+        float targetPot = model.getTargetPotential(offset);
+        float restingPot = model.getRestingPotential(offset);
+        float targetTime = model.getTargetTime(offset);
+        float restingTime = model.getRestingTime(offset);
+        // targetPot fluctuates between 50mv and 70mV
+        // restingPoot fluctuates between -90mv and -40mV
+        if (deltaValueFeedback > 0) {
+            targetPot = update(targetPot, 90f, targetTime, 3f, elapsed);
+            restingPot = update(restingPot, -40f, restingTime, 3f, elapsed);
+        } else {
+            targetPot = update(targetPot, 50f, targetTime, 3f, elapsed);
+            restingPot = update(restingPot, -90f, restingTime, 3f, elapsed);
         }
+        model.setTargetPotential(offset, targetPot);
+        model.setRestingPotential(offset, restingPot);
+        model.setLastUpdateTime(offset, currentTime);
     }
 
-    public float getCurrentPotential() {
-        try {
-            model.readLock(index);
-            return model.getCurrentPotential(index);
-        } finally {
-            model.readUnlock(index);
-        }
+    public static float getCurrentPotential(PlasticityModel model, int offset) {
+        return model.getCurrentPotential(offset);
     }
 
     // is called when time adjustments are made
-    public void applyTimeFeedback(float deltaTimeFeedback, float currentTime) {
+    public static void applyTimeFeedback(PlasticityModel model, int offset, float deltaTimeFeedback, float currentTime) {
         if (Math.abs(deltaTimeFeedback) < 0.001f) {
             return;
         }
-        model.writeLock(index);
-
-        try {
-            float totalTime = model.getTargetTime(index);
-            float elapsed = currentTime - model.getLastUpdateTime(index);
-            float tauDominatorTarget = model.getTargetRate(index);
-            float tauDominatorResting = model.getRestingRate(index);
-            // tauDominators fluctuates between 2 and 5
-            if (deltaTimeFeedback < 0.0f) {
-                tauDominatorTarget = update(tauDominatorTarget, 2.0f, totalTime, 3f, elapsed);
-                tauDominatorResting = update(tauDominatorResting, 5.0f, totalTime, 3f, elapsed);
-            } else {
-                tauDominatorTarget = update(tauDominatorTarget, 5.0f, totalTime, 3f, elapsed);
-                tauDominatorResting = update(tauDominatorResting, 2.0f, totalTime, 3f, elapsed);
-            }
-            model.setTargetRate(index, tauDominatorTarget);
-            model.setRestingRate(index, tauDominatorTarget);
-            model.setLastUpdateTime(index, currentTime);
-        } finally {
-            model.writeUnlock(index);
+        float totalTime = model.getTargetTime(offset);
+        float elapsed = currentTime - model.getLastUpdateTime(offset);
+        float tauDominatorTarget = model.getTargetRate(offset);
+        float tauDominatorResting = model.getRestingRate(offset);
+        // tauDominators fluctuates between 2 and 5
+        if (deltaTimeFeedback < 0.0f) {
+            tauDominatorTarget = update(tauDominatorTarget, 2.0f, totalTime, 3f, elapsed);
+            tauDominatorResting = update(tauDominatorResting, 5.0f, totalTime, 3f, elapsed);
+        } else {
+            tauDominatorTarget = update(tauDominatorTarget, 5.0f, totalTime, 3f, elapsed);
+            tauDominatorResting = update(tauDominatorResting, 2.0f, totalTime, 3f, elapsed);
         }
+        model.setTargetRate(offset, tauDominatorTarget);
+        model.setRestingRate(offset, tauDominatorTarget);
+        model.setLastUpdateTime(offset, currentTime);
     }
 
     /**
      * Alpha function / Euler integration
      */
-    private float update(float currentValue, float targetValue, float maxTimeRange, float tauDominator, float elapsed) {
+    private static float update(float currentValue, float targetValue, float maxTimeRange, float tauDominator, float elapsed) {
         float tau = maxTimeRange / tauDominator;
         float alpha = elapsed / (tau + elapsed);
 

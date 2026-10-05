@@ -123,13 +123,11 @@ public final class DendritModel extends MetaDataAccessor {
         setEndOffset(META_SIZE);
     }
 
-    // TODO: remove weightId
-    public int alloc(int fieldId, int neuronId, int somaId, int weightId) {
+    public int alloc(int fieldId, int neuronId, int somaId) {
         int newOffset = super.alloc();
 
         setFieldId(newOffset, fieldId);
         setNeuronId(newOffset, neuronId);
-        setWeightId(newOffset, weightId);
         setSomaId(newOffset, somaId);
 
         return newOffset;

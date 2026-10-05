@@ -1,8 +1,6 @@
-/**
- * @(#)PotentialPersistence.java
- * Copyright (c) 2026 Uwe Hennig
- * All rights reserved.
- */
+/// @(#)PotentialPersistence.java
+/// Copyright (c) 2026 Uwe Hennig
+/// All rights reserved.
 package com.uwe_hennig.snn.anatomy.neuron;
 
 import static java.nio.file.StandardOpenOption.CREATE;
@@ -16,11 +14,10 @@ import java.lang.foreign.MemorySegment;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 
-/**
- * PotentialPersistence
- *
- * @author Uwe Hennig
- */
+/// PotentialPersistence
+///
+/// @author Uwe Hennig
+///
 public class PotentialPersistence {
     public static void save(PotentialModel model, Path file) throws IOException {
         try (FileChannel channel = FileChannel.open(file, CREATE, READ, WRITE, TRUNCATE_EXISTING)) {
@@ -34,18 +31,7 @@ public class PotentialPersistence {
         }
     }
 
-    public static PotentialModel laod(Path file) throws IOException {
-        try (FileChannel channel = FileChannel.open(file, READ)) {
-            int size = (int) channel.size();
-            int capacity = size / (int) PotentialModel.LAYOUT.byteSize();
-            PotentialModel model = new PotentialModel(capacity);
-
-            try (Arena tempArena = Arena.ofConfined()) {
-                MemorySegment mappedFile = channel.map(FileChannel.MapMode.READ_ONLY, 0, size, tempArena);
-                model.segment.copyFrom(mappedFile);
-            }
-
-            return model;
-        }
+    public static PotentialModel load(Path file) throws IOException {
+        return new PotentialModel(file);
     }
 }

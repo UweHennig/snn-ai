@@ -1,23 +1,24 @@
-/**
- * @(#)ThresholdModelManager.java
- * Copyright (c) 2026 Uwe Hennig
- * All rights reserved.
- */
+/// @(#)ThresholdModelManager.java
+/// Copyright (c) 2026 Uwe Hennig
+/// All rights reserved.
 package com.uwe_hennig.snn.anatomy.allocator;
 
-import com.uwe_hennig.snn.anatomy.neuron.ThresholdModel;
-import com.uwe_hennig.snn.anatomy.neuron.ThresholdView;
+import java.io.IOException;
+import java.nio.file.Path;
 
-/**
- * ThresholdModelManager
- *
- * @author Uwe Hennig
- */
+import com.uwe_hennig.snn.anatomy.neuron.ThresholdModel;
+import com.uwe_hennig.snn.anatomy.neuron.ThresholdPersistence;
+import com.uwe_hennig.snn.util.logging.SNNLogger;
+
+/// ThresholdModelManager
+///
+/// @author Uwe Hennig
+///
 public class ThresholdModelManager {
+    private static final String          FILENAME = "threshold.snn";
     private static ThresholdModelManager INSTANCE;
 
     private ThresholdModel model;
-    private int            nextOffset = 0;
 
     private ThresholdModelManager(int capacity) {
         this.model = new ThresholdModel(capacity);
@@ -38,17 +39,6 @@ public class ThresholdModelManager {
         return INSTANCE;
     }
 
-    public ThresholdView createView() {
-        if (model.getCapacity() <= nextOffset) {
-            throw new IllegalStateException("Out of off heap threshold memory");
-        }
-        return new ThresholdView(model, nextOffset++);
-    }
-
-    public int capacity() {
-        return nextOffset;
-    }
-
     public ThresholdModel getModel() {
         return model;
     }
@@ -57,16 +47,27 @@ public class ThresholdModelManager {
         if (INSTANCE != null) {
             INSTANCE.model.close();
             INSTANCE.model = null;
-            INSTANCE.nextOffset = 0;
             INSTANCE = null;
         }
     }
 
     public void save(String folder) {
-        /* TODO: Save model */
+        try {
+            Path path = Path.of(folder).resolve(FILENAME);
+            ThresholdPersistence.save(model, path);
+        } catch (IOException e) {
+            e.printStackTrace();
+            SNNLogger.error(() -> "Threshold not saved!");
+        }
     }
 
     public void load(String folder) {
-        /* TODO Load model */
+        try {
+            Path path = Path.of(folder).resolve(FILENAME);
+            this.model = ThresholdPersistence.load(path);
+        } catch (IOException e) {
+            e.printStackTrace();
+            SNNLogger.error(() -> "Threshold not loaded!");
+        }
     }
 }

@@ -17,9 +17,11 @@ public final class NeuronView {
         model.setFieldId(index, fieldId);
     }
 
-    public static void setRefs(int index, int fieldId, int dendritRef, int somaId, int axonId, int synapseRef) {
-        NeuronModel model = NeuronModelManager.INSTANCE.getModel();
-        model.setFieldId(index, fieldId);
-        model.setRef(index, dendritRef, somaId, axonId, synapseRef);
+    public static void setRefs(NeuronModel model, int offset, int fieldId, int dendritRef, int somaId, int axonId, int synapseRef) {
+        model.setFieldId(offset, fieldId);
+        model.setDendritRef(offset, dendritRef);
+        model.setSomaId(offset, somaId);
+        model.setAxonId(offset, axonId);
+        model.setSynapseRef(offset, synapseRef);
     }
 }

@@ -1,8 +1,6 @@
-/**
- * @(#)ThresholdPersistence.java
- * Copyright (c) 2026 Uwe Hennig
- * All rights reserved.
- */
+/// @(#)ThresholdPersistence.java
+/// Copyright (c) 2026 Uwe Hennig
+/// All rights reserved.
 package com.uwe_hennig.snn.anatomy.neuron;
 
 import static java.nio.file.StandardOpenOption.CREATE;
@@ -16,11 +14,10 @@ import java.lang.foreign.MemorySegment;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 
-/**
- * ThresholdPersistence
- *
- * @author Uwe Hennig
- */
+/// ThresholdPersistence
+///
+/// @author Uwe Hennig
+////
 public class ThresholdPersistence {
     public static void save(ThresholdModel model, Path file) throws IOException {
         try (FileChannel channel = FileChannel.open(file, CREATE, READ, WRITE, TRUNCATE_EXISTING)) {
@@ -34,18 +31,7 @@ public class ThresholdPersistence {
         }
     }
 
-    public static ThresholdModel laod(Path file) throws IOException {
-        try (FileChannel channel = FileChannel.open(file, READ)) {
-            int size = (int) channel.size();
-            int capacity = size / (int) ThresholdModel.LAYOUT.byteSize();
-            ThresholdModel model = new ThresholdModel(capacity);
-
-            try (Arena tempArena = Arena.ofConfined()) {
-                MemorySegment mappedFile = channel.map(FileChannel.MapMode.READ_ONLY, 0, size, tempArena);
-                model.segment.copyFrom(mappedFile);
-            }
-
-            return model;
-        }
+    public static ThresholdModel load(Path file) throws IOException {
+        return new ThresholdModel(file);
     }
 }

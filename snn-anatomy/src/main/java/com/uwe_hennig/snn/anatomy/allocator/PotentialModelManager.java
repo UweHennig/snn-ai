@@ -1,33 +1,34 @@
-/**
- * @(#)PotentialModelManager.java
- * Copyright (c) 2026 Uwe Hennig
- * All rights reserved.
- */
+/// @(#)PotentialModelManager.java
+/// Copyright (c) 2026 Uwe Hennig
+/// All rights reserved.
 package com.uwe_hennig.snn.anatomy.allocator;
 
-import com.uwe_hennig.snn.anatomy.neuron.PotentialModel;
-import com.uwe_hennig.snn.anatomy.neuron.PotentialView;
+import java.io.IOException;
+import java.nio.file.Path;
 
-/**
- * PotentialModelManager
- *
- * @author Uwe Hennig
- */
+import com.uwe_hennig.snn.anatomy.neuron.PotentialModel;
+import com.uwe_hennig.snn.anatomy.neuron.PotentialPersistence;
+import com.uwe_hennig.snn.util.logging.SNNLogger;
+
+/// PotentialModelManager
+///
+/// @author Uwe Hennig
+///
 public class PotentialModelManager {
+    private static final String        FILENAME = "potential.snn";
     private static PotentialModelManager INSTANCE;
 
     private PotentialModel model;
-    private int            nextOffset = 0;
 
-    private PotentialModelManager(int capacity) {
-        this.model = new PotentialModel(capacity);
+    private PotentialModelManager(int size) {
+        this.model = new PotentialModel(size);
     }
 
-    public static PotentialModelManager init(int capacity) {
+    public static PotentialModelManager init(int size) {
         if (INSTANCE == null) {
             synchronized (PlasticityModelManager.class) {
                 if (INSTANCE == null) {
-                    INSTANCE = new PotentialModelManager(capacity);
+                    INSTANCE = new PotentialModelManager(size);
                 }
             }
         }
@@ -38,24 +39,12 @@ public class PotentialModelManager {
         return INSTANCE;
     }
 
-    public PotentialView createView() {
-        if (model.getCapacity() <= nextOffset) {
-            throw new IllegalStateException("Out of off heap ptoential memory");
-        }
-        return new PotentialView(nextOffset++);
-    }
-
-    public int capacity() {
-        return nextOffset;
-    }
-
     public PotentialModel getModel() {
         return model;
     }
 
     public static void close() {
         if (INSTANCE != null) {
-            INSTANCE.nextOffset = 0;
             INSTANCE.model.close();
             INSTANCE.model = null;
             INSTANCE = null;
@@ -63,10 +52,22 @@ public class PotentialModelManager {
     }
 
     public void save(String folder) {
-        /* TODO: Save model */
+        try {
+            Path path = Path.of(folder).resolve(FILENAME);
+            PotentialPersistence.save(model, path);
+        } catch (IOException e) {
+            e.printStackTrace();
+            SNNLogger.error(() -> "Potential not saved!");
+        }
     }
 
     public void load(String folder) {
-        /* TODO Load model */
+        try {
+            Path path = Path.of(folder).resolve(FILENAME);
+            this.model = PotentialPersistence.load(path);
+        } catch (IOException e) {
+            e.printStackTrace();
+            SNNLogger.error(() -> "Potential not loaded!");
+        }
     }
 }

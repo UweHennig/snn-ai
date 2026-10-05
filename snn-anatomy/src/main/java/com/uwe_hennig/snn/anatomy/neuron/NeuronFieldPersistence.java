@@ -1,8 +1,6 @@
-/**
- * @(#)NeuronFieldPersistence.java
- * Copyright (c) 2026 Uwe Hennig
- * All rights reserved.
- */
+/// @(#)NeuronFieldPersistence.java
+///Copyright (c) 2026 Uwe Hennig
+///All rights reserved.
 package com.uwe_hennig.snn.anatomy.neuron;
 
 import static java.nio.file.StandardOpenOption.CREATE;
@@ -16,11 +14,10 @@ import java.lang.foreign.MemorySegment;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 
-/**
- * NeuronFieldPersistence
- *
- * @author Uwe Hennig
- */
+/// NeuronFieldPersistence
+///
+/// @author Uwe Hennig
+///
 public class NeuronFieldPersistence {
     public static void save(NeuronFieldModel model, Path file) throws IOException {
         try (FileChannel channel = FileChannel.open(file, CREATE, READ, WRITE, TRUNCATE_EXISTING)) {
@@ -35,17 +32,6 @@ public class NeuronFieldPersistence {
     }
 
     public static NeuronFieldModel laod(Path file) throws IOException {
-        try (FileChannel channel = FileChannel.open(file, READ)) {
-            int size = (int) channel.size();
-            int capacity = size / (int) NeuronFieldModel.LAYOUT.byteSize();
-            NeuronFieldModel model = new NeuronFieldModel(capacity);
-
-            try (Arena tempArena = Arena.ofConfined()) {
-                MemorySegment mappedFile = channel.map(FileChannel.MapMode.READ_ONLY, 0, size, tempArena);
-                model.segment.copyFrom(mappedFile);
-            }
-
-            return model;
-        }
+        return new NeuronFieldModel(file);
     }
 }

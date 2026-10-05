@@ -15,21 +15,22 @@ import com.uwe_hennig.snn.util.logging.SNNLogger;
 /// WeightModelManager
 ///
 /// @author Uwe Hennig
+///
 public class WeightModelManager {
-    private static final String        FILENAME = "weight.snn";
+    private static final String       FILENAME = "weight.snn";
     private static WeightModelManager INSTANCE;
 
     private WeightModel model;
 
-    private WeightModelManager(int capacity) {
-        this.model = new WeightModel(capacity);
+    private WeightModelManager(int size) {
+        this.model = new WeightModel(size);
     }
 
-    public static WeightModelManager init(int capacity) {
+    public static WeightModelManager init(int size) {
         if (INSTANCE == null) {
             synchronized (PlasticityModelManager.class) {
                 if (INSTANCE == null) {
-                    INSTANCE = new WeightModelManager(capacity);
+                    INSTANCE = new WeightModelManager(size);
                 }
             }
         }

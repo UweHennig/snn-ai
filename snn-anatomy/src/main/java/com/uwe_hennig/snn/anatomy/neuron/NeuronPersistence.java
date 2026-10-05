@@ -1,8 +1,6 @@
-/**
- * @(#)NeuronPersistence.java
- * Copyright (c) 2026 Uwe Hennig
- * All rights reserved.
- */
+/// @(#)NeuronPersistence.java
+/// Copyright (c) 2026 Uwe Hennig
+/// All rights reserved.
 package com.uwe_hennig.snn.anatomy.neuron;
 
 import static java.nio.file.StandardOpenOption.CREATE;
@@ -16,11 +14,10 @@ import java.lang.foreign.MemorySegment;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 
-/**
- * NeuronPersistence
- *
- * @author Uwe Hennig
- */
+/// NeuronPersistence
+///
+/// @author Uwe Hennig
+///
 public class NeuronPersistence {
     public static void save(NeuronModel model, Path file) throws IOException {
         try (FileChannel channel = FileChannel.open(file, CREATE, READ, WRITE, TRUNCATE_EXISTING)) {
@@ -34,18 +31,7 @@ public class NeuronPersistence {
         }
     }
 
-    public static NeuronModel laod(Path file) throws IOException {
-        try (FileChannel channel = FileChannel.open(file, READ)) {
-            int size = (int) channel.size();
-            int capacity = size / (int) NeuronModel.LAYOUT.byteSize();
-            NeuronModel model = new NeuronModel(capacity);
-
-            try (Arena tempArena = Arena.ofConfined()) {
-                MemorySegment mappedFile = channel.map(FileChannel.MapMode.READ_ONLY, 0, size, tempArena);
-                model.segment.copyFrom(mappedFile);
-            }
-
-            return model;
-        }
+    public static NeuronModel load(Path file) throws IOException {
+        return new NeuronModel(file);
     }
 }

@@ -1,84 +1,47 @@
-/**
- * @(#)PotentialView.java
- * Copyright (c) 2026 Uwe Hennig
- * All rights reserved.
- */
+/// @(#)PotentialView.java
+/// Copyright (c) 2026 Uwe Hennig
+/// All rights reserved.
 package com.uwe_hennig.snn.anatomy.neuron;
 
-import com.uwe_hennig.snn.anatomy.allocator.PotentialModelManager;
-
-/**
- * PotentialView
- *
- * @author Uwe Hennig
- */
+/// PotentialView
+///
+/// @author Uwe Hennig
+///
 public final class PotentialView {
-    private final int index;
-    public PotentialView(int index) {
-        this.index = index;
+    private PotentialView() {
     }
 
-    public float decay(float currentTime) {
-        PotentialModel model = PotentialModelManager.instance().getModel();
+    // ----- Domain Logic -----
 
-        float currentPotential = model.getPotential(index);
-        float lastUpdate = model.getLastUpdateTime(index);
+    public static float decay(PotentialModel model, int offset, float currentTime) {
+        float currentPotential = model.getPotential(offset);
+        float lastUpdate = model.getLastUpdateTime(offset);
         float elapsed = Math.max(currentTime - lastUpdate, 0f);
-        float repolarizationTime = model.getRepolarizationTime(index);
-        float restingPotential = model.getRestingPotential(index);
+        float repolarizationTime = model.getRepolarizationTime(offset);
+        float restingPotential = model.getRestingPotential(offset);
 
         float potential = currentPotential + (repolarizationTime - currentPotential) * Math.clamp(elapsed / restingPotential, 0.0f, 1.0f);
 
-        model.setPotential(index, potential);
-        model.setLastUpdateTime(index, currentPotential);
+        model.setPotential(offset, potential);
+        model.setLastUpdateTime(offset, currentPotential);
         return potential;
     }
 
-    public float getPotential() {
-        PotentialModel model = PotentialModelManager.instance().getModel();
-        try {
-            model.readLock(index);
-            return model.getPotential(index);
-        } finally {
-            model.readUnlock(index);
-        }
+    public static float getPotential(PotentialModel model, int offset) {
+        return model.getPotential(offset);
     }
 
-    public float addPotentitial(float potential, float currentTime) {
-        PotentialModel model = PotentialModelManager.instance().getModel();
-
-        return withPotential(potential + model.getPotential(index), currentTime);
+    public static float addPotentitial(PotentialModel model, int offset, float potential, float currentTime) {
+        return withPotential(model, offset, potential + model.getPotential(offset), currentTime);
     }
 
-    public boolean fire(float threshold) {
-        PotentialModel model = PotentialModelManager.instance().getModel();
-        try {
-            model.readLock(index);
-            return model.getPotential(index) > threshold;
-        } finally {
-            model.readUnlock(index);
-        }
+    public static boolean fire(PotentialModel model, int offset, float threshold) {
+        return model.getPotential(offset) > threshold;
     }
 
-    private float withPotential(float potential, float currentTime) {
-        PotentialModel model = PotentialModelManager.instance().getModel();
-
-        model.setPotential(index, potential);
-        model.setLastUpdateTime(index, currentTime);
-        return model.getPotential(index);
-    }
-
-    // TODO remove
-    public void initData() {
-        PotentialModel model = PotentialModelManager.instance().getModel();
-        try {
-            model.writeLock(index);
-            // TODO fetch values from parameter service
-            model.setPotential(index, -40f);
-            model.setRepolarizationTime(index, 100f);
-            model.setRestingPotential(index, -40);
-        } finally {
-            model.writeUnlock(index);
-        }
+    private static float withPotential(PotentialModel model, int offset, float potential, float currentTime) {
+        model.setPotential(offset, potential);
+        model.setLastUpdateTime(offset, currentTime);
+        return model.getPotential(offset);
     }
 }

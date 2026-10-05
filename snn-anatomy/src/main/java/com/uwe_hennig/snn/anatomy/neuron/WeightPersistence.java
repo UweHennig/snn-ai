@@ -1,8 +1,6 @@
-/**
- * @(#)WeightPersistence.java
- * Copyright (c) 2026 Uwe Hennig
- * All rights reserved.
- */
+/// @(#)WeightPersistence.java
+/// Copyright (c) 2026 Uwe Hennig
+/// All rights reserved.
 package com.uwe_hennig.snn.anatomy.neuron;
 
 import static java.nio.file.StandardOpenOption.CREATE;
@@ -19,6 +17,7 @@ import java.nio.file.Path;
 /// WeightPersistence
 ///
 /// @author Uwe Hennig
+///
 public final class WeightPersistence {
     public static void save(WeightModel model, Path file) throws IOException {
         try (FileChannel channel = FileChannel.open(file, CREATE, READ, WRITE, TRUNCATE_EXISTING)) {
