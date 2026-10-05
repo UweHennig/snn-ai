@@ -18,17 +18,12 @@ import java.nio.file.StandardOpenOption;
 /// ┌─────────────────────────────────┐
 /// │ MetaInfo                        │
 /// │  00: magic           : int      │
-/// │  04: version         : int      │
-/// │  08: metaSize        : int      │
-/// │  12: capacity        : int      │
-/// │  16: entrySize       : int      │
-/// │  20: numEntries      : int      │
-/// │  24: endOffset       : int      │
+/// │  ...                            │
+/// │  28: endOffset       : int      │
 /// ├─────────────────────────────────┤
 /// │ Entry 0                         │
-/// │  28: lock            : int      │
 /// │  32: weight          : float    │
-/// │  36: preSynapticTime : float    │
+/// │  46: preSynapticTime : float    │
 /// │  40: postSynapticTime: float    │
 /// │  44: hebbTimeRange   : float    │
 /// │  48: weightScale     : float    │
@@ -36,14 +31,13 @@ import java.nio.file.StandardOpenOption;
 /// │  56: timeLimit       : float    │
 /// ├─────────────────────────────────┤
 /// │ Entry 1                         │
-/// │  60: lock            : int      │
-/// │  64: weight          : float    │
-/// │  68: preSynapticTime : float    │
-/// │  72: postSynapticTime: float    │
-/// │  76: hebbTimeRange   : float    │
-/// │  80: weightScale     : float    │
-/// │  84: hebbScale       : float    │
-/// │  88: timeLimit       : float    │
+/// │  60: weight          : float    │
+/// │  64: preSynapticTime : float    │
+/// │  68: postSynapticTime: float    │
+/// │  72: hebbTimeRange   : float    │
+/// │  76: weightScale     : float    │
+/// │  80: hebbScale       : float    │
+/// │  84: timeLimit       : float    │
 /// ├─────────────────────────────────┤
 /// │ ...                             │
 /// └─────────────────────────────────┘
@@ -54,31 +48,31 @@ import java.nio.file.StandardOpenOption;
 public final class WeightModel extends MetaDataAccessor {
     static final int MAGIC      = ('D' << 24) | ('W' << 16) | ('_' << 8) | '1';
     static final int VALUE_SIZE = 4;
-    static final int META_SIZE  = 28;
-    static final int ENTRY_SIZE = 64;
+    static final int ENTRY_SIZE = 28;
 
     final static long TIMEOUT_NS = 200_000;
 
-    final int           capacity;
     final Arena         arena;
     final MemorySegment segment;
 
+    final int           size;
+
     // ----- public -----
 
-    public WeightModel(int capacity) {
-        assert capacity >= META_SIZE + ENTRY_SIZE : "'capacity' must be able to contain at least one entry";
+    public WeightModel(int size) {
+        assert size >= META_SIZE + ENTRY_SIZE : "'size' must be able to contain at least one entry";
 
-        this.capacity = capacity;
+        this.size = size;
         this.arena = Arena.ofShared();
-        this.segment = arena.allocate(capacity);
+        this.segment = arena.allocate(size);
         initMeta();
     }
 
     public WeightModel(Path filePath) throws IOException {
         this.arena = Arena.ofShared();
         try (FileChannel channel = FileChannel.open(filePath, StandardOpenOption.READ)) {
-            this.capacity = (int) channel.size();
-            this.segment = arena.allocate(this.capacity);
+            this.size = (int) channel.size();
+            this.segment = arena.allocate(this.size);
             channel.read(this.segment.asByteBuffer());
         }
     }
@@ -104,77 +98,68 @@ public final class WeightModel extends MetaDataAccessor {
         setMagic(MAGIC);
         setVersion(1);
         setMetaSize(META_SIZE);
-        setCapacity(capacity);
         setEntrySize(ENTRY_SIZE);
-        setNumEntries(0);
+        setTotalSize(size);
+        setMaxEntries((size - META_SIZE) / ENTRY_SIZE);
+        setEntryCount(0);
         setEndOffset(META_SIZE);
-    }
-
-    public int alloc() {
-        int newOffset = getEndOffset();
-        setEndOffset(newOffset + ENTRY_SIZE);
-
-        int numEntries = getNumEntries();
-        setNumEntries(numEntries + 1);
-
-        return newOffset;
     }
 
     // ----- getter/setter -----
 
     float getWeight(int offset) {
-        return segment.get(ValueLayout.JAVA_FLOAT, offset + 4L);
+        return segment.get(ValueLayout.JAVA_FLOAT, offset + 0L);
     }
 
     void setWeight(int offset, float weight) {
-        segment.set(ValueLayout.JAVA_FLOAT, offset + 4L, weight);
+        segment.set(ValueLayout.JAVA_FLOAT, offset + 0L, weight);
     }
 
     float getPreSynapticTime(int offset) {
-        return segment.get(ValueLayout.JAVA_FLOAT, offset + 8L);
+        return segment.get(ValueLayout.JAVA_FLOAT, offset + 4L);
     }
 
     void setPreSynapticTime(int offset, float timestamp) {
-        segment.set(ValueLayout.JAVA_FLOAT, offset + 8L, timestamp);
+        segment.set(ValueLayout.JAVA_FLOAT, offset + 4L, timestamp);
     }
 
     float getPostSynapticTime(int offset) {
-        return segment.get(ValueLayout.JAVA_FLOAT, offset + 12L);
+        return segment.get(ValueLayout.JAVA_FLOAT, offset + 8L);
     }
 
     void setPostSynapticTime(int offset, float timestamp) {
-        segment.set(ValueLayout.JAVA_FLOAT, offset + 12L, timestamp);
+        segment.set(ValueLayout.JAVA_FLOAT, offset + 8L, timestamp);
     }
 
     float getHebbTimeRange(int offset) {
-        return segment.get(ValueLayout.JAVA_FLOAT, offset + 16L);
+        return segment.get(ValueLayout.JAVA_FLOAT, offset + 12L);
     }
 
     void setHebbTimeRange(int offset, float time) {
-        segment.set(ValueLayout.JAVA_FLOAT, offset + 16L, time);
+        segment.set(ValueLayout.JAVA_FLOAT, offset + 12L, time);
     }
 
     float getWeightScale(int offset) {
-        return segment.get(ValueLayout.JAVA_FLOAT, offset + 20L);
+        return segment.get(ValueLayout.JAVA_FLOAT, offset + 16L);
     }
 
     void setWeightScale(int offset, float timeRange) {
-        segment.set(ValueLayout.JAVA_FLOAT, offset + 20L, timeRange);
+        segment.set(ValueLayout.JAVA_FLOAT, offset + 16L, timeRange);
     }
 
     float getHebbScale(int offset) {
-        return segment.get(ValueLayout.JAVA_FLOAT, offset + 24L);
+        return segment.get(ValueLayout.JAVA_FLOAT, offset + 20L);
     }
 
     void setHebbScale(int offset, float timeRange) {
-        segment.set(ValueLayout.JAVA_FLOAT, offset + 24L, timeRange);
+        segment.set(ValueLayout.JAVA_FLOAT, offset + 20L, timeRange);
     }
 
     float getTimeLimit(int offset) {
-        return segment.get(ValueLayout.JAVA_FLOAT, offset + 28L);
+        return segment.get(ValueLayout.JAVA_FLOAT, offset + 24L);
     }
 
     void setTimeLimit(int offset, float timeRange) {
-        segment.set(ValueLayout.JAVA_FLOAT, offset + 28L, timeRange);
+        segment.set(ValueLayout.JAVA_FLOAT, offset + 24L, timeRange);
     }
 }

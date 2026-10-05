@@ -1,180 +1,132 @@
-/**
- * @(#)PotentialModel.java
- * Copyright (c) 2026 Uwe Hennig
- * All rights reserved.
- */
+/// @(#)PotentialModel.java
+/// Copyright (c) 2026 Uwe Hennig
+/// All rights reserved.
 package com.uwe_hennig.snn.anatomy.neuron;
 
-import static java.lang.foreign.ValueLayout.JAVA_FLOAT;
-import static java.lang.foreign.ValueLayout.JAVA_INT;
-
+import java.io.IOException;
 import java.lang.foreign.Arena;
-import java.lang.foreign.GroupLayout;
-import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
-import java.lang.foreign.SequenceLayout;
-import java.lang.invoke.VarHandle;
-import java.util.concurrent.locks.LockSupport;
+import java.lang.foreign.ValueLayout;
+import java.nio.channels.FileChannel;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 
-/**
- * PotentialModel
- *
- * @author Uwe Hennig
- */
-public final class PotentialModel {
-    final int   capacity;
-    final Arena arena;
+/// PotentialModel
+/// ```
+/// ┌─────────────────────────────────┐
+/// │ MetaInfo                        │
+/// │  00: magic           : int      │
+/// │  ...                            │
+/// │  28: endOffset       : int      │
+/// ├─────────────────────────────────┤
+/// │ Entry 0                         │
+/// │  32: potential          : float │
+/// │  36: restingPotential   : float │
+/// │  40: lastUpdateTime     : float │
+/// │  44: repolarizationTime : float │
+/// ├─────────────────────────────────┤
+/// │ Entry 1                         │
+/// │  48: potential          : float │
+/// │  52: restingPotential   : float │
+/// │  56: lastUpdateTime     : float │
+/// │  60: repolarizationTime : float │
+/// ├─────────────────────────────────┤
+/// │ ...                             │
+/// └─────────────────────────────────┘
+/// ```
+///
+/// @author Uwe Hennig
+///
+public final class PotentialModel extends MetaDataAccessor {
+    static final int MAGIC      = ('P' << 24) | ('M' << 16) | ('_' << 8) | '1';
+    static final int VALUE_SIZE = 4;
+    static final int ENTRY_SIZE = 16;
 
-    SequenceLayout sequenceLayout;
-    MemorySegment  segment;
+    final Arena         arena;
+    final MemorySegment segment;
 
-    // @formatter:off
-    static final GroupLayout LAYOUT = MemoryLayout.structLayout(
-        JAVA_INT.withName("lock"),
-        JAVA_FLOAT.withName("potential"),
-        JAVA_FLOAT.withName("restingPotential"),
-        JAVA_FLOAT.withName("lastUpdateTime"),
-        JAVA_FLOAT.withName("repolarizationTime"),
-        MemoryLayout.paddingLayout(4)
-    ).withByteAlignment(8);
-
-    static final VarHandle VH_LOCK      =
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("lock"));
-    static final VarHandle VH_POTENTIAL =
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("potential"));
-    static final VarHandle VH_RESTING_POTENTIAL =
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("restingPotential"));
-    static final VarHandle VH_LAST_UPDATE_TIME =
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("lastUpdateTime"));
-    static final VarHandle VH_REPOLARIZATIN_TIME =
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("repolarizationTime"));
-
-    // @formatter:on
+    final int size;
 
     // ----- public -----
 
-    public PotentialModel(int capacity) {
-        assert capacity > 0 : "invalid capacity";
+    public PotentialModel(int size) {
+        assert size >= META_SIZE + ENTRY_SIZE : "'size' must be able to contain at least one entry";
 
-        this.capacity = capacity;
+        this.size = size;
         this.arena = Arena.ofShared();
+        this.segment = arena.allocate(size);
+        initMeta();
+    }
 
-        this.sequenceLayout = MemoryLayout.sequenceLayout(capacity, LAYOUT);
-        this.segment = arena.allocate(sequenceLayout);
+    public PotentialModel(Path filePath) throws IOException {
+        this.arena = Arena.ofShared();
+        try (FileChannel channel = FileChannel.open(filePath, StandardOpenOption.READ)) {
+            this.size = (int) channel.size();
+            this.segment = arena.allocate(this.size);
+            channel.read(this.segment.asByteBuffer());
+        }
+    }
+
+    public static int calculateSize(int entries) {
+        return META_SIZE + ENTRY_SIZE * entries;
+    }
+
+    @Override
+    protected MemorySegment getSegment() {
+        return segment;
     }
 
     public void close() {
-        arena.close();
-    }
-
-    public int getCapacity() {
-        return capacity;
-    }
-
-    // ----- lock/unlock -----
-
-    private static final int WRITER_WAITING = 0x40000000; // Bit 30
-    private static final int WRITER_ACTIVE  = 0xFFFFFFFF; // -1
-
-    void writeLock(int index) {
-        int spins = 0;
-        // set the WRITER_WAITING flag to indicate a write request
-        while (true) {
-            int current = (int) VH_LOCK.getVolatile(segment, 0L, index);
-            if ((current & WRITER_WAITING) == 0) {
-                if (VH_LOCK.compareAndSet(segment, 0L, index, current, current | WRITER_WAITING)) {
-                    break;
-                }
-            } else {
-                break;
-            }
-            backoff(spins++);
-        }
-
-        // set the lock
-        spins = 0;
-        while (true) {
-            int current = (int) VH_LOCK.getVolatile(segment, 0L, index);
-
-            // no reader active and write flag is set or initial state.
-            if (current == WRITER_WAITING || current == 0) {
-                if (VH_LOCK.compareAndSet(segment, 0L, index, current, WRITER_ACTIVE)) {
-                    return;
-                }
-            }
-
-            backoff(spins++);
+        if (arena != null) {
+            arena.close();
         }
     }
 
-    void writeUnlock(int index) {
-        VH_LOCK.setRelease(segment, 0L, index, 0);
+    // ----- meta -----
+
+    void initMeta() {
+        setMagic(MAGIC);
+        setVersion(1);
+        setMetaSize(META_SIZE);
+        setEntrySize(ENTRY_SIZE);
+        setTotalSize(size);
+        setMaxEntries((size - META_SIZE) / ENTRY_SIZE);
+        setEntryCount(0);
+        setEndOffset(META_SIZE);
     }
-
-    boolean readLock(int index) {
-        int spins = 0;
-        while (true) {
-            int current = (int) VH_LOCK.getVolatile(segment, 0L, index);
-
-            // give priority to the writers
-            if (current < 0 || (current & WRITER_WAITING) != 0) {
-                backoff(spins++);
-                continue;
-            }
-
-            // increment reader counter
-            if (VH_LOCK.compareAndSet(segment, 0L, index, current, current + 1)) {
-                return true;
-            }
-        }
-    }
-
-    void readUnlock(int index) {
-       // decrement reader counter
-       VH_LOCK.getAndAdd(segment, 0L, index, -1);
-    }
-
-    void backoff(int spins) {
-        if (spins < 64) {
-            Thread.onSpinWait();
-        } else {
-            LockSupport.parkNanos(1);
-        }
-    }
-
 
     // ----- getter/setter -----
 
-    float getPotential(int index) {
-        return (float) VH_POTENTIAL.get(segment, 0L, index);
+    float getPotential(int offset) {
+        return segment.get(ValueLayout.JAVA_FLOAT, offset + 0L);
     }
 
-    void setPotential(int index, float value) {
-        VH_POTENTIAL.set(segment, 0L, index, value);
+    void setPotential(int offset, float value) {
+        segment.set(ValueLayout.JAVA_FLOAT, offset + 0L, value);
     }
 
-    float getRestingPotential(int index) {
-        return (float) VH_RESTING_POTENTIAL.get(segment, 0L, index);
+    float getRestingPotential(int offset) {
+        return segment.get(ValueLayout.JAVA_FLOAT, offset + 4L);
     }
 
-    void setRestingPotential(int index, float value) {
-        VH_RESTING_POTENTIAL.set(segment, 0L, index, value);
+    void setRestingPotential(int offset, float value) {
+        segment.set(ValueLayout.JAVA_FLOAT, offset + 4L, value);
     }
 
-    float getLastUpdateTime(int index) {
-        return (float) VH_LAST_UPDATE_TIME.get(segment, 0L, index);
+    float getLastUpdateTime(int offset) {
+        return segment.get(ValueLayout.JAVA_FLOAT, offset + 8L);
     }
 
-    void setLastUpdateTime(int index, float value) {
-        VH_LAST_UPDATE_TIME.set(segment, 0L, index, value);
+    void setLastUpdateTime(int offset, float value) {
+        segment.set(ValueLayout.JAVA_FLOAT, offset + 8L, value);
     }
 
-    float getRepolarizationTime(int index) {
-        return (float) VH_REPOLARIZATIN_TIME.get(segment, 0L, index);
+    float getRepolarizationTime(int offset) {
+        return segment.get(ValueLayout.JAVA_FLOAT, offset + 12L);
     }
 
-    void setRepolarizationTime(int index, float value) {
-        VH_REPOLARIZATIN_TIME.set(segment, 0L, index, value);
+    void setRepolarizationTime(int offset, float value) {
+        segment.set(ValueLayout.JAVA_FLOAT, offset + 12L, value);
     }
 
 }

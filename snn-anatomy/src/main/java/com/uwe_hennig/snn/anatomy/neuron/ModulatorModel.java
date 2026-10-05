@@ -1,178 +1,132 @@
-/**
- * @(#)ModulatorModel.java
- * Copyright (c) 2026 Uwe Hennig
- * All rights reserved.
- */
+/// @(#)ModulatorModel.java
+/// Copyright (c) 2026 Uwe Hennig
+/// All rights reserved.
 package com.uwe_hennig.snn.anatomy.neuron;
 
-import static java.lang.foreign.ValueLayout.JAVA_FLOAT;
-import static java.lang.foreign.ValueLayout.JAVA_INT;
-
+import java.io.IOException;
 import java.lang.foreign.Arena;
-import java.lang.foreign.GroupLayout;
-import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
-import java.lang.foreign.SequenceLayout;
-import java.lang.invoke.VarHandle;
-import java.util.concurrent.locks.LockSupport;
+import java.lang.foreign.ValueLayout;
+import java.nio.channels.FileChannel;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 
-/**
- * ModulatorModel
- *
- * @author Uwe Hennig
- */
-public final class ModulatorModel {
-    final int   capacity;
-    final Arena arena;
+/// ModulatorModel
+/// ```
+/// ┌───────────────────────────────────┐
+/// │ MetaInfo                          │
+/// │  00: magic           : int        │
+/// │  ...                              │
+/// │  28: endOffset       : int        │
+/// ├───────────────────────────────────┤
+/// │ Entry 0                           │
+/// │  32: modulationGain       : float │
+/// │  36: gainDuration         : float │
+/// │  40: modulationGainDefault: float │
+/// │  44: lastEventTime        : float │
+/// ├───────────────────────────────────┤
+/// │ Entry 1                           │
+/// │  48: modulationGain       : float │
+/// │  52: gainDuration         : float │
+/// │  56: modulationGainDefault: float │
+/// │  60: lastEventTime        : float │
+/// ├───────────────────────────────────┤
+/// │ ...                               │
+/// └───────────────────────────────────┘
+/// ````
+///
+/// @author Uwe Hennig
+///
+public final class ModulatorModel extends MetaDataAccessor {
+    static final int MAGIC      = ('M' << 24) | ('M' << 16) | ('_' << 8) | '1';
+    static final int VALUE_SIZE = 4;
+    static final int ENTRY_SIZE = 16;
 
-    SequenceLayout sequenceLayout;
-    MemorySegment  segment;
+    final Arena         arena;
+    final MemorySegment segment;
 
-    // @formatter:off
-    static final GroupLayout LAYOUT = MemoryLayout.structLayout(
-        JAVA_INT.withName("lock"),
-        MemoryLayout.paddingLayout(4),
-        JAVA_FLOAT.withName("modulationGain"),
-        JAVA_FLOAT.withName("gainDuration"),
-        JAVA_FLOAT.withName("modulationGainDefault"),
-        JAVA_FLOAT.withName("lastEventTime")
-    ).withByteAlignment(8);
-
-    static final VarHandle VH_LOCK = LAYOUT.arrayElementVarHandle(
-        MemoryLayout.PathElement.groupElement("lock"));
-    static final VarHandle VH_MODULATION_GAIN = LAYOUT.arrayElementVarHandle(
-        MemoryLayout.PathElement.groupElement("modulationGain"));
-    static final VarHandle VH_GAIN_DURATION = LAYOUT.arrayElementVarHandle(
-        MemoryLayout.PathElement.groupElement("gainDuration"));
-    static final VarHandle VH_MODULATION_GAIN_DEFAULT = LAYOUT.arrayElementVarHandle(
-        MemoryLayout.PathElement.groupElement("modulationGainDefault"));
-    static final VarHandle VH_LAST_EVENT_TIME = LAYOUT.arrayElementVarHandle(
-        MemoryLayout.PathElement.groupElement("lastEventTime"));
-    // @formatter:on
+    final int size;
 
     // ----- public -----
 
-    public ModulatorModel(int capacity) {
-        assert capacity > 0 : "invalid capacity";
+    public ModulatorModel(int size) {
+        assert size >= META_SIZE + ENTRY_SIZE : "'size' must be able to contain at least one entry";
 
-        this.capacity = capacity;
+        this.size = size;
         this.arena = Arena.ofShared();
+        this.segment = arena.allocate(size);
 
-        this.sequenceLayout = MemoryLayout.sequenceLayout(capacity, LAYOUT);
-        this.segment = arena.allocate(sequenceLayout);
+        initMeta();
+    }
+
+    public ModulatorModel(Path filePath) throws IOException {
+        this.arena = Arena.ofShared();
+        try (FileChannel channel = FileChannel.open(filePath, StandardOpenOption.READ)) {
+            this.size = (int) channel.size();
+            this.segment = arena.allocate(this.size);
+            channel.read(this.segment.asByteBuffer());
+        }
+    }
+
+    public static int calculateSize(int entries) {
+        return META_SIZE + ENTRY_SIZE * entries;
+    }
+
+    @Override
+    protected MemorySegment getSegment() {
+        return segment;
     }
 
     public void close() {
-        arena.close();
-    }
-
-    public int getCapacity() {
-        return capacity;
-    }
-
-    // ----- lock/unlock -----
-
-    private static final int WRITER_WAITING = 0x40000000; // Bit 30
-    private static final int WRITER_ACTIVE  = 0xFFFFFFFF; // -1
-
-    void writeLock(int index) {
-        int spins = 0;
-        // set the WRITER_WAITING flag to indicate a write request
-        while (true) {
-            int current = (int) VH_LOCK.getVolatile(segment, 0L, index);
-            if ((current & WRITER_WAITING) == 0) {
-                if (VH_LOCK.compareAndSet(segment, 0L, index, current, current | WRITER_WAITING)) {
-                    break;
-                }
-            } else {
-                break;
-            }
-            backoff(spins++);
-        }
-
-        // set the lock
-        spins = 0;
-        while (true) {
-            int current = (int) VH_LOCK.getVolatile(segment, 0L, index);
-
-            // no reader active and write flag is set or initial state.
-            if (current == WRITER_WAITING || current == 0) {
-                if (VH_LOCK.compareAndSet(segment, 0L, index, current, WRITER_ACTIVE)) {
-                    return;
-                }
-            }
-
-            backoff(spins++);
+        if (arena != null) {
+            arena.close();
         }
     }
 
-    void writeUnlock(int index) {
-        VH_LOCK.setRelease(segment, 0L, index, 0);
+    // ----- meta -----
+
+    void initMeta() {
+        setMagic(MAGIC);
+        setVersion(1);
+        setMetaSize(META_SIZE);
+        setEntrySize(ENTRY_SIZE);
+        setTotalSize(size);
+        setMaxEntries((size - META_SIZE) / ENTRY_SIZE);
+        setEntryCount(0);
+        setEndOffset(META_SIZE);
     }
-
-    boolean readLock(int index) {
-        int spins = 0;
-        while (true) {
-            int current = (int) VH_LOCK.getVolatile(segment, 0L, index);
-
-            // give priority to the writers
-            if (current < 0 || (current & WRITER_WAITING) != 0) {
-                backoff(spins++);
-                continue;
-            }
-
-            // increment reader counter
-            if (VH_LOCK.compareAndSet(segment, 0L, index, current, current + 1)) {
-                return true;
-            }
-        }
-    }
-
-    void readUnlock(int index) {
-       // decrement reader counter
-       VH_LOCK.getAndAdd(segment, 0L, index, -1);
-    }
-
-    void backoff(int spins) {
-        if (spins < 64) {
-            Thread.onSpinWait();
-        } else {
-            LockSupport.parkNanos(1);
-        }
-    }
-
 
     // ----- getter/setter -----
 
-    float getModulationGain(int index) {
-        return (float) VH_MODULATION_GAIN.get(segment, 0L, index);
+    float getModulationGain(int offset) {
+        return segment.get(ValueLayout.JAVA_FLOAT, offset + 0L);
     }
 
-    void setModulationGain(int index, float value) {
-        VH_MODULATION_GAIN.set(segment, 0L, index, value);
+    void setModulationGain(int offset, float value) {
+        segment.set(ValueLayout.JAVA_FLOAT, offset + 0L, value);
     }
 
-    float getGainDuration(int index) {
-        return (float) VH_GAIN_DURATION.get(segment, 0L, index);
+    float getGainDuration(int offset) {
+        return segment.get(ValueLayout.JAVA_FLOAT, offset + 4L);
     }
 
-    void setGainDuration(int index, float value) {
-        VH_GAIN_DURATION.set(segment, 0L, index, value);
+    void setGainDuration(int offset, float value) {
+        segment.set(ValueLayout.JAVA_FLOAT, offset + 4L, value);
     }
 
-    float getModulationGainDefault(int index) {
-        return (float) VH_MODULATION_GAIN_DEFAULT.get(segment, 0L, index);
+    float getModulationGainDefault(int offset) {
+        return segment.get(ValueLayout.JAVA_FLOAT, offset + 8L);
     }
 
-    void setModulationGainDefault(int index, float value) {
-        VH_MODULATION_GAIN_DEFAULT.set(segment, 0L, index, value);
+    void setModulationGainDefault(int offset, float value) {
+        segment.set(ValueLayout.JAVA_FLOAT, offset + 8L, value);
     }
 
-    float getLastEventTime(int index) {
-        return (float) VH_LAST_EVENT_TIME.get(segment, 0L, index);
+    float getLastEventTime(int offset) {
+        return segment.get(ValueLayout.JAVA_FLOAT, offset + 12L);
     }
 
-    void setLastEventTime(int index, float value) {
-        VH_LAST_EVENT_TIME.set(segment, 0L, index, value);
+    void setLastEventTime(int offset, float value) {
+        segment.set(ValueLayout.JAVA_FLOAT, offset + 12L, value);
     }
 }

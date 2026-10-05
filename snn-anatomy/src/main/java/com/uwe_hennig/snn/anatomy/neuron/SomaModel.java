@@ -1,208 +1,194 @@
-/**
- * @(#)SomaModel.java
- * Copyright (c) 2026 Uwe Hennig
- * All rights reserved.
- */
+/// * @(#)SomaModel.java
+/// * Copyright (c) 2026 Uwe Hennig
+/// * All rights reserved.
 package com.uwe_hennig.snn.anatomy.neuron;
 
-import static java.lang.foreign.ValueLayout.JAVA_INT;
-
+import java.io.IOException;
 import java.lang.foreign.Arena;
-import java.lang.foreign.GroupLayout;
-import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
-import java.lang.foreign.SequenceLayout;
-import java.lang.invoke.VarHandle;
-import java.util.concurrent.locks.LockSupport;
+import java.lang.foreign.ValueLayout;
+import java.nio.channels.FileChannel;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 
-/**
- * SomaModel
- *
- * @author Uwe Hennig
- */
-public final class SomaModel {
-    public final int   capacity;
-    public final Arena arena;
+/// SomaModel
+/// ```
+/// ┌─────────────────────────────────┐
+/// │ MetaInfo                        │
+/// │  00: magic           : int      │
+/// │  ...                            │
+/// │  28: endOffset       : int      │
+/// ├─────────────────────────────────┤
+/// │ Entry 0                         │
+/// │  32: lock            : int      │
+/// │  36: fieldId         : int      │
+/// │  40: neuronId        : int      │
+/// │  44: axonId          : int      │
+/// │  48: potentialId     : int      │
+/// │  52: thresholdId     : int      │
+/// │  56: stpId           : int      │
+/// │  60: ltpId           : int      │
+/// ├─────────────────────────────────┤
+/// │ Entry 1                         │
+/// │  64: lock            : int      │
+/// │  68: fieldId         : int      │
+/// │  72: neuronId        : int      │
+/// │  76: axonId          : int      │
+/// │  80: potentialId     : int      │
+/// │  84: thresholdId     : int      │
+/// │  88: stpId           : int      │
+/// │  92: ltpId           : int      │
+/// ├─────────────────────────────────┤
+/// │ ...                             │
+/// └─────────────────────────────────┘
+/// ````
+///
+/// @author Uwe Hennig
+public final class SomaModel extends MetaDataAccessor {
+    static final int MAGIC      = ('S' << 24) | ('O' << 16) | ('M' << 8) | '1';
+    static final int VALUE_SIZE = 4;
+    static final int LOCK_SIZE  = 4;
+    static final int ENTRY_SIZE = 32;
 
-    SequenceLayout sequenceLayout;
-    MemorySegment  segment;
+    final Arena         arena;
+    final MemorySegment segment;
+    final int           totalSize;
 
-    // @formatter:off
-    static final GroupLayout LAYOUT = MemoryLayout.structLayout(
-        JAVA_INT.withName("lock"),
-        JAVA_INT.withName("fieldId"),
-        JAVA_INT.withName("neuronId"),
-        JAVA_INT.withName("potentialId"),
-        JAVA_INT.withName("thresholdId"),
-        JAVA_INT.withName("stpId"),
-        JAVA_INT.withName("ltpId"),
-        JAVA_INT.withName("axonId")
-        // TODO Refractory period
-    ).withByteAlignment(8);
+    final SnnLockSupport lockSupport;
 
-    static final VarHandle VH_LOCK =
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("lock"));
-    static final VarHandle VH_FIELD_ID =
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("fieldId"));
-    static final VarHandle VH_NEURON_ID =
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("neuronId"));
-    static final VarHandle VH_POTENTIAL_ID =
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("potentialId"));
-    static final VarHandle VH_THRESHOLD_ID =
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("thresholdId"));
-    static final VarHandle VH_STP_ID =
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("stpId"));
-    static final VarHandle VH_LTP_ID =
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("ltpId"));
-    static final VarHandle VH_AXON_ID =
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("axonId"));
-    // @formatter:on
+    public SomaModel(int totalSize) {
+        assert totalSize >= META_SIZE + ENTRY_SIZE : "'totalSize' must be able to contain at least one entry";
 
-    public SomaModel(int capacity) {
-        assert capacity > 0 : "invalid capacity";
-
-        this.capacity = capacity;
+        this.totalSize = totalSize;
         this.arena = Arena.ofShared();
 
-        this.sequenceLayout = MemoryLayout.sequenceLayout(capacity, LAYOUT);
-        this.segment = arena.allocate(sequenceLayout);
+        this.segment = arena.allocate(totalSize);
+        this.lockSupport = new SnnLockSupport(segment);
+
+        initMeta();
+    }
+
+    public SomaModel(Path filePath) throws IOException {
+        this.arena = Arena.ofShared();
+        try (FileChannel channel = FileChannel.open(filePath, StandardOpenOption.READ)) {
+            this.totalSize = (int) channel.size();
+            this.segment = arena.allocate(this.totalSize);
+            channel.read(this.segment.asByteBuffer());
+            this.lockSupport = new SnnLockSupport(segment);
+        }
+    }
+
+    public static int calculateSize(int entries) {
+        return META_SIZE + ENTRY_SIZE * entries;
+    }
+
+    @Override
+    protected MemorySegment getSegment() {
+        return segment;
     }
 
     public void close() {
         arena.close();
     }
 
-    public int getCapacity() {
-        return capacity;
+    // ----- lock -----
+    void writeLock(int offset) {
+        lockSupport.writeLock(offset);
     }
 
-    // ----- lock/unlock -----
-
-    private static final int WRITER_WAITING = 0x40000000; // Bit 30
-    private static final int WRITER_ACTIVE  = 0xFFFFFFFF; // -1
-
-    void writeLock(int index) {
-        int spins = 0;
-        // set the WRITER_WAITING flag to indicate a write request
-        while (true) {
-            int current = (int) VH_LOCK.getVolatile(segment, 0L, index);
-            if ((current & WRITER_WAITING) == 0) {
-                if (VH_LOCK.compareAndSet(segment, 0L, index, current, current | WRITER_WAITING)) {
-                    break;
-                }
-            } else {
-                break;
-            }
-            backoff(spins++);
-        }
-
-        // set the lock
-        spins = 0;
-        while (true) {
-            int current = (int) VH_LOCK.getVolatile(segment, 0L, index);
-
-            // no reader active and write flag is set or initial state.
-            if (current == WRITER_WAITING || current == 0) {
-                if (VH_LOCK.compareAndSet(segment, 0L, index, current, WRITER_ACTIVE)) {
-                    return;
-                }
-            }
-
-            backoff(spins++);
-        }
+    void readLock(int offset) {
+        lockSupport.readLock(offset);
     }
 
-    void writeUnlock(int index) {
-        VH_LOCK.setRelease(segment, 0L, index, 0);
+    void writeUnlock(int offset) {
+        lockSupport.writeUnlock(offset);
     }
 
-    boolean readLock(int index) {
-        int spins = 0;
-        while (true) {
-            int current = (int) VH_LOCK.getVolatile(segment, 0L, index);
-
-            // give priority to the writers
-            if (current < 0 || (current & WRITER_WAITING) != 0) {
-                backoff(spins++);
-                continue;
-            }
-
-            // increment reader counter
-            if (VH_LOCK.compareAndSet(segment, 0L, index, current, current + 1)) {
-                return true;
-            }
-        }
+    void readUnlock(int offset) {
+        lockSupport.readUnlock(offset);
+        ;
     }
 
-    void readUnlock(int index) {
-       // decrement reader counter
-       VH_LOCK.getAndAdd(segment, 0L, index, -1);
+    // ----- meta -----
+
+    void initMeta() {
+        setMagic(MAGIC);
+        setVersion(1);
+        setMetaSize(META_SIZE);
+        setEntrySize(ENTRY_SIZE);
+        setTotalSize(totalSize);
+        setMaxEntries((totalSize - META_SIZE) / ENTRY_SIZE);
+        setEntryCount(0);
+
+        // Data begins after the meta section
+        setEndOffset(META_SIZE);
     }
 
-    void backoff(int spins) {
-        if (spins < 64) {
-            Thread.onSpinWait();
-        } else {
-            LockSupport.parkNanos(1);
-        }
-    }
+    public int alloc(int fieldId, int neuronId, int axonId) {
+        int newOffset = super.alloc();
 
+        setFieldId(newOffset, fieldId);
+        setNeuronId(newOffset, neuronId);
+        setAxonId(newOffset, axonId);
+
+        return newOffset;
+    }
 
     // ----- getter/setter -----
 
-    int getFieldId(int index) {
-        return (int) VH_FIELD_ID.get(segment, 0L, index);
+    int getFieldId(int offset) {
+        return segment.get(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 0L);
     }
 
-    void setFieldId(int index, int value) {
-        VH_FIELD_ID.set(segment, 0L, index, value);
+    void setFieldId(int offset, int value) {
+        segment.set(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 0L, value);
     }
 
-    int getNeuronId(int index) {
-        return (int) VH_NEURON_ID.get(segment, 0L, index);
+    int getNeuronId(int offset) {
+        return segment.get(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 4L);
     }
 
-    void setNeuronId(int index, int value) {
-        VH_NEURON_ID.set(segment, 0L, index, value);
+    void setNeuronId(int offset, int value) {
+        segment.set(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 4L, value);
     }
 
-    int getPotentialId(int index) {
-        return (int) VH_POTENTIAL_ID.get(segment, 0L, index);
+    int getAxonId(int offset) {
+        return segment.get(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 8L);
     }
 
-    void setPotentialId(int index, int value) {
-        VH_POTENTIAL_ID.set(segment, 0L, index, value);
+    void setAxonId(int offset, int value) {
+        segment.set(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 8L, value);
     }
 
-    int getThresholdId(int index) {
-        return (int) VH_THRESHOLD_ID.get(segment, 0L, index);
+    int getPotentialId(int offset) {
+        return segment.get(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 12L);
     }
 
-    void setThresholdId(int index, int value) {
-        VH_THRESHOLD_ID.set(segment, 0L, index, value);
+    void setPotentialId(int offset, int value) {
+        segment.set(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 12L, value);
     }
 
-    int getStpId(int index) {
-        return (int) VH_STP_ID.get(segment, 0L, index);
+    int getThresholdId(int offset) {
+        return segment.get(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 16L);
     }
 
-    void setStpId(int index, int value) {
-        VH_STP_ID.set(segment, 0L, index, value);
+    void setThresholdId(int offset, int value) {
+        segment.set(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 16L, value);
     }
 
-    int getLtpId(int index) {
-        return (int) VH_LTP_ID.get(segment, 0L, index);
+    int getStpId(int offset) {
+        return segment.get(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 20L);
     }
 
-    void setLtpId(int index, int value) {
-        VH_LTP_ID.set(segment, 0L, index, value);
+    void setStpId(int offset, int value) {
+        segment.set(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 20L, value);
     }
 
-    int getAxonId(int index) {
-        return (int) VH_AXON_ID.get(segment, 0L, index);
+    int getLtpId(int offset) {
+        return segment.get(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 24L);
     }
 
-    void setAxonId(int index, int value) {
-        VH_AXON_ID.set(segment, 0L, index, value);
+    void setLtpId(int offset, int value) {
+        segment.set(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 24L, value);
     }
 }

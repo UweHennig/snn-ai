@@ -1,8 +1,6 @@
-/**
- * @(#)DendritPersistence.java
- * Copyright (c) 2026 Uwe Hennig
- * All rights reserved.
- */
+/// @(#)DendritPersistence.java
+/// Copyright (c) 2026 Uwe Hennig
+/// All rights reserved.
 package com.uwe_hennig.snn.anatomy.neuron;
 
 import static java.nio.file.StandardOpenOption.CREATE;
@@ -19,6 +17,7 @@ import java.nio.file.Path;
 /// DendritPersistence
 ///
 /// @author Uwe Hennig
+///
 public class DendritPersistence {
     public static void save(DendritModel model, Path file) throws IOException {
         try (FileChannel channel = FileChannel.open(file, CREATE, READ, WRITE, TRUNCATE_EXISTING)) {
@@ -30,7 +29,6 @@ public class DendritPersistence {
                 mappedFile.force();
             }
         }
-
     }
 
     public static DendritModel load(Path file) throws IOException {

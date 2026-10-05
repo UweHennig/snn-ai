@@ -11,32 +11,27 @@ import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
-///
 /// DendritModel
 /// ```
 /// ┌─────────────────────────────────┐
 /// │ MetaInfo                        │
 /// │  00: magic           : int      │
-/// │  04: version         : int      │
-/// │  08: metaSize        : int      │
-/// │  12: capacity        : int      │
-/// │  16: entrySize       : int      │
-/// │  20: numEntries      : int      │
-/// │  24: endOffset       : int      │
+/// │  ...                            │
+/// │  28: endOffset       : int      │
 /// ├─────────────────────────────────┤
 /// │ Entry 0                         │
-/// │  28: lock            : int      │
-/// │  32: fieldId         : int      │
-/// │  36: neuronId        : int      │
-/// │  40: weightId        : int      │
-/// │  44: somaId          : int      │
+/// │  32: lock            : int      │
+/// │  36: fieldId         : int      │
+/// │  40: neuronId        : int      │
+/// │  44: weightId        : int      │
+/// │  48: somaId          : int      │
 /// ├─────────────────────────────────┤
 /// │ Entry 1                         │
-/// │  48: lock            : int      │
-/// │  52: fieldId         : int      │
-/// │  56: neuronId        : int      │
-/// │  60: weightId        : int      │
-/// │  64: somaId          : int      │
+/// │  52: lock            : int      │
+/// │  56: fieldId         : int      │
+/// │  60: neuronId        : int      │
+/// │  64: weightId        : int      │
+/// │  68: somaId          : int      │
 /// ├─────────────────────────────────┤
 /// │ ...                             │
 /// └─────────────────────────────────┘
@@ -45,33 +40,38 @@ import java.nio.file.StandardOpenOption;
 /// @author Uwe Hennig
 ///
 public final class DendritModel extends MetaDataAccessor {
-    static final int MAGIC      = ('D' << 24) | ('M' << 16) | ('_' << 8) | '1';
+    static final int MAGIC      = ('D' << 24) | ('E' << 16) | ('M' << 8) | '1';
     static final int VALUE_SIZE = 4;
-    static final int META_SIZE  = 28;
     static final int ENTRY_SIZE = 20;
+    static final int LOCK_SIZE  = 4;
 
-    final int           capacity;
     final Arena         arena;
     final MemorySegment segment;
+    final int           totalSize;
+
+    final SnnLockSupport lockSupport;
 
     // ----- public -----
 
-    public DendritModel(int capacity) {
-        assert capacity >= META_SIZE + ENTRY_SIZE : "'capacity' must be able to contain at least one entry";
+    public DendritModel(int totalSize) {
+        assert totalSize >= META_SIZE + ENTRY_SIZE : "'totalSize' must be able to contain at least one entry";
 
-        this.capacity = capacity;
+        this.totalSize = totalSize;
         this.arena = Arena.ofShared();
 
-        this.segment = arena.allocate(capacity);
+        this.segment = arena.allocate(totalSize);
+        this.lockSupport = new SnnLockSupport(segment);
+
         initMeta();
     }
 
     public DendritModel(Path filePath) throws IOException {
         this.arena = Arena.ofShared();
         try (FileChannel channel = FileChannel.open(filePath, StandardOpenOption.READ)) {
-            this.capacity = (int) channel.size();
-            this.segment = arena.allocate(this.capacity);
+            this.totalSize = (int) channel.size();
+            this.segment = arena.allocate(this.totalSize);
             channel.read(this.segment.asByteBuffer());
+            this.lockSupport = new SnnLockSupport(segment);
         }
     }
 
@@ -90,29 +90,47 @@ public final class DendritModel extends MetaDataAccessor {
         }
     }
 
+    // ----- lock -----
+
+    void writeLock(int offset) {
+        lockSupport.writeLock(offset);
+    }
+
+    void readLock(int offset) {
+        lockSupport.readLock(offset);
+    }
+
+    void writeUnlock(int offset) {
+        lockSupport.writeUnlock(offset);
+    }
+
+    void readUnlock(int offset) {
+        lockSupport.readUnlock(offset);;
+    }
+
     // ----- meta -----
 
     void initMeta() {
         setMagic(MAGIC);
         setVersion(1);
         setMetaSize(META_SIZE);
-        setCapacity(capacity);
         setEntrySize(ENTRY_SIZE);
-        setNumEntries(0);
+        setTotalSize(totalSize);
+        setMaxEntries((totalSize - META_SIZE) / ENTRY_SIZE);
+        setEntryCount(0);
+
+        // Data begins after the meta section
         setEndOffset(META_SIZE);
     }
 
+    // TODO: remove weightId
     public int alloc(int fieldId, int neuronId, int somaId, int weightId) {
-        int newOffset = getEndOffset();
-        setEndOffset(newOffset + ENTRY_SIZE);
+        int newOffset = super.alloc();
 
         setFieldId(newOffset, fieldId);
         setNeuronId(newOffset, neuronId);
         setWeightId(newOffset, weightId);
         setSomaId(newOffset, somaId);
-
-        int numEntries = getNumEntries();
-        setNumEntries(numEntries + 1);
 
         return newOffset;
     }
@@ -120,34 +138,34 @@ public final class DendritModel extends MetaDataAccessor {
     // ----- getter/setter -----
 
     int getFiedlId(int offset) {
-        return segment.get(ValueLayout.JAVA_INT, offset + 4L);
+        return segment.get(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 0L);
     }
 
     void setFieldId(int offset, int value) {
-        segment.set(ValueLayout.JAVA_INT, offset + 4L, value);
+        segment.set(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 0L, value);
     }
 
     int getNeuronId(int offset) {
-        return segment.get(ValueLayout.JAVA_INT, offset + 8L);
+        return segment.get(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 4L);
     }
 
     void setNeuronId(int offset, int value) {
-        segment.set(ValueLayout.JAVA_INT, offset + 8L, value);
+        segment.set(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 4L, value);
     }
 
     int getSomaId(int offset) {
-        return segment.get(ValueLayout.JAVA_INT, offset + 12L);
+        return segment.get(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 8L);
     }
 
     void setSomaId(int offset, int value) {
-        segment.set(ValueLayout.JAVA_INT, offset + 12L, value);
+        segment.set(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 8L, value);
     }
 
     int getWeighId(int offset) {
-        return segment.get(ValueLayout.JAVA_INT, offset + 16L);
+        return segment.get(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 12L);
     }
 
     void setWeightId(int offset, int value) {
-        segment.set(ValueLayout.JAVA_INT, offset + 16L, value);
+        segment.set(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 12L, value);
     }
 }

@@ -1,33 +1,34 @@
-/**
- * @(#)AxonAllocator.java
- * Copyright (c) 2026 Uwe Hennig
- * All rights reserved.
- */
+/// @(#)AxonModelManager.java
+/// Copyright (c) 2026 Uwe Hennig
+/// All rights reserved.
 package com.uwe_hennig.snn.anatomy.allocator;
 
-import com.uwe_hennig.snn.anatomy.neuron.AxonModel;
-import com.uwe_hennig.snn.anatomy.neuron.AxonView;
+import java.io.IOException;
+import java.nio.file.Path;
 
-/**
- * AxonAllocator
- *
- * @author Uwe Hennig
- */
+import com.uwe_hennig.snn.anatomy.neuron.AxonModel;
+import com.uwe_hennig.snn.anatomy.neuron.AxonPersistence;
+import com.uwe_hennig.snn.util.logging.SNNLogger;
+
+/// AxonModelManager
+///
+/// @author Uwe Hennig
+///
 public class AxonModelManager {
+    private static final String     FILENAME = "axon.snn";
     private static AxonModelManager INSTANCE;
 
     private AxonModel model;
-    private int       nextOffset = 0;
 
-    private AxonModelManager(int capacity) {
-        this.model = new AxonModel(capacity);
+    private AxonModelManager(int size) {
+        this.model = new AxonModel(size);
     }
 
-    public static AxonModelManager init(int capacity) {
+    public static AxonModelManager init(int size) {
         if (INSTANCE == null) {
             synchronized (AxonModelManager.class) {
                 if (INSTANCE == null) {
-                    INSTANCE = new AxonModelManager(capacity);
+                    INSTANCE = new AxonModelManager(size);
                 }
             }
         }
@@ -38,17 +39,6 @@ public class AxonModelManager {
         return INSTANCE;
     }
 
-    public AxonView createView() {
-        if (model.getCapacity() <= nextOffset) {
-            throw new IllegalStateException("Out of off heap axon memory");
-        }
-        return new AxonView(model, nextOffset++);
-    }
-
-    public int capacity() {
-        return nextOffset;
-    }
-
     public AxonModel getModel() {
         return model;
     }
@@ -57,16 +47,27 @@ public class AxonModelManager {
         if (INSTANCE != null) {
             INSTANCE.model.close();
             INSTANCE.model = null;
-            INSTANCE.nextOffset = 0;
             INSTANCE = null;
         }
     }
 
     public void save(String folder) {
-        /* TODO: Save model */
+        try {
+            Path path = Path.of(folder).resolve(FILENAME);
+            AxonPersistence.save(model, path);
+        } catch (IOException e) {
+            e.printStackTrace();
+            SNNLogger.error(() -> "Axon not saved!");
+        }
     }
 
     public void load(String folder) {
-        /* TODO Load model */
+        try {
+            Path path = Path.of(folder).resolve(FILENAME);
+            this.model = AxonPersistence.load(path);
+        } catch (IOException e) {
+            e.printStackTrace();
+            SNNLogger.error(() -> "Axon not loaded!");
+        }
     }
 }

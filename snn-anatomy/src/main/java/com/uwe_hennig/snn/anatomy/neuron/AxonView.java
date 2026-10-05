@@ -1,69 +1,45 @@
-/**
- * @(#)AxonView.java
- * Copyright (c) 2026 Uwe Hennig
- * All rights reserved.
- */
+/// @(#)AxonView.java
+/// Copyright (c) 2026 Uwe Hennig
+/// All rights reserved.
 package com.uwe_hennig.snn.anatomy.neuron;
 
-/**
- * AxonView
- *
- * @author Uwe Hennig
- */
+/// AxonView
+///
+/// @author Uwe Hennig
+///
 public final class AxonView {
-    private final AxonModel model;
-    private final int       index;
-
-    public AxonView(AxonModel model, int index) {
-        this.model = model;
-        this.index = index;
-    }
-
-    // ----- lock/unlock -----
-
-    public void readLock() {
-        model.readLock(index);
-    }
-
-    public void readUnlock() {
-        model.readUnlock(index);
-    }
-
-    public void writeLock() {
-        model.writeLock(index);
-    }
-
-    public void writeUnlock() {
-        model.writeUnlock(index);
+    private AxonView() {
     }
 
     // ----- Getter/Setter -----
 
-    public int getSynapseRef() {
-        return model.getSynapseRef(index);
+    public static int getFieldId(AxonModel model, int offset) {
+        return model.getFiedlId(offset);
     }
 
-    public int getNeuronId() {
-        return model.getNeuronId(index);
+    public static int getNeuronId(AxonModel model, int offset) {
+        return model.getNeuronId(offset);
     }
 
-    public int getModulatorId() {
-        return model.getModulatorId(index);
+    public static int getBlockId(AxonModel model, int offset) {
+        return model.getBlockId(offset);
     }
 
-    public int getId() {
-        return index;
+    // ----- lock/unlock -----
+
+    public static void readLock(AxonModel model, int offset) {
+        model.readLock(offset);
     }
 
-    public void setStructure(int fieldId, int neuronId, int synapseRef) {
-        model.writeLock(index);
-        try {
-            // TODO Modulator-Id
-            model.setFieldId(index, fieldId);
-            model.setNeuronId(index, neuronId);
-            model.setSynapseRef(index, synapseRef);
-        } finally {
-            model.writeUnlock(index);
-        }
+    public static void readUnlock(AxonModel model, int offset) {
+        model.readUnlock(offset);
+    }
+
+    public static void writeLock(AxonModel model, int offset) {
+        model.writeLock(offset);
+    }
+
+    public void writeUnlock(AxonModel model, int offset) {
+        model.writeUnlock(offset);
     }
 }

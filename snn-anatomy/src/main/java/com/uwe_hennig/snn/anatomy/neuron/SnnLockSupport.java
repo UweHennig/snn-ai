@@ -11,20 +11,24 @@ import java.util.concurrent.locks.LockSupport;
 /// LockSupport
 ///
 /// @author Uwe Hennig
-public abstract class SnnLockSupport {
-    abstract protected MemorySegment getSegment();
-
+public final class SnnLockSupport {
     private static final int WRITER_WAITING  = 0x40000000; // Bit 30
     private static final int WRITER_ACTIVE   = 0xFFFFFFFF; // -1
     private static final VarHandle IntHandle = ValueLayout.JAVA_INT.varHandle();
 
+    private final MemorySegment segment;
+
+    public SnnLockSupport(MemorySegment segment) {
+        this.segment = segment;
+    }
+
     void writeLock(int offset) {
         int spins = 0;
         while (true) {
-            int current = (int) IntHandle.getVolatile(getSegment(), offset);
+            int current = (int) IntHandle.getVolatile(segment, offset);
 
             if ((current & WRITER_WAITING) == 0) {
-                if (IntHandle.compareAndSet(getSegment(), offset, current, current | WRITER_WAITING)) {
+                if (IntHandle.compareAndSet(segment, offset, current, current | WRITER_WAITING)) {
                     break;
                 }
             } else {
@@ -36,11 +40,11 @@ public abstract class SnnLockSupport {
         // set the lock
         spins = 0;
         while (true) {
-            int current = (int) IntHandle.getVolatile(getSegment(), offset);
+            int current = (int) IntHandle.getVolatile(segment, offset);
 
             // no reader active and write flag is set or initial state.
             if (current == WRITER_WAITING || current == 0) {
-                if (IntHandle.compareAndSet(getSegment(), offset, current, WRITER_ACTIVE)) {
+                if (IntHandle.compareAndSet(segment, offset, current, WRITER_ACTIVE)) {
                     return;
                 }
             }
@@ -52,7 +56,7 @@ public abstract class SnnLockSupport {
     boolean readLock(int offset) {
         int spins = 0;
         while (true) {
-            int current = (int) IntHandle.getVolatile(getSegment(), offset);
+            int current = (int) IntHandle.getVolatile(segment, offset);
 
             // give priority to the writers
             if (current < 0 || (current & WRITER_WAITING) != 0) {
@@ -61,22 +65,22 @@ public abstract class SnnLockSupport {
             }
 
             // increment reader counter
-            if (IntHandle.compareAndSet(getSegment(), offset, current, current + 1)) {
+            if (IntHandle.compareAndSet(segment, offset, current, current + 1)) {
                 return true;
             }
         }
     }
 
     void writeUnlock(int offset) {
-        IntHandle.setRelease(getSegment(), offset, 0);
+        IntHandle.setRelease(segment, offset, 0);
     }
 
     void readUnlock(int offset) {
        // decrement reader counter
-        IntHandle.getAndAdd(getSegment(), offset, -1);
+        IntHandle.getAndAdd(segment, offset, -1);
     }
 
-    void backoff(int spins) {
+    private void backoff(int spins) {
         if (spins < 16) {
             Thread.onSpinWait();
         } else {

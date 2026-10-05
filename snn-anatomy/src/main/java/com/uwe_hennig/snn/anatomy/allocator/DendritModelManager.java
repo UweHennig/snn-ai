@@ -1,4 +1,4 @@
-/// @(#)DendritAllocator.java
+/// @(#)DendritModelManager.java
 /// Copyright (c) 2026 Uwe Hennig
 /// All rights reserved.
 package com.uwe_hennig.snn.anatomy.allocator;
@@ -13,21 +13,22 @@ import com.uwe_hennig.snn.util.logging.SNNLogger;
 /// DendritModelManager
 ///
 /// @author Uwe Hennig
+///
 public class DendritModelManager {
     private static final String        FILENAME = "dendrit.snn";
     private static DendritModelManager INSTANCE;
 
     private DendritModel model;
 
-    private DendritModelManager(int capacity) {
-        model = new DendritModel(capacity);
+    private DendritModelManager(int size) {
+        model = new DendritModel(size);
     }
 
-    public static DendritModelManager init(int capacity) {
+    public static DendritModelManager init(int size) {
         if (INSTANCE == null) {
             synchronized (PlasticityModelManager.class) {
                 if (INSTANCE == null) {
-                    INSTANCE = new DendritModelManager(capacity);
+                    INSTANCE = new DendritModelManager(size);
                 }
             }
         }

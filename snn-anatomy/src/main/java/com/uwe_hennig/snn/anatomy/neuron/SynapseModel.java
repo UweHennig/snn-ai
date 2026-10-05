@@ -1,189 +1,167 @@
-/**
- * @(#)SynapseModel.java
- * Copyright (c) 2026 Uwe Hennig
- * All rights reserved.
- */
+/// @(#)SynapseModel.java
+/// Copyright (c) 2026 Uwe Hennig
+/// All rights reserved.
 package com.uwe_hennig.snn.anatomy.neuron;
 
-import static java.lang.foreign.ValueLayout.JAVA_INT;
-
+import java.io.IOException;
 import java.lang.foreign.Arena;
-import java.lang.foreign.GroupLayout;
-import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
-import java.lang.foreign.SequenceLayout;
-import java.lang.invoke.VarHandle;
-import java.util.concurrent.locks.LockSupport;
+import java.lang.foreign.ValueLayout;
+import java.nio.channels.FileChannel;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 
-/**
- * SynapseModel
- *
- * @author Uwe Hennig
- */
-public final class SynapseModel {
-    public final int   capacity;
-    public final Arena arena;
+/// SynapseModel
+/// ```
+/// ┌─────────────────────────────────┐
+/// │ MetaInfo                        │
+/// │  00: magic           : int      │
+/// │  ...                            │
+/// │  28: endOffset       : int      │
+/// ├─────────────────────────────────┤
+/// │ Entry 0                         │
+/// │  32: lock            : int      │
+/// │  36: fieldId         : int      │
+/// │  40: neuronId        : int      │
+/// │  44: targetId        : int      │
+/// │  48: modulatorId     : int      │
+/// ├─────────────────────────────────┤
+/// │ Entry 1                         │
+/// │  52: lock            : int      │
+/// │  56: fieldId         : int      │
+/// │  60: neuronId        : int      │
+/// │  64: targetId        : int      │
+/// │  68: modulatorId     : int      │
+/// ├─────────────────────────────────┤
+/// │ ...                             │
+/// └─────────────────────────────────┘
+/// ```
+///
+/// @author Uwe Hennig
+public final class SynapseModel extends MetaDataAccessor {
+    static final int MAGIC      = ('S' << 24) | ('Y' << 16) | ('M' << 8) | '1';
+    static final int VALUE_SIZE = 4;
+    static final int ENTRY_SIZE = 20;
+    static final int LOCK_SIZE  = 4;
 
-    SequenceLayout sequenceLayout;
-    MemorySegment  segment;
+    final Arena         arena;
+    final MemorySegment segment;
+    final int           totalSize;
 
-    // @formatter:off
-    static final GroupLayout LAYOUT = MemoryLayout.structLayout(
-        JAVA_INT.withName("lock"),
-        JAVA_INT.withName("fiedlId"),
-        JAVA_INT.withName("neuronId"),
-        JAVA_INT.withName("targetId"),
-        JAVA_INT.withName("targetType"),
-        JAVA_INT.withName("modulatorId")
-    ).withByteAlignment(8);
-
-    static final VarHandle VH_LOCK =
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("lock"));
-    static final VarHandle VH_FIELD_ID =
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("fiedlId"));
-    static final VarHandle VH_NEURON_ID =
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("neuronId"));
-    static final VarHandle VH_TARGET_ID =
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("targetId"));
-    static final VarHandle VH_TARGET_TYPE =
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("targetType"));
-    static final VarHandle VH_MODULATOR_ID =
-        LAYOUT.arrayElementVarHandle(MemoryLayout.PathElement.groupElement("modulatorId"));
-    // @formatter:on
+    final SnnLockSupport lockSupport;
 
     // ----- public -----
 
-    public SynapseModel(int capacity) {
-        assert capacity > 0 : "invalid capacity";
+    public SynapseModel(int totalSize) {
+        assert totalSize >= META_SIZE + ENTRY_SIZE : "'totalSize' must be able to contain at least one entry";
 
-        this.capacity = capacity;
+        this.totalSize = totalSize;
         this.arena = Arena.ofShared();
 
-        this.sequenceLayout = MemoryLayout.sequenceLayout(capacity, LAYOUT);
-        this.segment = arena.allocate(sequenceLayout);
+        this.segment = arena.allocate(totalSize);
+        this.lockSupport = new SnnLockSupport(segment);
+
+        initMeta();
+    }
+
+    public SynapseModel(Path filePath) throws IOException {
+        this.arena = Arena.ofShared();
+        try (FileChannel channel = FileChannel.open(filePath, StandardOpenOption.READ)) {
+            this.totalSize = (int) channel.size();
+            this.segment = arena.allocate(this.totalSize);
+            channel.read(this.segment.asByteBuffer());
+            this.lockSupport = new SnnLockSupport(segment);
+        }
+
+    }
+
+    public static int calculateSize(int entries) {
+        return META_SIZE + ENTRY_SIZE * entries;
+    }
+
+    @Override
+    protected MemorySegment getSegment() {
+        return segment;
     }
 
     public void close() {
         arena.close();
     }
 
-    public int getCapacity() {
-        return capacity;
-    }
-
     // ----- lock/unlock -----
 
-    private static final int WRITER_WAITING = 0x40000000; // Bit 30
-    private static final int WRITER_ACTIVE  = 0xFFFFFFFF; // -1
-
-    void writeLock(int index) {
-        int spins = 0;
-        // set the WRITER_WAITING flag to indicate a write request
-        while (true) {
-            int current = (int) VH_LOCK.getVolatile(segment, 0L, index);
-            if ((current & WRITER_WAITING) == 0) {
-                if (VH_LOCK.compareAndSet(segment, 0L, index, current, current | WRITER_WAITING)) {
-                    break;
-                }
-            } else {
-                break;
-            }
-            backoff(spins++);
-        }
-
-        // set the lock
-        spins = 0;
-        while (true) {
-            int current = (int) VH_LOCK.getVolatile(segment, 0L, index);
-
-            // no reader active and write flag is set or initial state.
-            if (current == WRITER_WAITING || current == 0) {
-                if (VH_LOCK.compareAndSet(segment, 0L, index, current, WRITER_ACTIVE)) {
-                    return;
-                }
-            }
-
-            backoff(spins++);
-        }
+    void writeLock(int offset) {
+        lockSupport.writeLock(offset);
     }
 
-    void writeUnlock(int index) {
-        VH_LOCK.setRelease(segment, 0L, index, 0);
+    void readLock(int offset) {
+        lockSupport.readLock(offset);
     }
 
-    boolean readLock(int index) {
-        int spins = 0;
-        while (true) {
-            int current = (int) VH_LOCK.getVolatile(segment, 0L, index);
-
-            // give priority to the writers
-            if (current < 0 || (current & WRITER_WAITING) != 0) {
-                backoff(spins++);
-                continue;
-            }
-
-            // increment reader counter
-            if (VH_LOCK.compareAndSet(segment, 0L, index, current, current + 1)) {
-                return true;
-            }
-        }
+    void writeUnlock(int offset) {
+        lockSupport.writeUnlock(offset);
     }
 
-    void readUnlock(int index) {
-       // decrement reader counter
-       VH_LOCK.getAndAdd(segment, 0L, index, -1);
+    void readUnlock(int offset) {
+        lockSupport.readUnlock(offset);
     }
 
-    void backoff(int spins) {
-        if (spins < 64) {
-            Thread.onSpinWait();
-        } else {
-            LockSupport.parkNanos(1);
-        }
+    // ----- meta -----
+
+    void initMeta() {
+        setMagic(MAGIC);
+        setVersion(1);
+        setMetaSize(META_SIZE);
+        setEntrySize(ENTRY_SIZE);
+        setTotalSize(totalSize);
+        setMaxEntries((totalSize - META_SIZE) / ENTRY_SIZE);
+        setEntryCount(0);
+
+        // Data begins after the meta section
+        setEndOffset(META_SIZE);
     }
 
+    public int alloc(int fieldId, int neuronId, int targetId) {
+        int newOffset = super.alloc();
+
+        setFieldId(newOffset, fieldId);
+        setNeuronId(newOffset, neuronId);
+        setTargetId(newOffset, targetId);
+
+        return newOffset;
+    }
 
     // ----- getter/setter -----
 
-    int getFiedlId(int index) {
-        return (int) VH_FIELD_ID.get(segment, 0L, index);
+    int getFiedlId(int offset) {
+        return segment.get(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 0L);
     }
 
-    void setFieldId(int index, int value) {
-        VH_FIELD_ID.set(segment, 0L, index, value);
+    void setFieldId(int offset, int value) {
+        segment.set(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 0L, value);
     }
 
-    int getNeuronId(int index) {
-        return (int) VH_NEURON_ID.get(segment, 0L, index);
+    int getNeuronId(int offset) {
+        return segment.get(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 4L);
     }
 
-    void setNeuronId(int index, int value) {
-        VH_NEURON_ID.set(segment, 0L, index, value);
+    void setNeuronId(int offset, int value) {
+        segment.set(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 4L, value);
     }
 
-    int getTargetId(int index) {
-        return (int) VH_TARGET_ID.get(segment, 0L, index);
+    int getTargetId(int offset) {
+        return segment.get(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 8L);
     }
 
-    void setTargetId(int index, int value) {
-        VH_TARGET_ID.set(segment, 0L, index, value);
+    void setTargetId(int offset, int value) {
+        segment.set(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 8L, value);
     }
 
-    int getTargetType(int index) {
-        return (int) VH_TARGET_TYPE.get(segment, 0L, index);
+    int getModulatorId(int offset) {
+        return segment.get(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 12L);
     }
 
-    void setTargetType(int index, int value) {
-        VH_TARGET_TYPE.set(segment, 0L, index, value);
+    void setModulatorId(int offset, int value) {
+        segment.set(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 12L, value);
     }
-
-
-    int getModulatorId(int index) {
-        return (int) VH_MODULATOR_ID.get(segment, 0L, index);
-    }
-
-    void setModulatorId(int index, int value) {
-        VH_MODULATOR_ID.set(segment, 0L, index, value);
-    }
-
 }

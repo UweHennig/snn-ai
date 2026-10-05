@@ -1,73 +1,45 @@
-/**
- * @(#)SomaView.java
- * Copyright (c) 2026 Uwe Hennig
- * All rights reserved.
- */
+/// @(#)SomaView.java
+/// Copyright (c) 2026 Uwe Hennig
+/// All rights reserved.
 package com.uwe_hennig.snn.anatomy.neuron;
 
-/**
- * SomaView
- *
- * @author Uwe Hennig
- */
+/// SomaView
+///
+/// @author Uwe Hennig
+///
 public final class SomaView {
-    private final SomaModel model;
-    private final int       index;
+    private SomaView() {
+    }
 
-    public SomaView(SomaModel model, int index) {
-        this.model = model;
-        this.index = index;
+    // ----- getter/setter -----
+
+    public static int getFieldId(SomaModel model, int offset) {
+        return model.getFieldId(offset);
+    }
+
+    public static int getNeuronId(SomaModel model, int offset) {
+        return model.getNeuronId(offset);
+    }
+
+    public static int getAxonId(SomaModel model, int offset) {
+        return model.getAxonId(offset);
     }
 
     // ----- lock/unlock -----
 
-    public void readLock() {
-        model.readLock(index);
+    public static void readLock(SomaModel model, int offset) {
+        model.readLock(offset);
     }
 
-    public void readUnlock() {
-        model.readUnlock(index);
+    public static void readUnlock(SomaModel model, int offset) {
+        model.readUnlock(offset);
     }
 
-    public void writeLock() {
-        model.writeLock(index);
+    public static void writeLock(SomaModel model, int offset) {
+        model.writeLock(offset);
     }
 
-    public void writeUnlock() {
-        model.writeUnlock(index);
-    }
-
-    // ----- Getter/Setter -----
-    public void setStrukture(int fieldId, int neuronId, int axonId) {
-        model.setAxonId(index, axonId);
-        model.setNeuronId(index, neuronId);
-        model.setFieldId(index, fieldId);
-    }
-
-    public int getId() {
-        return index;
-    }
-
-    public int getFieldId() {
-        return model.getFieldId(index);
-    }
-
-    public int getNeuronId() {
-        return model.getNeuronId(index);
-    }
-
-    public int getAxonId() {
-        return model.getAxonId(index);
-    }
-
-    public void setStructure(int fieldId, int neuronId, int axonId) {
-        model.writeLock(index);
-        try {
-            model.setFieldId(index, fieldId);
-            model.setNeuronId(index, neuronId);
-            model.setAxonId(index, axonId);
-        } finally {
-            model.writeUnlock(index);
-        }
+    public static void writeUnlock(SomaModel model, int offset) {
+        model.writeUnlock(offset);
     }
 }

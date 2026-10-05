@@ -1,33 +1,34 @@
-/**
- * @(#)SomaModelMangager.java
- * Copyright (c) 2026 Uwe Hennig
- * All rights reserved.
- */
+/// @(#)SomaModelMangager.java
+/// Copyright (c) 2026 Uwe Hennig
+/// All rights reserved.
 package com.uwe_hennig.snn.anatomy.allocator;
 
-import com.uwe_hennig.snn.anatomy.neuron.SomaModel;
-import com.uwe_hennig.snn.anatomy.neuron.SomaView;
+import java.io.IOException;
+import java.nio.file.Path;
 
-/**
- * SomaModelMangager
- *
- * @author Uwe Hennig
- */
+import com.uwe_hennig.snn.anatomy.neuron.SomaModel;
+import com.uwe_hennig.snn.anatomy.neuron.SomaPersistence;
+import com.uwe_hennig.snn.util.logging.SNNLogger;
+
+/// SomaModelMangager
+///
+/// @author Uwe Hennig
+/// 
 public class SomaModelMangager {
+    private static final String      FILENAME = "soma.snn";
     private static SomaModelMangager INSTANCE;
 
     private SomaModel model;
-    private int       nextOffset = 0;
 
-    private SomaModelMangager(int capacity) {
-        this.model = new SomaModel(capacity);
+    private SomaModelMangager(int size) {
+        this.model = new SomaModel(size);
     }
 
-    public static SomaModelMangager init(int capacity) {
+    public static SomaModelMangager init(int size) {
         if (INSTANCE == null) {
             synchronized (PlasticityModelManager.class) {
                 if (INSTANCE == null) {
-                    INSTANCE = new SomaModelMangager(capacity);
+                    INSTANCE = new SomaModelMangager(size);
                 }
             }
         }
@@ -38,17 +39,6 @@ public class SomaModelMangager {
         return INSTANCE;
     }
 
-    public SomaView createView() {
-        if (model.getCapacity() <= nextOffset) {
-            throw new IllegalStateException("Out of off heap soma memory");
-        }
-        return new SomaView(model, nextOffset++);
-    }
-
-    public int capacity() {
-        return nextOffset;
-    }
-
     public SomaModel getModel() {
         return model;
     }
@@ -57,16 +47,27 @@ public class SomaModelMangager {
         if (INSTANCE != null) {
             INSTANCE.model.close();
             INSTANCE.model = null;
-            INSTANCE.nextOffset = 0;
             INSTANCE = null;
         }
     }
 
     public void save(String folder) {
-        /* TODO: Save model */
+        try {
+            Path path = Path.of(folder).resolve(FILENAME);
+            SomaPersistence.save(model, path);
+        } catch (IOException e) {
+            e.printStackTrace();
+            SNNLogger.error(() -> "Soma not saved!");
+        }
     }
 
     public void load(String folder) {
-        /* TODO Load model */
+        try {
+            Path path = Path.of(folder).resolve(FILENAME);
+            this.model = SomaPersistence.load(path);
+        } catch (IOException e) {
+            e.printStackTrace();
+            SNNLogger.error(() -> "Soma not loaded!");
+        }
     }
 }

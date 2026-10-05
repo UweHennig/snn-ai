@@ -7,9 +7,20 @@ import java.lang.foreign.MemorySegment;
 import java.lang.foreign.ValueLayout;
 
 /// MetaDataAccessor
-///
+///  MetaInfo (Header Layout)
+///   00: magic           : int    // Magic number for identifying the file type
+///   04: version         : int    // File format version
+///   08: metaSize        : int    // Size of this header in bytes
+///   12: entrySize       : int    // Fixed size of a single entry in bytes
+///   16: totalSize       : int    // Total physical size in bytes
+///   20: maxEntries      : int    // Maximum number of entries
+///   24: entryCount      : int    // Current number of entries written
+///   28: endOffset       : int    // Byte pointer to the current end of the payload
 /// @author Uwe Hennig
-public abstract class MetaDataAccessor extends SnnLockSupport {
+public abstract class MetaDataAccessor {
+    static final int META_SIZE  = 32;
+    abstract MemorySegment getSegment();
+
     int getMagic() {
         return getSegment().get(ValueLayout.JAVA_INT, 0L);
     }
@@ -34,35 +45,65 @@ public abstract class MetaDataAccessor extends SnnLockSupport {
         getSegment().set(ValueLayout.JAVA_INT, 8L, metaSize);
     }
 
-    int getCapacity() {
+    int getEntrySize() {
         return getSegment().get(ValueLayout.JAVA_INT, 12L);
     }
 
-    void setCapacity(int capacity) {
-        getSegment().set(ValueLayout.JAVA_INT, 12L, capacity);
+    void setEntrySize(int entrySize) {
+        getSegment().set(ValueLayout.JAVA_INT, 12L, entrySize);
     }
 
-    int getEntrySize() {
+    int getTotalSize() {
         return getSegment().get(ValueLayout.JAVA_INT, 16L);
     }
 
-    void setEntrySize(int entrySize) {
+    void setTotalSize(int entrySize) {
         getSegment().set(ValueLayout.JAVA_INT, 16L, entrySize);
     }
 
-    int getNumEntries() {
+    int getMaxEntries() {
         return getSegment().get(ValueLayout.JAVA_INT, 20L);
     }
 
-    void setNumEntries(int numEntries) {
-        getSegment().set(ValueLayout.JAVA_INT, 20L, numEntries);
+    void setMaxEntries(int entrySize) {
+        getSegment().set(ValueLayout.JAVA_INT, 20L, entrySize);
     }
 
-    int getEndOffset() {
+    int getEntryCount() {
         return getSegment().get(ValueLayout.JAVA_INT, 24L);
     }
 
-    void setEndOffset(int endOffset) {
-        getSegment().set(ValueLayout.JAVA_INT, 24L, endOffset);
+    void setEntryCount(int entrySize) {
+        getSegment().set(ValueLayout.JAVA_INT, 24L, entrySize);
     }
+
+    int getEndOffset() {
+        return getSegment().get(ValueLayout.JAVA_INT, 28L);
+    }
+
+    void setEndOffset(int endOffset) {
+        getSegment().set(ValueLayout.JAVA_INT, 28L, endOffset);
+    }
+
+    int offsetFromIndex(int index) {
+        int maxEntries = getMaxEntries();
+        assert index >=0 && index <= maxEntries : "invalid index";
+
+        return getMetaSize() + index * getEntrySize();
+    }
+
+    int alloc() {
+        // lock not required!
+        int newOffset = getEndOffset();
+        assert newOffset >= META_SIZE : "invalid initialisation!";
+
+        int entrySize = getEntrySize();
+        setEndOffset(newOffset + entrySize);
+
+        int entryCount = getEntryCount();
+        setEntryCount(entryCount + 1);
+
+        return newOffset;
+    }
+
 }
