@@ -1,6 +1,6 @@
-///  @(#)DendritTest.java
-///  Copyright (c) 2026 Uwe Hennig
-//   All rights reserved.
+/// @(#)DendritModelTest.java
+/// Copyright (c) 2026 Uwe Hennig
+/// All rights reserved.
 package com.uwe_hennig.snn.anatomy.neuron;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -12,10 +12,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
-///  DendritTest
+/// DendritModelTest
 ///
-///  @author Uwe Hennig
-public class DendritTest {
+/// @author Uwe Hennig
+///
+public class DendritModelTest {
 
     @Test
     @DisplayName("Simple DendritModel Test")
@@ -24,7 +25,7 @@ public class DendritTest {
         DendritModel model = new DendritModel(totalSize);
 
         checkModel(model, totalSize);
-        int offset = model.alloc(1, 2, 3, 4);
+        int offset = model.claimSlot(1, 2, 3);
 
         try {
             model.writeLock(offset);
@@ -32,7 +33,6 @@ public class DendritTest {
             model.setFieldId(offset, 1);
             model.setNeuronId(offset, 2);
             model.setSomaId(offset, 3);
-            model.setWeightId(offset, 4);
         } finally {
             model.writeUnlock(offset);
         }
@@ -42,8 +42,7 @@ public class DendritTest {
 
             assertEquals(1, model.getFiedlId(offset), "Invalid field id");
             assertEquals(2, model.getNeuronId(offset), "Invalid neuron id");
-            assertEquals(3, model.getSomaId(offset),"invalid soma id");
-            assertEquals(4, model.getWeighId(offset),"invalid weight id");
+            assertEquals(3, model.getSomaId(offset), "invalid soma id");
         } finally {
             model.readUnlock(offset);
         }

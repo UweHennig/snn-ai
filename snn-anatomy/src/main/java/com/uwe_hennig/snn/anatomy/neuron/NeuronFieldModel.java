@@ -81,6 +81,10 @@ public final class NeuronFieldModel extends MetaDataAccessor {
         return META_SIZE + ENTRY_SIZE * entries;
     }
 
+    public static int getEntryOffset(int entry) {
+        return META_SIZE + ENTRY_SIZE * entry;
+    }
+
     @Override
     protected MemorySegment getSegment() {
         return segment;
@@ -125,15 +129,10 @@ public final class NeuronFieldModel extends MetaDataAccessor {
         setEndOffset(META_SIZE);
     }
 
-    public int alloc(int neuronRef, int outNeighboursRef, int inNeighboursRef) {
-        int newOffset = super.alloc();
-
+    @Override
+    public int claimSlot() {
+        int newOffset = super.claimSlot();
         setFieldId(newOffset, newOffset);
-
-        setNeuronRef(newOffset, neuronRef);
-        setOutNeighboursRef(newOffset, outNeighboursRef);
-        setInNeighboursRef(newOffset, inNeighboursRef);
-
         return newOffset;
     }
 

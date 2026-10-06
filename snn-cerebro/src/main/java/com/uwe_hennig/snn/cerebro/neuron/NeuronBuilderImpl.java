@@ -121,7 +121,7 @@ public class NeuronBuilderImpl implements NeuronBuilder {
         // TODO
         WeightModelManager wmm = WeightModelManager.instance();
         WeightModel model = wmm.getModel();
-        int weightOffset = model.alloc();
+        int weightOffset = model.claimSlot();
         return weightOffset;
     }
 

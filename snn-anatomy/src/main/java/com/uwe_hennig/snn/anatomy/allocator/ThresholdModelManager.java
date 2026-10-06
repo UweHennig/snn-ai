@@ -39,8 +39,8 @@ public class ThresholdModelManager {
         return INSTANCE;
     }
 
-    public ThresholdModel getModel() {
-        return model;
+    public int claimSlot() {
+        return model.claimSlot();
     }
 
     public static void close() {

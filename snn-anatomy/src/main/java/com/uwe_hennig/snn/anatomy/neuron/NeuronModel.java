@@ -124,8 +124,8 @@ public final class NeuronModel extends MetaDataAccessor {
         setEndOffset(META_SIZE);
     }
 
-    public int alloc(int fieldId) {
-        int newOffset = super.alloc();
+    public int claimSlot(int fieldId) {
+        int newOffset = super.claimSlot();
         setFieldId(newOffset, fieldId);
         return newOffset;
     }

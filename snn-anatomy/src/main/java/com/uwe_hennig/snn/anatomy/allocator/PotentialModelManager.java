@@ -39,8 +39,8 @@ public class PotentialModelManager {
         return INSTANCE;
     }
 
-    public PotentialModel getModel() {
-        return model;
+    public int claimSlot() {
+        return model.claimSlot();
     }
 
     public static void close() {

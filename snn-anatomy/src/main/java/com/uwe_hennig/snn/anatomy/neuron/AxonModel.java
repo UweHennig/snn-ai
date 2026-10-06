@@ -121,8 +121,8 @@ public final class AxonModel extends MetaDataAccessor {
         setEndOffset(META_SIZE);
     }
 
-    public int alloc(int fieldId, int neuronId, int blockId) {
-        int newOffset = super.alloc();
+    public int claimSlot(int fieldId, int neuronId, int blockId) {
+        int newOffset = super.claimSlot();
 
         setFieldId(newOffset, fieldId);
         setNeuronId(newOffset, neuronId);

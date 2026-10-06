@@ -31,7 +31,7 @@ public class NeuronFieldPersistence {
         }
     }
 
-    public static NeuronFieldModel laod(Path file) throws IOException {
+    public static NeuronFieldModel load(Path file) throws IOException {
         return new NeuronFieldModel(file);
     }
 }

@@ -24,24 +24,27 @@ import java.nio.file.StandardOpenOption;
 /// │  36: fieldId         : int      │
 /// │  40: neuronId        : int      │
 /// │  44: targetId        : int      │
-/// │  48: modulatorId     : int      │
+/// │  48: targetType      : int      │
+/// │  52: modulatorId     : int      │
 /// ├─────────────────────────────────┤
 /// │ Entry 1                         │
-/// │  52: lock            : int      │
-/// │  56: fieldId         : int      │
-/// │  60: neuronId        : int      │
-/// │  64: targetId        : int      │
-/// │  68: modulatorId     : int      │
+/// │  56: lock            : int      │
+/// │  60: fieldId         : int      │
+/// │  64: neuronId        : int      │
+/// │  68: targetId        : int      │
+/// │  72: targetId        : int      │
+/// │  74: modulatorId     : int      │
 /// ├─────────────────────────────────┤
 /// │ ...                             │
 /// └─────────────────────────────────┘
 /// ```
 ///
 /// @author Uwe Hennig
+///
 public final class SynapseModel extends MetaDataAccessor {
     static final int MAGIC      = ('S' << 24) | ('Y' << 16) | ('M' << 8) | '1';
     static final int VALUE_SIZE = 4;
-    static final int ENTRY_SIZE = 20;
+    static final int ENTRY_SIZE = 24;
     static final int LOCK_SIZE  = 4;
 
     final Arena         arena;
@@ -121,8 +124,8 @@ public final class SynapseModel extends MetaDataAccessor {
         setEndOffset(META_SIZE);
     }
 
-    public int alloc(int fieldId, int neuronId, int targetId) {
-        int newOffset = super.alloc();
+    public int claimSlot(int fieldId, int neuronId, int targetId) {
+        int newOffset = super.claimSlot();
 
         setFieldId(newOffset, fieldId);
         setNeuronId(newOffset, neuronId);
@@ -157,11 +160,19 @@ public final class SynapseModel extends MetaDataAccessor {
         segment.set(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 8L, value);
     }
 
-    int getModulatorId(int offset) {
+    int getTargetType(int offset) {
         return segment.get(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 12L);
     }
 
-    void setModulatorId(int offset, int value) {
+    void setTargetType(int offset, int value) {
         segment.set(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 12L, value);
+    }
+
+    int getModulatorId(int offset) {
+        return segment.get(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 16L);
+    }
+
+    void setModulatorId(int offset, int value) {
+        segment.set(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 16L, value);
     }
 }

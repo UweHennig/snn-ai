@@ -39,8 +39,8 @@ public class DendritModelManager {
         return INSTANCE;
     }
 
-    public DendritModel getModel() {
-        return model;
+    public int claimSlot(int fieldOffset, int neuronOffset, int targetOffset) {
+        return model.claimSlot(fieldOffset, neuronOffset, targetOffset);
     }
 
     public static void close() {

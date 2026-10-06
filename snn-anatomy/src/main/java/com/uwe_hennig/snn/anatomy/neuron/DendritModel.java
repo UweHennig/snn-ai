@@ -123,12 +123,12 @@ public final class DendritModel extends MetaDataAccessor {
         setEndOffset(META_SIZE);
     }
 
-    public int alloc(int fieldId, int neuronId, int somaId) {
-        int newOffset = super.alloc();
+    public int claimSlot(int fieldOffset, int neuronOffset, int somaOffset) {
+        int newOffset = super.claimSlot();
 
-        setFieldId(newOffset, fieldId);
-        setNeuronId(newOffset, neuronId);
-        setSomaId(newOffset, somaId);
+        setFieldId(newOffset, fieldOffset);
+        setNeuronId(newOffset, neuronOffset);
+        setSomaId(newOffset, somaOffset);
 
         return newOffset;
     }

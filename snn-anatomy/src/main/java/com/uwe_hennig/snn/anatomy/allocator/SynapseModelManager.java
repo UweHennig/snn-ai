@@ -39,8 +39,8 @@ public class SynapseModelManager {
         return INSTANCE;
     }
 
-    public SynapseModel getModel() {
-        return model;
+    public int claimSlot(int fieldOffset, int neuronOffset, int targetOffset) {
+        return model.claimSlot(fieldOffset, neuronOffset, targetOffset);
     }
 
     public static void close() {

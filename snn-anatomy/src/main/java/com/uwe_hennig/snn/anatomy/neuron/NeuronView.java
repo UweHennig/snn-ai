@@ -5,17 +5,11 @@
  */
 package com.uwe_hennig.snn.anatomy.neuron;
 
-import com.uwe_hennig.snn.anatomy.allocator.NeuronModelManager;
-
 /**
  * NeuronView
  * @author Uwe Hennig
  */
 public final class NeuronView {
-    public static void setFieldId(int index, int fieldId) {
-        NeuronModel model = NeuronModelManager.INSTANCE.getModel();
-        model.setFieldId(index, fieldId);
-    }
 
     public static void setRefs(NeuronModel model, int offset, int fieldId, int dendritRef, int somaId, int axonId, int synapseRef) {
         model.setFieldId(offset, fieldId);

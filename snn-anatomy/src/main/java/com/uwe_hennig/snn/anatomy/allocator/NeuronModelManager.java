@@ -20,8 +20,8 @@ public class NeuronModelManager {
 
     private NeuronModel model;
 
-    private NeuronModelManager(int capacity) {
-        this.model = new NeuronModel(capacity);
+    private NeuronModelManager(int size) {
+        this.model = new NeuronModel(size);
     }
 
     public static NeuronModelManager init(int size) {
@@ -39,8 +39,8 @@ public class NeuronModelManager {
         return INSTANCE;
     }
 
-    public NeuronModel getModel() {
-        return model;
+    public int claimSlot() {
+        return model.claimSlot();
     }
 
     public static void close() {

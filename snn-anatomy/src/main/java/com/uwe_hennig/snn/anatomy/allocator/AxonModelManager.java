@@ -39,8 +39,8 @@ public class AxonModelManager {
         return INSTANCE;
     }
 
-    public AxonModel getModel() {
-        return model;
+    public int claimSlot(int fieldOffset, int neuronOffset, int targetOffset) {
+        return model.claimSlot(fieldOffset, neuronOffset, targetOffset);
     }
 
     public static void close() {

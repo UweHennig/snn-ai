@@ -1,8 +1,6 @@
-/**
- * @(#)NeuronFieldTest.java
- * Copyright (c) 2026 Uwe Hennig
- * All rights reserved.
- */
+/// @(#)NeuronFieldTest.java
+/// Copyright (c) 2026 Uwe Hennig
+/// All rights reserved.
 package com.uwe_hennig.snn.anatomy.neuron;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -14,33 +12,36 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
-/**
- * NeuronFieldTest
- *
- * @author Uwe Hennig
- */
+/// NeuronFieldTest
+///
+/// @author Uwe Hennig
+///
 public class NeuronFieldTest {
     @Test
     @DisplayName("Simple FieldModel Test")
     public void testFieldModel() {
-        final int capacity = 10;
-        NeuronFieldModel model = new NeuronFieldModel(capacity);
-        checkModel(model, capacity);
+        final int eintries = 10;
+        final int size = NeuronFieldModel.calculateSize(eintries);
 
-        for (int i = 0; i < capacity; i++) {
+        NeuronFieldModel model = new NeuronFieldModel(size);
+        checkModel(model, size);
+
+        for (int i = 0; i < eintries; i++) {
+            int offset = model.claimSlot();
             try {
-                model.writeLock(i);
-                model.setType(i, i + 1);
-
+                model.writeLock(offset);
+                model.setType(offset, i + 1);
             } catch (Exception e) {
                 fail("Exception on testAsyncData " + e.getLocalizedMessage());
             } finally {
-                model.writeUnlock(i);
+                model.writeUnlock(offset);
             }
         }
-        for (int i = 0; i < capacity; i++) {
+
+        for (int i = 0; i < eintries; i++) {
+            int offset = NeuronFieldModel.getEntryOffset(i);
             try {
-                assertEquals(i + 1, model.getType(i));
+                assertEquals(i + 1, model.getType(offset));
             } catch (Exception e) {
                 fail("Exception on testAsyncData " + e.getLocalizedMessage());
             }
@@ -48,19 +49,15 @@ public class NeuronFieldTest {
         model.close();
     }
 
-    private void checkModel(NeuronFieldModel model, int capacity) {
+    private void checkModel(NeuronFieldModel model, int totalSize) {
         System.out.printf("%nModel information");
-        System.out.printf("%nCapacity       : %6d", model.capacity);
-        System.out.printf("%nLayout size    : %6d bytes", NeuronFieldModel.LAYOUT.byteSize());
+        System.out.printf("%nTotal size     : %6d", model.totalSize);
         System.out.printf("%nByte size      : %6d bytes", model.segment.byteSize());
-        System.out.printf("%nStructure      : %s%n%n", NeuronFieldModel.LAYOUT);
 
         assertNotNull(model.arena, "Arena is null!");
         assertNotNull(model.segment, "Segment is null!");
-        assertNotNull(model.sequenceLayout, "SequenceLayout is null!");
 
-        assertEquals(capacity, model.capacity, "Invalid capacity!");
-        assertEquals(NeuronFieldModel.LAYOUT.byteSize() * model.capacity, model.segment.byteSize(), "Invalid segment size!");
+        assertEquals(totalSize, model.totalSize, "Invalid capacity!");
     }
 
     @BeforeEach

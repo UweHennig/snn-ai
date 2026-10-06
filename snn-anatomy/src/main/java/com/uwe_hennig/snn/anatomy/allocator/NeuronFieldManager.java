@@ -1,37 +1,34 @@
-/**
- * @(#)NeuronFieldManager.java
- * Copyright (c) 2026 Uwe Hennig
- * All rights reserved.
- */
+/// @(#)NeuronFieldManager.java
+/// Copyright (c) 2026 Uwe Hennig
+/// All rights reserved.
 package com.uwe_hennig.snn.anatomy.allocator;
 
-import com.uwe_hennig.snn.anatomy.core.MultiList;
-import com.uwe_hennig.snn.anatomy.neuron.NeuronFieldModel;
+import java.io.IOException;
+import java.nio.file.Path;
 
-/**
- * NeuronFieldManager
- *
- * @author Uwe Hennig
- */
+import com.uwe_hennig.snn.anatomy.neuron.NeuronFieldModel;
+import com.uwe_hennig.snn.anatomy.neuron.NeuronFieldPersistence;
+import com.uwe_hennig.snn.util.logging.SNNLogger;
+
+/// NeuronFieldManager
+///
+/// @author Uwe Hennig
+///
 public class NeuronFieldManager {
+    private static final String       FILENAME = "field.snn";
     private static NeuronFieldManager INSTANCE;
 
     private NeuronFieldModel model;
-    private MultiList        multiList;
 
-    private int nextOffset = 0;
-
-    private NeuronFieldManager(int modelCapacity, long maxBlocks, int minDataCapacityBytes) {
-        model = new NeuronFieldModel(modelCapacity);
-        maxBlocks = Math.max(maxBlocks, modelCapacity);
-        multiList = new MultiList(maxBlocks, minDataCapacityBytes);
+    private NeuronFieldManager(int size) {
+        model = new NeuronFieldModel(size);
     }
 
-    public static NeuronFieldManager init(int modelCapacity, long maxBlocks, int minDataCapacityBytes) {
+    public static NeuronFieldManager init(int size) {
         if (INSTANCE == null) {
             synchronized (NeuronFieldManager.class) {
                 if (INSTANCE == null) {
-                    INSTANCE = new NeuronFieldManager(modelCapacity, maxBlocks, minDataCapacityBytes);
+                    INSTANCE = new NeuronFieldManager(size);
                 }
             }
         }
@@ -42,31 +39,35 @@ public class NeuronFieldManager {
         return INSTANCE;
     }
 
-    public int nextId() {
-        if (model.getCapacity() <= nextOffset) {
-            throw new IllegalStateException("Out of off heap neuron field memory");
-        }
-        return nextOffset++;
-    }
-
-    public NeuronFieldModel getModel() {
-        return model;
-    }
-
-    public MultiList getListModel() {
-        return multiList;
+    public int claimSlot() {
+        return model.claimSlot();
     }
 
     public static void close() {
         if (INSTANCE != null) {
             INSTANCE.model.close();
             INSTANCE.model = null;
-
-            INSTANCE.multiList.close();
-            INSTANCE.multiList = null;
-
             INSTANCE = null;
         }
     }
 
+    public void save(String folder) {
+        try {
+            Path path = Path.of(folder).resolve(FILENAME);
+            NeuronFieldPersistence.save(model, path);
+        } catch (IOException e) {
+            e.printStackTrace();
+            SNNLogger.error(() -> "Field not saved!");
+        }
+    }
+
+    public void load(String folder) {
+        try {
+            Path path = Path.of(folder).resolve(FILENAME);
+            this.model = NeuronFieldPersistence.load(path);
+        } catch (IOException e) {
+            e.printStackTrace();
+            SNNLogger.error(() -> "Field not loaded!");
+        }
+    }
 }

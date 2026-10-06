@@ -13,7 +13,7 @@ import com.uwe_hennig.snn.util.logging.SNNLogger;
 /// SomaModelMangager
 ///
 /// @author Uwe Hennig
-/// 
+///
 public class SomaModelMangager {
     private static final String      FILENAME = "soma.snn";
     private static SomaModelMangager INSTANCE;
@@ -39,8 +39,8 @@ public class SomaModelMangager {
         return INSTANCE;
     }
 
-    public SomaModel getModel() {
-        return model;
+    public int claimSlot(int fieldOffset, int neuronOffset, int targetOffset) {
+        return model.claimSlot(fieldOffset, neuronOffset, targetOffset);
     }
 
     public static void close() {

@@ -41,8 +41,8 @@ public class WeightModelManager {
         return INSTANCE;
     }
 
-    public WeightModel getModel() {
-        return model;
+    public int claimSlot() {
+        return model.claimSlot();
     }
 
     public static void close() {

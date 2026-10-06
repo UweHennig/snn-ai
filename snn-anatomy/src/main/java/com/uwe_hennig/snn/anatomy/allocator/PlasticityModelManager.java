@@ -39,8 +39,8 @@ public class PlasticityModelManager {
         return INSTANCE;
     }
 
-    public PlasticityModel getModel() {
-        return model;
+    public int claimSlot() {
+        return model.claimSlot();
     }
 
     public static void close() {

@@ -1,4 +1,4 @@
-/// @(#)WeightTest.java
+/// @(#)WeightModelTest.java
 /// Copyright (c) 2026 Uwe Hennig
 /// All rights reserved.
 package com.uwe_hennig.snn.anatomy.neuron;
@@ -23,11 +23,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.TestMethodOrder;
 
-/// WeightTest
+/// WeightModelTest
 ///
 /// @author Uwe Hennig
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class WeightTest {
+public class WeightModelTest {
     private static final int        RW_ENTRIES    = 1_000_000;
     private static final int        RW_TOTAL_SIZE = WeightModel.calculateSize(1_000_000);
     private static final AtomicLong counter       = new AtomicLong();
@@ -40,7 +40,7 @@ public class WeightTest {
             int size = WeightModel.calculateSize(1);
             model = new WeightModel(size);
             checkModel(model, size);
-            int offset = model.alloc();
+            int offset = model.claimSlot();
 
             assertEquals(WeightModel.META_SIZE, offset);
 
@@ -82,7 +82,7 @@ public class WeightTest {
 
         try {
             for (int i = 0; i < RW_ENTRIES; i++) {
-                int offset = model.alloc();
+                int offset = model.claimSlot();
 
                 model.setWeight(offset, values);
                 model.setHebbTimeRange(offset, values + 1f);

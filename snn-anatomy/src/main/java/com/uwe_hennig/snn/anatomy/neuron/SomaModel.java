@@ -44,6 +44,7 @@ import java.nio.file.StandardOpenOption;
 /// ````
 ///
 /// @author Uwe Hennig
+///
 public final class SomaModel extends MetaDataAccessor {
     static final int MAGIC      = ('S' << 24) | ('O' << 16) | ('M' << 8) | '1';
     static final int VALUE_SIZE = 4;
@@ -124,8 +125,8 @@ public final class SomaModel extends MetaDataAccessor {
         setEndOffset(META_SIZE);
     }
 
-    public int alloc(int fieldId, int neuronId, int axonId) {
-        int newOffset = super.alloc();
+    public int claimSlot(int fieldId, int neuronId, int axonId) {
+        int newOffset = super.claimSlot();
 
         setFieldId(newOffset, fieldId);
         setNeuronId(newOffset, neuronId);
