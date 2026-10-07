@@ -25,6 +25,10 @@ public final class DendritView {
         return model.getSomaId(offset);
     }
 
+    public static int getWeightId(DendritModel model, int offset) {
+        return model.getWeighId(offset);
+    }
+
     // ----- lock/unlock -----
 
     public static void readLock(DendritModel model, int offset) {

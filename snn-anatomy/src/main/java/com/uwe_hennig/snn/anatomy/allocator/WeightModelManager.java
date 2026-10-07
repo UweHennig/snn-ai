@@ -45,6 +45,10 @@ public class WeightModelManager {
         return model.claimSlot();
     }
 
+    public WeightModel getModel() {
+        return model;
+    }
+
     public static void close() {
         if (INSTANCE != null) {
             INSTANCE.model.close();
