@@ -3,6 +3,8 @@
 /// All rights reserved.
 package com.uwe_hennig.snn.cerebro.neuron;
 
+import static com.uwe_hennig.snn.contracts.core.ElementType.DENDRIT;
+
 import com.uwe_hennig.snn.anatomy.allocator.DendritModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.WeightModelManager;
 import com.uwe_hennig.snn.anatomy.neuron.DendritModel;
@@ -30,31 +32,32 @@ public final class Dendrit {
     ///            is the stimulus type: FEEDBACK_TIME, FEEDBACK_VALUE, STIMULUS
     /// @param stimulusValue
     ///            a float delta or absolute value depending on stimulusType
-    public static void stimulate(int offset, int srcId, int srcType, int stimulusType, float stimulusValue) {
+    public static void stimulate(int offset, int srcNeuronId, int srcType, int stimulusType, float stimulusValue) {
         DendritModel model = DendritModelManager.instance().getModel();
 
+        float currentTime = 1000; // TODO
+        float adjustedValue = stimulusValue;
+
+        DendritView.writeLock(model, offset);
         try {
-            final float currentTime = 1000; // TODO Model time
-
-            DendritView.writeLock(model, offset);
-
             if (StimulusType.isStimulus(stimulusType)) {
                 int weightId = DendritView.getWeightId(model, offset);
                 WeightModel weightModel = WeightModelManager.instance().getModel();
-                WeightView.applyStimulus(weightModel, weightId, stimulusValue, currentTime);
+                adjustedValue = WeightView.applyStimulus(weightModel, weightId, stimulusValue, currentTime);
             }
 
             if (StimulusType.isTimeFeedback(stimulusType)) {
                 int weightId = DendritView.getWeightId(model, offset);
                 WeightModel weightModel = WeightModelManager.instance().getModel();
-                WeightView.applyFeedback(weightModel, weightId, stimulusValue);
+                adjustedValue = WeightView.applyFeedback(weightModel, weightId, stimulusValue);
             }
-
-            int somaId = DendritView.getSomaId(model, offset);
-            // TODO forward values to soma
-
         } finally {
             DendritView.writeUnlock(model, offset);
         }
+
+        int somaId = DendritView.getSomaId(model, offset);
+        int dendritNeuronId = DendritView.getNeuronId(model, offset);
+
+        Soma.stimulate(somaId, dendritNeuronId, DENDRIT, stimulusType, adjustedValue);
     }
 }

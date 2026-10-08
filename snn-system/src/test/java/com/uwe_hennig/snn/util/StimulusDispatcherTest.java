@@ -38,8 +38,8 @@ public class StimulusDispatcherTest {
             queue = new IntQueue(1024);
             dispatcher = StimulusDispatcher.init(3, ts, queue);
 
-            int blockA = ts.allocateBlock(2, 10, 20);
-            int blockB = ts.allocateBlock(2, 30, 40);
+            int blockA = ts.allocateBlock(2, 3, 10, 20);
+            int blockB = ts.allocateBlock(2, 3, 30, 40);
 
             queue.offer(blockA);
             queue.offer(blockB);

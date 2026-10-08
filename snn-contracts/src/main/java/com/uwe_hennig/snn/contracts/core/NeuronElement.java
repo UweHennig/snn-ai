@@ -12,7 +12,7 @@ package com.uwe_hennig.snn.contracts.core;
  * @author Uwe Hennig
  */
 public interface NeuronElement {
-    NeuronElementType getType();
+    ElementType getType();
     void stimulate(int stimulusIdentifier);
     int  getNeuronId();
 }

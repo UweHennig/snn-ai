@@ -39,7 +39,7 @@ public final class AxonView {
         model.writeLock(offset);
     }
 
-    public void writeUnlock(AxonModel model, int offset) {
+    public static void writeUnlock(AxonModel model, int offset) {
         model.writeUnlock(offset);
     }
 }

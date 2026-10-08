@@ -34,12 +34,13 @@ public class BufferedTransferTest {
     @DisplayName("BufferedTransfer data test")
     public void testMetaData() {
         final int entries = 2;
+        final int srcNeuronId = 42;
         final int srcId = 10;
         final int srcType = 20;
 
         BufferedTransferSegment ts = new BufferedTransferSegment(1048576);
 
-        int blockOffset = ts.allocateBlock(entries, srcId, srcType);
+        int blockOffset = ts.allocateBlock(entries, srcNeuronId, srcId, srcType);
 
         int magic = ts.getMagic();
         assertEquals(0x42545331, magic, "invalid magic");
@@ -50,6 +51,7 @@ public class BufferedTransferTest {
         assertEquals(1, ts.getNumBlocks(), "invalid numBlocks");
         assertEquals(META_SIZE, blockOffset, "invalid start of initial block");
 
+        assertEquals(srcNeuronId, ts.getNeuronId(blockOffset), "invalid stored neuron id");
         assertEquals(srcId, ts.getSrcId(blockOffset), "invalid stored source id");
         assertEquals(srcType, ts.getSrcType(blockOffset), "invalid stored source type");
 
@@ -62,15 +64,17 @@ public class BufferedTransferTest {
     @Test
     @DisplayName("BufferedTransfer data test")
     public void testSimpleEntry() {
+        final int srcNIdA = 5;
         final int srcIdA = 10;
         final int srcTypeA = 20;
 
+        final int srcNIdB = 8;
         final int srcIdB = 30;
         final int srcTypeB = 40;
 
         BufferedTransferSegment ts = new BufferedTransferSegment(1048576);
-        int blockOffsetA = ts.allocateBlock(2, srcIdA, srcTypeA);
-        int blockOffsetB = ts.allocateBlock(2, srcIdB, srcTypeB);
+        int blockOffsetA = ts.allocateBlock(2, srcNIdA, srcIdA, srcTypeA);
+        int blockOffsetB = ts.allocateBlock(2, srcNIdB, srcIdB, srcTypeB);
 
         // --- A
         ts.setTrgId(blockOffsetA, 0, 11);
@@ -176,19 +180,23 @@ public class BufferedTransferTest {
     @DisplayName("BufferedTransfer simple entry rotation test")
     public void testSimpleRotation() {
         System.setProperty("snn.logging", "true");
+        final int srcNId = 5;
         final int srcId = 10;
         final int srcType = 20;
         BufferedTransferSegment ts = new BufferedTransferSegment(1048576);
-        int blockOffset = ts.allocateBlock(1, srcId, srcType);
+        int blockOffset = ts.allocateBlock(1, srcNId, srcId, srcType);
         try {
             Queue<Float> fbTimeQ = new LinkedList<>();
             Queue<Float> fbValueQ = new LinkedList<>();
             Queue<Float> stimulusQ = new LinkedList<>();
 
             for (int i = 0; i < 3; i++) {
-                ts.offerFbTime(blockOffset, 0, 10f); fbTimeQ.offer(10f);
-                ts.offerFbTime(blockOffset, 0, 20f); fbTimeQ.offer(20f);
-                ts.offerFbTime(blockOffset, 0, 30f); fbTimeQ.offer(30f);
+                ts.offerFbTime(blockOffset, 0, 10f);
+                fbTimeQ.offer(10f);
+                ts.offerFbTime(blockOffset, 0, 20f);
+                fbTimeQ.offer(20f);
+                ts.offerFbTime(blockOffset, 0, 30f);
+                fbTimeQ.offer(30f);
                 assertEquals(fbTimeQ.poll(), ts.pollFbTime(blockOffset, 0));
                 assertEquals(fbTimeQ.poll(), ts.pollFbTime(blockOffset, 0));
                 assertEquals(fbTimeQ.poll(), ts.pollFbTime(blockOffset, 0));
@@ -232,11 +240,12 @@ public class BufferedTransferTest {
         ThreadLocalRandom rand = ThreadLocalRandom.current();
 
         final int entries = 100;
+        final int neuronId = 5;
         final int srcId = 10;
         final int srcType = 20;
 
         BufferedTransferSegment ts = new BufferedTransferSegment(1048576);
-        int blockOffset = ts.allocateBlock(entries, srcId, srcType);
+        int blockOffset = ts.allocateBlock(entries, neuronId, srcId, srcType);
 
         int entry = 0;
         int method = 0;
@@ -295,18 +304,18 @@ public class BufferedTransferTest {
         final int blocks = 5;
         final int duration = 10;
 
-        BufferedTransferSegment model = new BufferedTransferSegment(1024*1024);
+        BufferedTransferSegment model = new BufferedTransferSegment(1024 * 1024);
         int[] blockArray = new int[blocks];
 
         for (int i = 0; i < blocks; i++) {
-            blockArray[i] = model.allocateBlock(entries, i, i);
+            blockArray[i] = model.allocateBlock(entries, i, i, i);
         }
 
         AtomicBoolean running = new AtomicBoolean(true);
         AtomicLong writeOp = new AtomicLong();
         AtomicLong readOp = new AtomicLong();
-        AtomicLong readMiss= new AtomicLong();
-        AtomicLong dropMiss= new AtomicLong();
+        AtomicLong readMiss = new AtomicLong();
+        AtomicLong dropMiss = new AtomicLong();
 
         ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
         //ExecutorService executor = Executors.newFixedThreadPool(2);

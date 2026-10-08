@@ -43,6 +43,10 @@ public class AxonModelManager {
         return model.claimSlot(fieldOffset, neuronOffset, targetOffset);
     }
 
+    public AxonModel getModel() {
+        return model;
+    }
+
     public static void close() {
         if (INSTANCE != null) {
             INSTANCE.model.close();

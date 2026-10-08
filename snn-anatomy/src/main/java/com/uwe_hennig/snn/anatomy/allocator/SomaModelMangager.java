@@ -43,6 +43,10 @@ public class SomaModelMangager {
         return model.claimSlot(fieldOffset, neuronOffset, targetOffset);
     }
 
+    public SomaModel getModel() {
+        return model;
+    }
+
     public static void close() {
         if (INSTANCE != null) {
             INSTANCE.model.close();

@@ -43,6 +43,10 @@ public class SynapseModelManager {
         return model.claimSlot(fieldOffset, neuronOffset, targetOffset);
     }
 
+    public SynapseModel getModel() {
+        return model;
+    }
+
     public static void close() {
         if (INSTANCE != null) {
             INSTANCE.model.close();

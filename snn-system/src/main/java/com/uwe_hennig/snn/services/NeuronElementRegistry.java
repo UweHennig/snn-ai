@@ -6,7 +6,7 @@
 package com.uwe_hennig.snn.services;
 
 import com.uwe_hennig.snn.contracts.core.NeuronElement;
-import com.uwe_hennig.snn.contracts.core.NeuronElementType;
+import com.uwe_hennig.snn.contracts.core.ElementType;
 
 /**
  * NeuronElementRegistry
@@ -60,7 +60,7 @@ public final class NeuronElementRegistry {
         }
     }
 
-    public NeuronElement getNeuronElement(int idx, NeuronElementType trgType) {
+    public NeuronElement getNeuronElement(int idx, ElementType trgType) {
         return switch (trgType) {
             case DENDRIT -> dendritArray[idx];
             case SOMA -> somaArray[idx];

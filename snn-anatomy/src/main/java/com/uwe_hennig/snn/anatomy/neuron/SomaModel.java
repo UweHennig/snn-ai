@@ -28,16 +28,18 @@ import java.nio.file.StandardOpenOption;
 /// │  52: thresholdId     : int      │
 /// │  56: stpId           : int      │
 /// │  60: ltpId           : int      │
+/// │  64: fireTime        : float    │
 /// ├─────────────────────────────────┤
 /// │ Entry 1                         │
-/// │  64: lock            : int      │
-/// │  68: fieldId         : int      │
-/// │  72: neuronId        : int      │
-/// │  76: axonId          : int      │
-/// │  80: potentialId     : int      │
-/// │  84: thresholdId     : int      │
-/// │  88: stpId           : int      │
-/// │  92: ltpId           : int      │
+/// │  68: lock            : int      │
+/// │  72: fieldId         : int      │
+/// │  76: neuronId        : int      │
+/// │  80: axonId          : int      │
+/// │  84: potentialId     : int      │
+/// │  88: thresholdId     : int      │
+/// │  92: stpId           : int      │
+/// │  96: ltpId           : int      │
+/// │ 100: fireTime        : float    │
 /// ├─────────────────────────────────┤
 /// │ ...                             │
 /// └─────────────────────────────────┘
@@ -191,5 +193,13 @@ public final class SomaModel extends MetaDataAccessor {
 
     void setLtpId(int offset, int value) {
         segment.set(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 24L, value);
+    }
+
+    float getFireTime(int offset) {
+        return segment.get(ValueLayout.JAVA_FLOAT, offset + LOCK_SIZE + 28L);
+    }
+
+    void setFireTime(int offset, float value) {
+        segment.set(ValueLayout.JAVA_FLOAT, offset + LOCK_SIZE + 28L, value);
     }
 }

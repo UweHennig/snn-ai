@@ -5,36 +5,27 @@
  */
 package com.uwe_hennig.snn.cerebro.neuron;
 
-import static com.uwe_hennig.snn.contracts.core.NeuronElementType.AXON;
-
+import com.uwe_hennig.snn.anatomy.allocator.AxonModelManager;
+import com.uwe_hennig.snn.anatomy.neuron.AxonModel;
 import com.uwe_hennig.snn.anatomy.neuron.AxonView;
-import com.uwe_hennig.snn.anatomy.neuron.ModulatorView;
-import com.uwe_hennig.snn.contracts.core.NeuronElement;
-import com.uwe_hennig.snn.contracts.core.NeuronElementType;
-import com.uwe_hennig.snn.contracts.core.ViewIdentity;
-import com.uwe_hennig.snn.services.NeuronElementRegistry;
 
 /**
  * Axon
  *
  * @author Uwe Hennig
  */
-public final class Axon extends ViewIdentity implements NeuronElement {
-    private final AxonView      axonView;
-    private final ModulatorView modulatorView;
-
-    public Axon(AxonView axonView, ModulatorView modulatorView) {
-        this.axonView = axonView;
-        this.modulatorView = modulatorView;
+public final class Axon {
+    private Axon() {
     }
 
-    @Override
-    public void stimulate(int stimulusIdentifier) {
+    public static void stimulate(int offset, int srcNeuronId, int srcType, int stimulusType, float stimulusValue) {
+        AxonModel model = AxonModelManager.instance().getModel();
+        AxonView.writeLock(model, offset);
+
+        //            float currentTime = 1000; // TODO
         try {
-            axonView.writeLock();
-            // TODO Axon must terminate thread activit and create a new Matrix Event
+            // TODO Axon must terminate thread activity
             //            // TODO complete implementation
-            //            float currentTime = 1000; // TODO
             //
             //            float stimulusValue = StimulusService.getValue(stimulusIdentifier);
             //            int stimulusType = StimulusService.getStimulusType(stimulusIdentifier);
@@ -47,29 +38,10 @@ public final class Axon extends ViewIdentity implements NeuronElement {
             //
             //            // TODO for each synapse or bulk
             //            stimulusIdentifier = StimulusService.update(stimulusIdentifier, stimulusType, stimulusValue, synapseRef);
-            //            SnnTransferservice.transfer(stimulusIdentifier);
         } finally {
-            axonView.writeUnlock();
+            AxonView.writeUnlock(model, offset);
         }
-    }
 
-    @Override
-    public NeuronElementType getType() {
-        return AXON;
-    }
-
-    private boolean isExternalStimulus(int stimulusIdentifier) {
-        NeuronElement neuronElement = NeuronElementRegistry.instance().getNeuronElement(stimulusIdentifier, AXON);
-        return neuronElement != null && neuronElement.getNeuronId() != this.getNeuronId();
-    }
-
-    @Override
-    public int getNeuronId() {
-        return axonView.getNeuronId();
-    }
-
-    @Override
-    public int getViewId() {
-        return axonView.getId();
+        // TODO kein Transfer, aber neue Werte im BufferedTransferSegment
     }
 }

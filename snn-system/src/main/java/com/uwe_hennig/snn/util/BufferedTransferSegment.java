@@ -22,36 +22,37 @@ import java.lang.foreign.ValueLayout;
 /// ├─────────────────────────────────┤
 /// │ Block Header (12 bytes)         │
 /// │  32: entries        : int       │
-/// │  36: srcId          : int       │
-/// │  40: srcType        : int       │
+/// │  36: srcNeuronId    : int       │
+/// │  40: srcId          : int       │
+/// │  44: srcType        : int       │
 /// ├─────────────────────────────────┤
 /// │ Entry 0 (56 bytes)              │
-/// │  44: targetId        : int      │
-/// │  48: targetType      : int      │
+/// │  48: targetId        : int      │
+/// │  52: targetType      : int      │
 /// | Stimulus                        │
-/// │  52: stimulus_status : int      │
-/// │  56: stimulus        : float[3] │
+/// │  56: stimulus_status : int      │
+/// │  60: stimulus        : float[3] │
 /// | Stimulus Feedback Time          │
-/// │  68: fb_time_status  : int      │
-/// │  72: fb_time         : float[3] │
+/// │  72: fb_time_status  : int      │
+/// │  76: fb_time         : float[3] │
 /// | Stimulus Feedback Value         │
-/// │  84: fb_value_status : int      │
-/// │  88: fb_value        : float[3] │
+/// │  88: fb_value_status : int      │
+/// │  92: fb_value        : float[3] │
 /// ├─────────────────────────────────┤
 /// │ Entry 1 (56 bytes)              │
-/// │  100: targetId        : int     │
-/// │  104: targetType      : int     │
+/// │  104: targetId        : int     │
+/// │  108: targetType      : int     │
 /// | Stimulus                        │
-/// │  108: stimulus_status : int     │
-/// │  112: stimulus        : float[3]│
+/// │  112: stimulus_status : int     │
+/// │  116: stimulus        : float[3]│
 /// | Stimulus Feedback Time          │
-/// │  124: fb_time_status  : int     │
-/// │  128: fb_time         : float[3]│
+/// │  128: fb_time_status  : int     │
+/// │  132: fb_time         : float[3]│
 /// | Stimulus Feedback Value         │
-/// │  140: fb_value_status : int     │
-/// │  144: fb_value        : float[3]│
+/// │  136: fb_value_status : int     │
+/// │  140: fb_value        : float[3]│
 /// ├─────────────────────────────────┤
-/// │  156: next Block                │
+/// │  152: next Block                │
 /// ├─────────────────────────────────┤
 /// │ ...                             │
 /// └─────────────────────────────────┘
@@ -68,7 +69,7 @@ public final class BufferedTransferSegment {
     static final float EMTPY_VALUE = Float.NaN;
 
     static final int META_SIZE          = 8 * VALUE_SIZE;
-    static final int BLOCK_HEADER_SIZE  = 3 * VALUE_SIZE;
+    static final int BLOCK_HEADER_SIZE  = 4 * VALUE_SIZE;
     static final int ENTRY_HEADER_SIZE  = 2 * VALUE_SIZE;
     static final int NUM_QUEUE_ELEMENTS = 3;
     static final int NUM_STIMULI_TYPES  = 3;
@@ -166,13 +167,13 @@ public final class BufferedTransferSegment {
     // --- Block ---
 
     // returns the offset, which ist an index of receptor view
-    public int allocateBlock(int entries, int srcId, int srcType) {
+    public int allocateBlock(int entries, int srcNeuronId, int srcId, int srcType) {
         int endBlock = getEndOffset();
         setEndOffset(endBlock + entries * ENTRY_SIZE + BLOCK_HEADER_SIZE);
 
         int numBlocks = getNumBlocks();
         setNumBlocks(numBlocks + 1);
-
+        setNeuronId(endBlock, srcNeuronId);
         setSrcId(endBlock, srcId);
         setSrcType(endBlock, srcType);
         setEntries(endBlock, entries);
@@ -188,20 +189,28 @@ public final class BufferedTransferSegment {
         return segment.get(ValueLayout.JAVA_INT, blockOffset);
     }
 
-    public void setSrcId(int blockOffset, int value) {
+    public void setNeuronId(int blockOffset, int value) {
         segment.set(ValueLayout.JAVA_INT, blockOffset + 4L, value);
     }
 
-    public int getSrcId(int blockOffset) {
+    public int getNeuronId(int blockOffset) {
         return segment.get(ValueLayout.JAVA_INT, blockOffset + 4L);
     }
 
-    public void setSrcType(int blockOffset, int value) {
+    public void setSrcId(int blockOffset, int value) {
         segment.set(ValueLayout.JAVA_INT, blockOffset + 8L, value);
     }
 
-    public int getSrcType(int blockOffset) {
+    public int getSrcId(int blockOffset) {
         return segment.get(ValueLayout.JAVA_INT, blockOffset + 8L);
+    }
+
+    public void setSrcType(int blockOffset, int value) {
+        segment.set(ValueLayout.JAVA_INT, blockOffset + 12L, value);
+    }
+
+    public int getSrcType(int blockOffset) {
+        return segment.get(ValueLayout.JAVA_INT, blockOffset + 12L);
     }
 
     // --- Enty Header ---
