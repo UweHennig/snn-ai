@@ -35,7 +35,7 @@ public final class SnnLockSupport {
             int current = (int) INT_HANDLE.getVolatile(segment, offset);
 
             if ((current & WRITER_WAITING) != 0) {
-                break; // schon gesetzt – ok
+                break; // Already set – OK
             }
             if (INT_HANDLE.compareAndSet(segment, offset,
                     current, current | WRITER_WAITING)) {
@@ -87,7 +87,7 @@ public final class SnnLockSupport {
 
             // Increase the number of readers.
             if ((current & READER_MASK) == READER_MASK) {
-                throw new IllegalStateException("Reader-Zähler überlaufen");
+                throw new IllegalStateException("Reader counter overflow");
             }
             if (INT_HANDLE.compareAndSet(segment, offset, current, current + 1)) {
                 return;
@@ -99,7 +99,7 @@ public final class SnnLockSupport {
         int prev = (int) INT_HANDLE.getAndAddRelease(segment, offset, -1);
         if ((prev & READER_MASK) == 0) {
             INT_HANDLE.getAndAdd(segment, offset, 1);
-            throw new IllegalMonitorStateException("readUnlock ohne readLock");
+            throw new IllegalMonitorStateException("readUnlock without readLock");
         }
     }
 

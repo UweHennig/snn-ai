@@ -95,4 +95,7 @@ public final class PlasticityView {
 
         return currentValue + (targetValue - currentValue) * alpha;
     }
+
+    // ----- getter/setter -----
+
 }

@@ -35,7 +35,7 @@ public final class PotentialView {
         return withPotential(model, offset, potential + model.getPotential(offset), currentTime);
     }
 
-    public static boolean fire(PotentialModel model, int offset, float threshold) {
+    public static boolean canFire(PotentialModel model, int offset, float threshold) {
         return model.getPotential(offset) > threshold;
     }
 

@@ -11,6 +11,8 @@ public final class SomaView {
     private SomaView() {
     }
 
+    // ----- domain logic -----
+
     // ----- getter/setter -----
 
     public static int getFieldId(SomaModel model, int offset) {
@@ -23,6 +25,22 @@ public final class SomaView {
 
     public static int getAxonId(SomaModel model, int offset) {
         return model.getAxonId(offset);
+    }
+
+    public static int getStpId(SomaModel model, int offset) {
+        return model.getStpId(offset);
+    }
+
+    public static int getLtpId(SomaModel model, int offset) {
+        return model.getLtpId(offset);
+    }
+
+    public static int getPotentialId(SomaModel model, int offset) {
+        return model.getPotentialId(offset);
+    }
+
+    public static int getThresholdId(SomaModel model, int offset) {
+        return model.getThresholdId(offset);
     }
 
     // ----- lock/unlock -----

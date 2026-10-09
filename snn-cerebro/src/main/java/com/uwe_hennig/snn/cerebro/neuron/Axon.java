@@ -19,6 +19,10 @@ public final class Axon {
     }
 
     public static void stimulate(int offset, int srcNeuronId, int srcType, int stimulusType, float stimulusValue) {
+        if (Math.abs(stimulusValue) < 0.01) {
+            return;
+        }
+
         AxonModel model = AxonModelManager.instance().getModel();
         AxonView.writeLock(model, offset);
 

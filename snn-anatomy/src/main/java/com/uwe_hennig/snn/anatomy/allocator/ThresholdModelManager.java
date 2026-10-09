@@ -43,6 +43,10 @@ public class ThresholdModelManager {
         return model.claimSlot();
     }
 
+    public ThresholdModel getModel() {
+        return model;
+    }
+
     public static void close() {
         if (INSTANCE != null) {
             INSTANCE.model.close();

@@ -43,6 +43,10 @@ public class ModulatorModelManager {
         return model.claimSlot();
     }
 
+    public ModulatorModel getModel() {
+        return model;
+    }
+
     public static void close() {
         if (INSTANCE != null) {
             INSTANCE.model.close();

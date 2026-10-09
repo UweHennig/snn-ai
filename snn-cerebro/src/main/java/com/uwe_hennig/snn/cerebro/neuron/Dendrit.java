@@ -4,6 +4,7 @@
 package com.uwe_hennig.snn.cerebro.neuron;
 
 import static com.uwe_hennig.snn.contracts.core.ElementType.DENDRIT;
+import static com.uwe_hennig.snn.contracts.core.ElementType.SOMA;
 
 import com.uwe_hennig.snn.anatomy.allocator.DendritModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.WeightModelManager;
@@ -33,10 +34,22 @@ public final class Dendrit {
     /// @param stimulusValue
     ///            a float delta or absolute value depending on stimulusType
     public static void stimulate(int offset, int srcNeuronId, int srcType, int stimulusType, float stimulusValue) {
+        if (Math.abs(stimulusValue) < 0.01) {
+            return;
+        }
+
         DendritModel model = DendritModelManager.instance().getModel();
 
         float currentTime = 1000; // TODO
         float adjustedValue = stimulusValue;
+
+        if (isExternalStimulus(model, offset, srcNeuronId)) {
+            // Dendrit ignores inhibitory/excitatory, but forwards the stimulus
+            // Feedback mechanisms also have inhibitory and excitatory effects
+            int somaOffset = DendritView.getSomaId(model, offset);
+            Soma.stimulate(somaOffset, srcNeuronId, SOMA, stimulusType, adjustedValue);
+            return;
+        }
 
         DendritView.writeLock(model, offset);
         try {
@@ -59,5 +72,13 @@ public final class Dendrit {
         int dendritNeuronId = DendritView.getNeuronId(model, offset);
 
         Soma.stimulate(somaId, dendritNeuronId, DENDRIT, stimulusType, adjustedValue);
+    }
+
+    private static boolean isExternalStimulus(DendritModel model, int offset, int srcNeuronId) {
+        int neuronId = DendritView.getSomaId(model, offset);
+        if (neuronId != srcNeuronId) {
+            return true;
+        }
+        return false;
     }
 }

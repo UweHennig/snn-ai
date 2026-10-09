@@ -5,20 +5,25 @@
  */
 package com.uwe_hennig.snn.cerebro.neuron;
 
-import static com.uwe_hennig.snn.contracts.core.ElementType.AXON;
+import static com.uwe_hennig.snn.contracts.core.ElementType.SOMA;
 
+import com.uwe_hennig.snn.anatomy.allocator.PlasticityModelManager;
+import com.uwe_hennig.snn.anatomy.allocator.PotentialModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.SomaModelMangager;
-import com.uwe_hennig.snn.anatomy.neuron.AxonView;
+import com.uwe_hennig.snn.anatomy.allocator.ThresholdModelManager;
+import com.uwe_hennig.snn.anatomy.neuron.PlasticityModel;
+import com.uwe_hennig.snn.anatomy.neuron.PlasticityView;
+import com.uwe_hennig.snn.anatomy.neuron.PotentialModel;
+import com.uwe_hennig.snn.anatomy.neuron.PotentialView;
 import com.uwe_hennig.snn.anatomy.neuron.SomaModel;
 import com.uwe_hennig.snn.anatomy.neuron.SomaView;
-import com.uwe_hennig.snn.contracts.core.NeuronElement;
-import com.uwe_hennig.snn.contracts.core.ElementType;
+import com.uwe_hennig.snn.anatomy.neuron.ThresholdModel;
+import com.uwe_hennig.snn.anatomy.neuron.ThresholdView;
 import com.uwe_hennig.snn.contracts.core.StimulusType;
-import com.uwe_hennig.snn.services.NeuronElementRegistry;
 
 /**
- * Soma
- * TODO Refractory period
+ * Soma TODO Refractory period
+ *
  * @author Uwe Hennig
  */
 public final class Soma {
@@ -26,49 +31,78 @@ public final class Soma {
     }
 
     public static void stimulate(int offset, int srcNeuronId, int srcType, int stimulusType, float stimulusValue) {
+        if (Math.abs(stimulusValue) < 0.01) {
+            return;
+        }
+
         SomaModel model = SomaModelMangager.instance().getModel();
+        int neuronId = SomaView.getNeuronId(model, offset);
 
-            float currentTime = 1000; // TODO
-            float adjustedValue = stimulusValue;
+        float currentTime = 1000; // TODO
+        boolean forward = false;
+        float actionPotential = 0.0f;
 
-            if (StimulusType.isStimulus(stimulusType) && isExternalStimulus(model, offset, srcNeuronId)) {
-                // Soma ignores inhibitory/excitatory
-//              SnnTransferservice.transfer(stimulusIdentifier);
-            }
+        int axonOffset = SomaView.getAxonId(model, offset);
 
-            SomaView.writeLock(model, offset);
-            try {
-//            PotentialView.updatePlasticityPotential(stpViewId, currentTime);
-//            PotentialView.updatePlasticityPotential(ltpViewId, currentTime);
-//            PotentialView.decay(potentialViewId, currentTime);
+        if (isExternalStimulus(model, offset, srcNeuronId)) {
+            // Soma ignores inhibitory/excitatory, but forwards the stimulus
+            // Feedback mechanisms also have inhibitory and excitatory effects
+            Axon.stimulate(axonOffset, srcNeuronId, SOMA, stimulusType, stimulusValue);
+            return;
+        }
+
+        PlasticityModel plasticityModel = PlasticityModelManager.instance().getModel();
+        PotentialModel potentialModel = PotentialModelManager.instance().getModel();
+        ThresholdModel thresholdModel = ThresholdModelManager.instance().getModel();
+
+        int stpOffset = SomaView.getStpId(model, offset);
+        int ltpOffset = SomaView.getLtpId(model, offset);
+        int potOffset = SomaView.getPotentialId(model, offset);
+        int thresholOffset = SomaView.getThresholdId(model, potOffset);
+
+        SomaView.writeLock(model, offset);
+        try {
+            PlasticityView.updatePlasticityPotential(plasticityModel, stpOffset, currentTime);
+            PlasticityView.updatePlasticityPotential(plasticityModel, ltpOffset, currentTime);
+            PotentialView.decay(potentialModel, potOffset, currentTime);
 
             if (StimulusType.isTimeFeedback(stimulusType)) {
-//                ThresholdView.applyTimeFeedback(thresholdViewId, stimulusValue);
-//                PotentialView.applyTimeFeedback(stpViewId, stimulusValue, currentTime);
-//                PotentialView.applyTimeFeedback(ltpViewId, stimulusValue, currentTime);
+                int thresholdOffset = SomaView.getThresholdId(model, offset);
+
+                ThresholdView.applyTimeFeedback(thresholdModel, thresholdOffset, stimulusValue);
+                PlasticityView.applyTimeFeedback(plasticityModel, stpOffset, stimulusValue, currentTime);
+                PlasticityView.applyTimeFeedback(plasticityModel, ltpOffset, stimulusValue, currentTime);
             }
 
             if (StimulusType.isValueFeedback(stimulusType)) {
-//                PotentialView.applyValueFeedback(stpViewId, stimulusValue, currentTime);
-//                PotentialView.applyValueFeedback(ltpViewId, stimulusValue, currentTime);
+                PlasticityView.applyValueFeedback(plasticityModel, stpOffset, stimulusValue, currentTime);
+                PlasticityView.applyValueFeedback(plasticityModel, ltpOffset, stimulusValue, currentTime);
             }
 
             if (StimulusType.isStimulus(stimulusType)) {
-//                PotentialView.addPotentitial(potentialViewId, stimulusValue, currentTime);
-//                if (PotentialView.fire(potentialViewId, getThreshold(thresholdViewId))) {
-//                    float actionPotential = getCurrentPotential(ltpViewId) + getCurrentPotential(stpViewId);
-//                    stimulusIdentifier = StimulusService.update(stimulusIdentifier, StimulusType.STIMULUS.code(), actionPotential, SomaView.getAxonId(viewId));
+                PotentialView.addPotentitial(potentialModel, potOffset, stimulusValue, currentTime);
             }
+
+            if (StimulusType.isStimulus(stimulusType)) {
+                float threshold = ThresholdView.getThreshold(thresholdModel, thresholOffset);
+
+                if (PotentialView.canFire(potentialModel, potOffset, threshold)) {
+                    forward = true;
+                    float ltp = PlasticityView.getCurrentPotential(plasticityModel, ltpOffset);
+                    float stp = PlasticityView.getCurrentPotential(plasticityModel, stpOffset);
+                    actionPotential = (float) Math.clamp(stp + ltp, -70.0, 70.0);
+
+                    // TODO die Potentiale müssen reduziert werden
+                }
+            }
+
         } finally {
             SomaView.writeUnlock(model, offset);
         }
 
-        int neuronId = SomaView.getNeuronId(model, offset);
-        int axonId = SomaView.getAxonId(model, offset);
-
-        // TODO Wert prüfen/ändern von stimulusValue
-        int axonOffset = SomaView.getAxonId(model, offset);
-        Axon.stimulate(axonOffset, neuronId, SomaType, stimulusType, adjustedValue);
+        if (forward) {
+            Axon.stimulate(axonOffset, neuronId, SOMA, stimulusType, actionPotential);
+        }
     }
 
     private static boolean isExternalStimulus(SomaModel model, int offset, int srcNeuronId) {

@@ -25,6 +25,10 @@ public class SynapseView {
         return model.getTargetId(offset);
     }
 
+    public static int getModulatorId(SynapseModel model, int offset) {
+        return model.getModulatorId(offset);
+    }
+
     // ----- lock/unlock -----
 
     public static void readLock(SynapseModel model, int offset) {

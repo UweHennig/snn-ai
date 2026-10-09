@@ -43,6 +43,10 @@ public class PlasticityModelManager {
         return model.claimSlot();
     }
 
+    public PlasticityModel getModel() {
+        return model;
+    }
+
     public static void close() {
         if (INSTANCE != null) {
             INSTANCE.model.close();
