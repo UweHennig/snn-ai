@@ -96,6 +96,10 @@ public final class PlasticityView {
         return currentValue + (targetValue - currentValue) * alpha;
     }
 
+    public static int claimSlot(PlasticityModel model) {
+        return model.claimSlot();
+    }
+
     // ----- getter/setter -----
 
 }

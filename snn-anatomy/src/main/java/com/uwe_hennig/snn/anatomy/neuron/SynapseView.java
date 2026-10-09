@@ -11,6 +11,10 @@ public class SynapseView {
     private SynapseView() {
     }
 
+    public static int claimSlot(SynapseModel model, int fieldId, int neuronId, int targetId) {
+        return model.claimSlot(fieldId, neuronId, targetId);
+    }
+
     // ----- getter/setter -----
 
     public static int getFiedlId(SynapseModel model, int offset) {
@@ -27,6 +31,10 @@ public class SynapseView {
 
     public static int getModulatorId(SynapseModel model, int offset) {
         return model.getModulatorId(offset);
+    }
+
+    public static void setModulatorId(SynapseModel model, int offset, int value) {
+        model.setModulatorId(offset, value);
     }
 
     // ----- lock/unlock -----

@@ -44,4 +44,8 @@ public final class PotentialView {
         model.setLastUpdateTime(offset, currentTime);
         return model.getPotential(offset);
     }
+
+    public static int claimSlot(PotentialModel model) {
+        return model.claimSlot();
+    }
 }

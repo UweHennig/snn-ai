@@ -11,6 +11,10 @@ public final class AxonView {
     private AxonView() {
     }
 
+    public static int claimSlot(AxonModel model, int fieldId, int neuronId, int blockId) {
+        return model.claimSlot(fieldId, neuronId, blockId);
+    }
+
     // ----- Getter/Setter -----
 
     public static int getFieldId(AxonModel model, int offset) {
@@ -23,6 +27,10 @@ public final class AxonView {
 
     public static int getBlockId(AxonModel model, int offset) {
         return model.getBlockId(offset);
+    }
+
+    public static void setModulatorId(AxonModel model, int offset, int value) {
+        model.setModulatorId(offset, value);
     }
 
     // ----- lock/unlock -----

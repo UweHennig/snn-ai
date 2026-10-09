@@ -14,5 +14,5 @@ public interface NeuronBuilder {
     // TODO DataSupport for Dendrites, Soma, Axon, Synapse
     NeuronBuilder withDendrites(int dendrites);
     NeuronBuilder withSynapses(int synapses);
-    NeuronGraph build();
+    NeuronInfo build();
 }

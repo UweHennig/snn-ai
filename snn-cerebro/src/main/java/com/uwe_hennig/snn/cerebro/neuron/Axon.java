@@ -23,29 +23,33 @@ public final class Axon {
             return;
         }
 
+        float currentTime = 1000; // TODO
         AxonModel model = AxonModelManager.instance().getModel();
-        AxonView.writeLock(model, offset);
 
-        //            float currentTime = 1000; // TODO
+        AxonView.writeLock(model, offset);
         try {
-            // TODO Axon must terminate thread activity
-            //            // TODO complete implementation
-            //
-            //            float stimulusValue = StimulusService.getValue(stimulusIdentifier);
-            //            int stimulusType = StimulusService.getStimulusType(stimulusIdentifier);
-            //
-            //            if (StimulusService.isStimulus(stimulusIdentifier) && isExternalStimulus(stimulusIdentifier)) {
-            //                stimulusValue = ModulatorView.applyStimulus(modulatorViewId, stimulusValue, currentTime);
-            //            } else if (StimulusService.isStimulus(stimulusIdentifier)) {
-            //                stimulusValue = ModulatorView.applyStimulus(modulatorViewId, stimulusType, currentTime);
-            //            }
-            //
-            //            // TODO for each synapse or bulk
-            //            stimulusIdentifier = StimulusService.update(stimulusIdentifier, stimulusType, stimulusValue, synapseRef);
+            // TODO complete implementation
+
+            if (isExternalStimulus(model, offset, srcNeuronId)) {
+                //stimulusValue = ModulatorView.applyModulation(modulatorViewId, stimulusValue, currentTime);
+            } else {
+                // TODO Verfahren auch für Feedbacks definieren!
+                //stimulusValue = ModulatorView.applyStimulus(modulatorViewId, stimulusValue, currentTime);
+            }
+
         } finally {
             AxonView.writeUnlock(model, offset);
         }
 
-        // TODO kein Transfer, aber neue Werte im BufferedTransferSegment
+        // TODO Axon must terminate thread activity
+        // TODO No transfer, but new values in the BufferedTransferSegment
+    }
+
+    private static boolean isExternalStimulus(AxonModel model, int offset, int srcNeuronId) {
+        int neuronId = AxonView.getNeuronId(model, offset);
+        if (neuronId != srcNeuronId) {
+            return true;
+        }
+        return false;
     }
 }

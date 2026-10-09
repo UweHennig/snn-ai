@@ -12,6 +12,9 @@ public final class SomaView {
     }
 
     // ----- domain logic -----
+    public static int claimSlot(SomaModel model, int fieldId, int neuronId, int axonId) {
+        return model.claimSlot(fieldId, neuronId, axonId);
+    }
 
     // ----- getter/setter -----
 
@@ -31,16 +34,32 @@ public final class SomaView {
         return model.getStpId(offset);
     }
 
+    public static void setStpId(SomaModel model, int offset, int value) {
+        model.setStpId(offset, value);
+    }
+
     public static int getLtpId(SomaModel model, int offset) {
         return model.getLtpId(offset);
+    }
+
+    public static void setLtpId(SomaModel model, int offset, int value) {
+        model.setLtpId(offset, value);
     }
 
     public static int getPotentialId(SomaModel model, int offset) {
         return model.getPotentialId(offset);
     }
 
+    public static void setPotentialId(SomaModel model, int offset, int value) {
+        model.setPotentialId(offset, value);
+    }
+
     public static int getThresholdId(SomaModel model, int offset) {
         return model.getThresholdId(offset);
+    }
+
+    public static void setThresholdId(SomaModel model, int offset, int value) {
+        model.setThresholdId(offset, value);
     }
 
     // ----- lock/unlock -----

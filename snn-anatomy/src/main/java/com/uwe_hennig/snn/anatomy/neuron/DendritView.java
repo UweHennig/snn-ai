@@ -11,6 +11,10 @@ package com.uwe_hennig.snn.anatomy.neuron;
 public final class DendritView {
     private DendritView() {}
 
+    public static int claimSlot(DendritModel model, int fieldOffset, int neuronOffset, int somaOffset) {
+        return model.claimSlot(fieldOffset, neuronOffset, somaOffset);
+    }
+
     // ----- getter/setter -----
 
     public static int getFieldId(DendritModel model, int offset) {
@@ -27,6 +31,10 @@ public final class DendritView {
 
     public static int getWeightId(DendritModel model, int offset) {
         return model.getWeighId(offset);
+    }
+
+    public static void setWeightId(DendritModel model, int offset, int value) {
+        model.setWeightId(offset, value);
     }
 
     // ----- lock/unlock -----

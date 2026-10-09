@@ -5,38 +5,39 @@
  */
 package com.uwe_hennig.snn.cerebro.neuron;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.uwe_hennig.snn.anatomy.allocator.AxonModelManager;
-import com.uwe_hennig.snn.anatomy.allocator.DendritListManager;
 import com.uwe_hennig.snn.anatomy.allocator.DendritModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.ModulatorModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.NeuronModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.PlasticityModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.PotentialModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.SomaModelMangager;
-import com.uwe_hennig.snn.anatomy.allocator.SynapseListManager;
 import com.uwe_hennig.snn.anatomy.allocator.SynapseModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.ThresholdModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.WeightModelManager;
+import com.uwe_hennig.snn.anatomy.neuron.AxonModel;
 import com.uwe_hennig.snn.anatomy.neuron.AxonView;
 import com.uwe_hennig.snn.anatomy.neuron.DendritModel;
 import com.uwe_hennig.snn.anatomy.neuron.DendritView;
+import com.uwe_hennig.snn.anatomy.neuron.ModulatorModel;
 import com.uwe_hennig.snn.anatomy.neuron.ModulatorView;
+import com.uwe_hennig.snn.anatomy.neuron.PlasticityModel;
 import com.uwe_hennig.snn.anatomy.neuron.PlasticityView;
+import com.uwe_hennig.snn.anatomy.neuron.PotentialModel;
 import com.uwe_hennig.snn.anatomy.neuron.PotentialView;
+import com.uwe_hennig.snn.anatomy.neuron.SomaModel;
 import com.uwe_hennig.snn.anatomy.neuron.SomaView;
+import com.uwe_hennig.snn.anatomy.neuron.SynapseModel;
 import com.uwe_hennig.snn.anatomy.neuron.SynapseView;
+import com.uwe_hennig.snn.anatomy.neuron.ThresholdModel;
 import com.uwe_hennig.snn.anatomy.neuron.ThresholdView;
 import com.uwe_hennig.snn.anatomy.neuron.WeightModel;
+import com.uwe_hennig.snn.anatomy.neuron.WeightView;
 import com.uwe_hennig.snn.cerebro.contracts.NeuronBuilder;
-import com.uwe_hennig.snn.cerebro.contracts.NeuronGraph;
+import com.uwe_hennig.snn.cerebro.contracts.NeuronInfo;
 
 /**
  * NeuronBuilderImpl
- *
- * TODO NeuronAllocator, NeuronGraph, DomainObjects, WeightAllocator, EdgeModel
  *
  * @author Uwe Hennig
  */
@@ -44,8 +45,8 @@ public class NeuronBuilderImpl implements NeuronBuilder {
     private int fieldId;
     private int neuronId;
 
-    private int dendrites;
-    private int synapses;
+    private int numDendrites;
+    private int numSynapses;
 
     public NeuronBuilderImpl(int fieldId) {
         this.fieldId = fieldId;
@@ -56,7 +57,7 @@ public class NeuronBuilderImpl implements NeuronBuilder {
         if (dendrites < 1) {
             throw new IllegalStateException("At least one dendrit is required!");
         }
-        this.dendrites = dendrites;
+        this.numDendrites = dendrites;
         return this;
     }
 
@@ -65,73 +66,58 @@ public class NeuronBuilderImpl implements NeuronBuilder {
         if (synapses < 1) {
             throw new IllegalStateException("At least one synapse is required!");
         }
-        this.synapses = synapses;
+        this.numSynapses = synapses;
         return this;
     }
 
     @Override
-    public NeuronGraph build() {
+    public NeuronInfo build() {
         if (!checkPreconditions()) {
             throw new IllegalStateException("System not ready!");
         }
 
+        neuronId = createNeuron();
+
         // synapse
-        List<Synapse> synapseList = new ArrayList<>(synapses);
+        int [] synapseArray = new int [numSynapses];
 
-        int[] synapseIdArray = new int[synapses];
-
-        for (int i = 0; i < synapses; i++) {
-            Synapse synapse = createSynapse();
-            synapseList.add(synapse);
-            synapseIdArray[i] = synapse.getViewId();
+        for (int i = 0; i < numSynapses; i++) {
+            synapseArray[i] = createSynapse(fieldId, neuronId, 0);
         }
-        int synapsesRef = SynapseListManager.instance().nextId();
-        SynapseListManager.instance().getModel().put(synapsesRef, synapseIdArray);
 
         // axon
-        Axon axon = createAxon(synapsesRef);
-        int axonId = axon.getViewId();
+        int axonOffset = createAxon(fieldId, neuronId, synapseArray);
 
         // soma
-        Soma soma = createSoma(axon.getViewId());
-        int somaId = soma.getViewId();
+        int somaOffset = createSoma(fieldId, neuronId, axonOffset);
 
         // dendrit
-        int[] dendritArray = new int[dendrites];
-        int[] weightArray = new int[dendrites];
+        int[] dendritArray = new int[numDendrites];
 
-        for (int i = 0; i < dendrites; i++) {
-            int weighOffset = createWeight();
-            int dendritOffset = createDendrit(soma.getViewId(), weighOffset);
+        for (int i = 0; i < numDendrites; i++) {
+            int dendritOffset = createDendrit(fieldId, neuronId, somaOffset);
             dendritArray[i] = dendritOffset;
-            weightArray[i] = weighOffset;
         }
 
-        // TODO neuron
-        this.neuronId = NeuronModelManager.instance().nextId();
-        //NeuronView.setRefs(neuronId, fieldId, dendritRef, somaId, axonId, synapsesRef);
-
-        // TODO
-        return new NeuronGraph(fieldId, neuronId, soma, axon, null /* dendritList */, synapseList);
+        return new NeuronInfo(fieldId, neuronId, somaOffset, axonOffset, dendritArray, synapseArray);
     }
 
     // -- convenient --
 
-    private int createWeight() {
+    private int createNeuron() {
         // TODO
-        WeightModelManager wmm = WeightModelManager.instance();
-        WeightModel model = wmm.getModel();
-        int weightOffset = model.claimSlot();
-        return weightOffset;
+        return 0;
     }
 
-    private int createDendrit(int somaId, int weightId) {
+    private int createDendrit(int fieldId, int neuronId, int somaId) {
         try {
-            DendritModelManager dmm = DendritModelManager.instance();
-            DendritModel model = dmm.getModel();
-            int dendritOffset = model.alloc(fieldId, neuronId, somaId, weightId);
+            DendritModel model = DendritModelManager.instance().getModel();
+            int dendritOffset = DendritView.claimSlot(model, fieldId, neuronId, somaId);
 
-            DendritView.setStructure(model, dendritOffset, fieldId, neuronId, somaId, weightId);
+            WeightModel weightModel = WeightModelManager.instance().getModel();
+            int weightOffset = WeightView.claimSlot(weightModel);
+
+            DendritView.setWeightId(model, dendritOffset, weightOffset);
 
             return dendritOffset;
         } catch (Exception e) {
@@ -141,46 +127,49 @@ public class NeuronBuilderImpl implements NeuronBuilder {
         }
     }
 
-    private Soma createSoma(int axonId) {
-        SomaModelMangager somm = SomaModelMangager.instance();
-        SomaView somaView = somm.createView();
-        somaView.setStructure(fieldId, neuronId, axonId);
+    private int createSoma(int fieldId, int neuronId, int axonId) {
+        SomaModel model = SomaModelMangager.instance().getModel();
+        ThresholdModel thresholdModel = ThresholdModelManager.instance().getModel();
+        PotentialModel potentialModel = PotentialModelManager.instance().getModel();
+        PlasticityModel plasticityModel = PlasticityModelManager.instance().getModel();
 
-        ThresholdModelManager tmm = ThresholdModelManager.instance();
-        ThresholdView thresholdView = tmm.createView();
+        int thresholdOffset = ThresholdView.claim(thresholdModel);
+        int potentialOffset = PotentialView.claimSlot(potentialModel);
+        int stpOffset = PlasticityView.claimSlot(plasticityModel);
+        int ltpOffset = PlasticityView.claimSlot(plasticityModel);
+        int offset = SomaView.claimSlot(model, fieldId, neuronId, axonId);
 
-        PotentialModelManager pmm = PotentialModelManager.instance();
-        PotentialView potentialView = pmm.createView();
+        SomaView.setThresholdId(model, offset, thresholdOffset);
+        SomaView.setPotentialId(model, offset, potentialOffset);
+        SomaView.setStpId(model, offset, stpOffset);
+        SomaView.setLtpId(model, offset, ltpOffset);
 
-        PlasticityModelManager plmm = PlasticityModelManager.instance();
-        PlasticityView stpView = plmm.createView();
-        PlasticityView ltpView = plmm.createView();
-
-        return new Soma(somaView, thresholdView, potentialView, stpView, ltpView);
+        return offset;
     }
 
-    private Axon createAxon(int synapseRef) {
-        AxonModelManager amm = AxonModelManager.instance();
-        AxonView axonView = amm.createView();
+    private int createAxon(int fieldOffset, int neuronOffset, int [] numSynapses) {
+        AxonModel model = AxonModelManager.instance().getModel();
+        ModulatorModel modulatorModel = ModulatorModelManager.instance().getModel();
+        int modulatorOffset = ModulatorView.claimSlot(modulatorModel);
 
-        ModulatorModelManager mmm = ModulatorModelManager.instance();
-        ModulatorView modulatorView = mmm.createView();
+        // TODO BufferedTransferManger
+        // BufferedTransferSegment: int allocateBlock(int entries, int srcNeuronId, int srcId, int srcType)
 
-        axonView.setStructure(fieldId, neuronId, synapseRef);
+        int offset = AxonView.claimSlot(model, fieldOffset, neuronOffset, neuronOffset);
+        AxonView.setModulatorId(model, offset, modulatorOffset);
 
-        return new Axon(axonView, modulatorView);
+        return offset;
     }
 
-    private Synapse createSynapse() {
-        SynapseModelManager smm = SynapseModelManager.instance();
-        SynapseView synapseView = smm.createView();
+    private int createSynapse(int fieldOffset, int neuronOffset, int targetOffset) {
+        SynapseModel synapseModel = SynapseModelManager.instance().getModel();
+        ModulatorModel modulatorModel = ModulatorModelManager.instance().getModel();
 
-        ModulatorModelManager mmm = ModulatorModelManager.instance();
-        ModulatorView modulatorView = mmm.createView();
+        int modulatorOffset = ModulatorView.claimSlot(modulatorModel);
+        int synapseOffset = SynapseView.claimSlot(synapseModel, fieldOffset, neuronOffset, targetOffset);
+        SynapseView.setModulatorId(synapseModel, synapseOffset, modulatorOffset);
 
-        synapseView.setStructure(fieldId, neuronId, modulatorView.getId());
-
-        return new Synapse(synapseView, modulatorView);
+        return synapseOffset;
     }
 
     private boolean checkPreconditions() {
@@ -196,12 +185,6 @@ public class NeuronBuilderImpl implements NeuronBuilder {
         WeightModelManager wmm = WeightModelManager.instance();
         if (wmm == null) {
             System.err.println("WeightModelManager not instantiated!");
-            result = false;
-        }
-
-        DendritListManager dlm = DendritListManager.instance();
-        if (dlm == null) {
-            System.err.println("DendritListManager not instantiated!");
             result = false;
         }
 
@@ -247,12 +230,6 @@ public class NeuronBuilderImpl implements NeuronBuilder {
         ModulatorModelManager mmm = ModulatorModelManager.instance();
         if (mmm == null) {
             System.err.println("ModulatorModelManager not instantiated!");
-            result = false;
-        }
-
-        SynapseListManager asmm = SynapseListManager.instance();
-        if (asmm == null) {
-            System.err.println("SynapseListManager not instantiated!");
             result = false;
         }
 

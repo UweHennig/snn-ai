@@ -27,6 +27,10 @@ public final class ThresholdView {
         return model.getThreshold(offset);
     }
 
+    public static int claim(ThresholdModel model) {
+        return model.claimSlot();
+    }
+
     // ----- convenience -----
 
     static float deltaThreshold(ThresholdModel model, int offset, float deltaTimeFeedback) {

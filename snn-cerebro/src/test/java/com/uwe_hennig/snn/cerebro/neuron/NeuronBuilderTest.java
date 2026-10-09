@@ -29,7 +29,7 @@ import com.uwe_hennig.snn.anatomy.allocator.SynapseListManager;
 import com.uwe_hennig.snn.anatomy.allocator.SynapseModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.ThresholdModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.WeightModelManager;
-import com.uwe_hennig.snn.cerebro.contracts.NeuronGraph;
+import com.uwe_hennig.snn.cerebro.contracts.NeuronInfo;
 
 /**
  * NeuronBuilderTest
@@ -45,7 +45,7 @@ public class NeuronBuilderTest {
         NeuronBuilderImpl neuronBuilder = new NeuronBuilderImpl(0);
         neuronBuilder.withDendrites(2);
         neuronBuilder.withSynapses(2);
-        NeuronGraph graph = neuronBuilder.build();
+        NeuronInfo graph = neuronBuilder.build();
 
         assertNotNull(graph);
         assertNotNull(graph.dendrites());
@@ -59,7 +59,7 @@ public class NeuronBuilderTest {
         checkStructure(graph);
     }
 
-    public void checkStructure(NeuronGraph graph) {
+    public void checkStructure(NeuronInfo graph) {
 //        int fieldId = graph.fieldId();
 //        assertTrue(fieldId >= 0);
 //

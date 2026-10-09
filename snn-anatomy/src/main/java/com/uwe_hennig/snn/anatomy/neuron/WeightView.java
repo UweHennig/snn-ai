@@ -41,8 +41,12 @@ public final class WeightView {
         return offset;
     }
 
-    public float getWeight(WeightModel model, int offset) {
+    public static float getWeight(WeightModel model, int offset) {
         return model.getWeight(offset);
+    }
+
+    public static int claimSlot(WeightModel model) {
+        return model.claimSlot();
     }
 
     // ----- convenience -----

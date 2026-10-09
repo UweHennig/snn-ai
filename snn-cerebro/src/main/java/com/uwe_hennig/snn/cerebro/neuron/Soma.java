@@ -88,11 +88,12 @@ public final class Soma {
 
                 if (PotentialView.canFire(potentialModel, potOffset, threshold)) {
                     forward = true;
+                    // TODO prüfen, ob man Anteile der Potentiale nehmen muss!
                     float ltp = PlasticityView.getCurrentPotential(plasticityModel, ltpOffset);
                     float stp = PlasticityView.getCurrentPotential(plasticityModel, stpOffset);
                     actionPotential = (float) Math.clamp(stp + ltp, -70.0, 70.0);
 
-                    // TODO die Potentiale müssen reduziert werden
+                    // TODO die Potentiale pot, stp und ltp müssen reduziert werden!
                 }
             }
 

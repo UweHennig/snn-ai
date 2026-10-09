@@ -51,6 +51,10 @@ public final class ModulatorView {
         model.setLastEventTime(offset, currentTime);
     }
 
+    public static int claimSlot(ModulatorModel model) {
+        return model.claimSlot();
+    }
+
     // ----- convenience -----
 
     private static boolean relevantGain(ModulatorModel model, int offset, float currentTime) {
