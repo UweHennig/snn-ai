@@ -3,12 +3,12 @@
 /// All rights reserved.
 package com.uwe_hennig.snn.util;
 
-import static com.uwe_hennig.snn.util.BufferedTransferSegment.BLOCK_HEADER_SIZE;
-import static com.uwe_hennig.snn.util.BufferedTransferSegment.EMTPY_VALUE;
-import static com.uwe_hennig.snn.util.BufferedTransferSegment.ENTRY_HEADER_SIZE;
-import static com.uwe_hennig.snn.util.BufferedTransferSegment.ENTRY_SIZE;
-import static com.uwe_hennig.snn.util.BufferedTransferSegment.META_SIZE;
-import static com.uwe_hennig.snn.util.BufferedTransferSegment.NUM_QUEUE_ELEMENTS;
+import static com.uwe_hennig.snn.util.BufferedTransferModel.BLOCK_HEADER_SIZE;
+import static com.uwe_hennig.snn.util.BufferedTransferModel.EMTPY_VALUE;
+import static com.uwe_hennig.snn.util.BufferedTransferModel.ENTRY_HEADER_SIZE;
+import static com.uwe_hennig.snn.util.BufferedTransferModel.ENTRY_SIZE;
+import static com.uwe_hennig.snn.util.BufferedTransferModel.META_SIZE;
+import static com.uwe_hennig.snn.util.BufferedTransferModel.NUM_QUEUE_ELEMENTS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -38,9 +38,9 @@ public class BufferedTransferTest {
         final int srcId = 10;
         final int srcType = 20;
 
-        BufferedTransferSegment ts = new BufferedTransferSegment(1048576);
+        BufferedTransferModel ts = new BufferedTransferModel(1048576);
 
-        int blockOffset = ts.allocateBlock(entries, srcNeuronId, srcId, srcType);
+        int blockOffset = ts.claimSlot(entries, srcNeuronId, srcId, srcType);
 
         int magic = ts.getMagic();
         assertEquals(0x42545331, magic, "invalid magic");
@@ -72,9 +72,9 @@ public class BufferedTransferTest {
         final int srcIdB = 30;
         final int srcTypeB = 40;
 
-        BufferedTransferSegment ts = new BufferedTransferSegment(1048576);
-        int blockOffsetA = ts.allocateBlock(2, srcNIdA, srcIdA, srcTypeA);
-        int blockOffsetB = ts.allocateBlock(2, srcNIdB, srcIdB, srcTypeB);
+        BufferedTransferModel ts = new BufferedTransferModel(1048576);
+        int blockOffsetA = ts.claimSlot(2, srcNIdA, srcIdA, srcTypeA);
+        int blockOffsetB = ts.claimSlot(2, srcNIdB, srcIdB, srcTypeB);
 
         // --- A
         ts.setTrgId(blockOffsetA, 0, 11);
@@ -183,8 +183,8 @@ public class BufferedTransferTest {
         final int srcNId = 5;
         final int srcId = 10;
         final int srcType = 20;
-        BufferedTransferSegment ts = new BufferedTransferSegment(1048576);
-        int blockOffset = ts.allocateBlock(1, srcNId, srcId, srcType);
+        BufferedTransferModel ts = new BufferedTransferModel(1048576);
+        int blockOffset = ts.claimSlot(1, srcNId, srcId, srcType);
         try {
             Queue<Float> fbTimeQ = new LinkedList<>();
             Queue<Float> fbValueQ = new LinkedList<>();
@@ -244,8 +244,8 @@ public class BufferedTransferTest {
         final int srcId = 10;
         final int srcType = 20;
 
-        BufferedTransferSegment ts = new BufferedTransferSegment(1048576);
-        int blockOffset = ts.allocateBlock(entries, neuronId, srcId, srcType);
+        BufferedTransferModel ts = new BufferedTransferModel(1048576);
+        int blockOffset = ts.claimSlot(entries, neuronId, srcId, srcType);
 
         int entry = 0;
         int method = 0;
@@ -304,11 +304,11 @@ public class BufferedTransferTest {
         final int blocks = 5;
         final int duration = 10;
 
-        BufferedTransferSegment model = new BufferedTransferSegment(1024 * 1024);
+        BufferedTransferModel model = new BufferedTransferModel(1024 * 1024);
         int[] blockArray = new int[blocks];
 
         for (int i = 0; i < blocks; i++) {
-            blockArray[i] = model.allocateBlock(entries, i, i, i);
+            blockArray[i] = model.claimSlot(entries, i, i, i);
         }
 
         AtomicBoolean running = new AtomicBoolean(true);

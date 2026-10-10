@@ -12,7 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
 /// DendritModel
-/// ```
+/// ````
 /// ┌─────────────────────────────────┐
 /// │ MetaInfo                        │
 /// │  00: magic           : int      │

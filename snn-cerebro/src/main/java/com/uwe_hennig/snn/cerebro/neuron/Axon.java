@@ -6,8 +6,11 @@
 package com.uwe_hennig.snn.cerebro.neuron;
 
 import com.uwe_hennig.snn.anatomy.allocator.AxonModelManager;
+import com.uwe_hennig.snn.anatomy.allocator.BufferedTransferModelManager;
 import com.uwe_hennig.snn.anatomy.neuron.AxonModel;
 import com.uwe_hennig.snn.anatomy.neuron.AxonView;
+import com.uwe_hennig.snn.contracts.core.StimulusType;
+import com.uwe_hennig.snn.util.BufferedTransferModel;
 
 /**
  * Axon
@@ -41,8 +44,7 @@ public final class Axon {
             AxonView.writeUnlock(model, offset);
         }
 
-        // TODO Axon must terminate thread activity
-        // TODO No transfer, but new values in the BufferedTransferSegment
+        transfer(model, offset, stimulusType, stimulusValue);
     }
 
     private static boolean isExternalStimulus(AxonModel model, int offset, int srcNeuronId) {
@@ -51,5 +53,24 @@ public final class Axon {
             return true;
         }
         return false;
+    }
+
+    private static void transfer(AxonModel model, int offset, int stimulusType, float stimulusValue) {
+        int blockOffset = AxonView.getBlockId(model, offset);
+
+        BufferedTransferModel transferModel = BufferedTransferModelManager.instance().getModel();
+        int entries = transferModel.getEntries(blockOffset);
+
+        for (int i = 0; i < entries; i++) {
+            if (StimulusType.isTimeFeedback(stimulusType)) {
+                transferModel.offerFbTime(blockOffset, i, stimulusValue);
+            }
+            if (StimulusType.isValueFeedback(stimulusType)) {
+                transferModel.offerFbValue(blockOffset, i, stimulusValue);
+            }
+            if (StimulusType.isStimulus(stimulusType)) {
+                transferModel.offerStimulus(blockOffset, i, stimulusValue);
+            }
+        }
     }
 }

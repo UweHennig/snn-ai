@@ -5,7 +5,7 @@
  */
 package com.uwe_hennig.snn.anatomy.peripheral;
 
-import com.uwe_hennig.snn.util.BufferedTransferSegment;
+import com.uwe_hennig.snn.util.BufferedTransferModel;
 
 /**
  * ReceptorView
@@ -13,7 +13,7 @@ import com.uwe_hennig.snn.util.BufferedTransferSegment;
  * @author Uwe Hennig
  */
 public final class ReceptorView {
-    private final BufferedTransferSegment model;
+    private final BufferedTransferModel model;
     private final int                     index;
     private final int                     entries;
 
@@ -22,7 +22,7 @@ public final class ReceptorView {
         void offer(int index, int entry, float value);
     }
 
-    public ReceptorView(BufferedTransferSegment model, int index) {
+    public ReceptorView(BufferedTransferModel model, int index) {
         this.model = model;
         this.index = index;
         this.entries = model.getEntries(index);

@@ -1,4 +1,4 @@
-/// @(#)BufferedTransferSegment.java
+/// @(#)BufferedTransferModel.java
 /// Copyright (c) 2026 Uwe Hennig
 /// All rights reserved.
 package com.uwe_hennig.snn.util;
@@ -7,7 +7,7 @@ import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.ValueLayout;
 
-/// BufferedTransferSegment
+/// BufferedTransferModel
 /// ````
 /// ┌─────────────────────────────────┐
 /// │ MetaInfo  (32 bytes)            │
@@ -63,7 +63,7 @@ import java.lang.foreign.ValueLayout;
 /// ````
 ///
 /// @author Uwe Hennig
-public final class BufferedTransferSegment {
+public final class BufferedTransferModel {
     static final int   MAGIC       = 0x42545331; // BTS
     static final int   VALUE_SIZE  = 4;
     static final float EMTPY_VALUE = Float.NaN;
@@ -81,7 +81,7 @@ public final class BufferedTransferSegment {
     final Arena         arena;
     final MemorySegment segment;
 
-    public BufferedTransferSegment(int size) {
+    public BufferedTransferModel(int size) {
         this.arena = Arena.ofShared();
         this.segment = arena.allocate(size);
         initMeta();
@@ -97,7 +97,7 @@ public final class BufferedTransferSegment {
         return segment.get(ValueLayout.JAVA_INT, 0L);
     }
 
-    void setMetaInfoSize(int value) {
+    protected void setMetaInfoSize(int value) {
         segment.set(ValueLayout.JAVA_INT, 4L, value);
     }
 
@@ -167,7 +167,7 @@ public final class BufferedTransferSegment {
     // --- Block ---
 
     // returns the offset, which ist an index of receptor view
-    public int allocateBlock(int entries, int srcNeuronId, int srcId, int srcType) {
+    public int claimSlot(int entries, int srcNeuronId, int srcId, int srcType) {
         int endBlock = getEndOffset();
         setEndOffset(endBlock + entries * ENTRY_SIZE + BLOCK_HEADER_SIZE);
 
@@ -213,7 +213,7 @@ public final class BufferedTransferSegment {
         return segment.get(ValueLayout.JAVA_INT, blockOffset + 12L);
     }
 
-    // --- Enty Header ---
+    // --- Entry Header ---
 
     public void setTrgId(int blockOffset, int entry, int value) {
         int entryOffset = blockOffset + BLOCK_HEADER_SIZE + entry * ENTRY_SIZE;

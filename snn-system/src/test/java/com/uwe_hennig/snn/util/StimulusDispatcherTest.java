@@ -29,17 +29,17 @@ public class StimulusDispatcherTest {
         SNNLogger.setActive(true);
         SNNLogger.setCallback(_ -> count.incrementAndGet());
 
-        BufferedTransferSegment ts = null;
+        BufferedTransferModel ts = null;
         IntQueue queue = null;
         StimulusDispatcher dispatcher = null;
 
         try {
-            ts = new BufferedTransferSegment(1048576);
+            ts = new BufferedTransferModel(1048576);
             queue = new IntQueue(1024);
             dispatcher = StimulusDispatcher.init(3, ts, queue);
 
-            int blockA = ts.allocateBlock(2, 3, 10, 20);
-            int blockB = ts.allocateBlock(2, 3, 30, 40);
+            int blockA = ts.claimSlot(2, 3, 10, 20);
+            int blockB = ts.claimSlot(2, 3, 30, 40);
 
             queue.offer(blockA);
             queue.offer(blockB);

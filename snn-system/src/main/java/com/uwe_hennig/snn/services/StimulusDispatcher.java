@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.LockSupport;
 
 import com.uwe_hennig.snn.contracts.core.StimulusType;
-import com.uwe_hennig.snn.util.BufferedTransferSegment;
+import com.uwe_hennig.snn.util.BufferedTransferModel;
 import com.uwe_hennig.snn.util.IntQueue;
 import com.uwe_hennig.snn.util.logging.SNNLogger;
 
@@ -25,21 +25,21 @@ import com.uwe_hennig.snn.util.logging.SNNLogger;
 public final class StimulusDispatcher {
     private static StimulusDispatcher INSTANCE;
 
-    private final BufferedTransferSegment buffer;
+    private final BufferedTransferModel buffer;
     private final IntQueue                bufferOffsets;
     private final int                     numWorkers;
 
     private final ExecutorService executor;
     private final AtomicBoolean   isRunning = new AtomicBoolean(false);
 
-    private StimulusDispatcher(int numWorkers, BufferedTransferSegment buffer, IntQueue bufferOffsets) {
+    private StimulusDispatcher(int numWorkers, BufferedTransferModel buffer, IntQueue bufferOffsets) {
         this.buffer = buffer;
         this.bufferOffsets = bufferOffsets;
         this.executor = Executors.newVirtualThreadPerTaskExecutor();
         this.numWorkers = numWorkers;
     }
 
-    public static StimulusDispatcher init(int numWorkers, BufferedTransferSegment buffer, IntQueue bufferOffsets) {
+    public static StimulusDispatcher init(int numWorkers, BufferedTransferModel buffer, IntQueue bufferOffsets) {
         if (INSTANCE == null) {
             synchronized (StimulusDispatcher.class) {
                 if (INSTANCE == null) {

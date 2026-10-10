@@ -25,14 +25,10 @@ public class SynapseModelTest {
 
         int offset = 0;
 
-        try {
-            offset = model.claimSlot(1, 2, 3);
-            model.writeLock(offset);
-            model.setModulatorId(offset, 4);
-            model.setTargetType(offset, 5);
-        } finally {
-            model.writeUnlock(0);
-        }
+        offset = model.claimSlot(1, 2, 3);
+        model.writeLock(offset);
+        model.setModulatorId(offset, 4);
+        model.setTargetType(offset, 5);
         checkModel(model, size);
 
         assertEquals(1L, model.getFiedlId(offset));
