@@ -111,8 +111,8 @@ public final class NeuronFieldModel extends MetaDataAccessor {
         setEndOffset(META_SIZE);
     }
 
-    public static int calculateSize(int maxNeurons, int maxOutNeighbours, int maxInNeighbours, int maxData) {
-        return META_SIZE + FIELD_HEADER_SIZE + (maxNeurons + maxOutNeighbours + maxInNeighbours + maxData + 1) * VALUE_SIZE;
+    public static int calculateSize(int maxNeurons, int maxInNeighbours, int maxOutNeighbours, int maxData) {
+        return FIELD_HEADER_SIZE + (maxNeurons + maxOutNeighbours + maxInNeighbours + maxData) * VALUE_SIZE;
     }
 
     @Override
@@ -142,8 +142,8 @@ public final class NeuronFieldModel extends MetaDataAccessor {
         lockSupport.readUnlock(offset);;
     }
 
-    int claimField(int maxNeurons, int maxOutNeighbours, int maxInNeighbours, int maxData) {
-        int range = calculateSize(maxNeurons, maxOutNeighbours, maxInNeighbours, maxData);
+    int claimField(int maxNeurons, int maxInNeighbours, int maxOutNeighbours, int maxData) {
+        int range = calculateSize(maxNeurons, maxInNeighbours, maxOutNeighbours, maxData);
         int newOffset = getEndOffset();
         setEndOffset(newOffset + range);
 
@@ -152,8 +152,13 @@ public final class NeuronFieldModel extends MetaDataAccessor {
 
         setNumNeurons(newOffset, 0);
         setMaxNeurons(newOffset, maxNeurons);
+
         setNumInNeighbours(newOffset, 0);
         setMaxInNeighbours(newOffset, maxInNeighbours);
+
+        setNumOutNeighbours(newOffset, 0);
+        setMaxOutNeighbours(newOffset, maxOutNeighbours);
+
         setNumData(newOffset, 0);
         setMaxData(newOffset, maxData);
 
@@ -193,7 +198,7 @@ public final class NeuronFieldModel extends MetaDataAccessor {
         int relOffset = (maxNeurons + maxInFields + numOutFields) * VALUE_SIZE;
         segment.set(ValueLayout.JAVA_INT, fieldOffset + FIELD_HEADER_SIZE + relOffset, fieldId);
 
-        setNumInNeighbours(fieldOffset, numOutFields + 1);
+        setNumOutNeighbours(fieldOffset, numOutFields + 1);
     }
 
     void setFieldType(int fieldOffset, int type) {
@@ -201,10 +206,12 @@ public final class NeuronFieldModel extends MetaDataAccessor {
         int maxInFields = getMaxInNeighbours(fieldOffset);
         int maxOutFields = getMaxOutNeighbours(fieldOffset);
         int numData = getNumData(fieldOffset);
-        assert numData >= 1 : "OutOfBounds field type";
+        int maxData = getMaxData(fieldOffset);
+        assert numData <=  maxData: "OutOfBounds field type";
+        setNumData(fieldOffset, numData + 1);
 
-        int relOffset = (maxNeurons + maxInFields + maxOutFields) * VALUE_SIZE;
-        segment.set(ValueLayout.JAVA_INT, fieldOffset + FIELD_HEADER_SIZE + relOffset, type);
+        int relOffset = FIELD_HEADER_SIZE + (maxNeurons + maxInFields + maxOutFields) * VALUE_SIZE;
+        segment.set(ValueLayout.JAVA_INT, fieldOffset + relOffset, type);
     }
 
     int getFieldType(int fieldOffset) {
@@ -270,6 +277,7 @@ public final class NeuronFieldModel extends MetaDataAccessor {
             int maxNeurons = getMaxNeurons(offset);
             int maxInFieds = getMaxInNeighbours(offset);
             long srcOffset = offset + FIELD_HEADER_SIZE + (maxNeurons + maxInFieds) * VALUE_SIZE;
+            result = new int[entries];
             MemorySegment.copy(segment, ValueLayout.JAVA_INT, srcOffset, result, 0, entries);
         }
 
@@ -277,66 +285,67 @@ public final class NeuronFieldModel extends MetaDataAccessor {
     }
 
     void setNumNeurons(int offset, int value) {
-        segment.set(ValueLayout.JAVA_INT, offset + FIELD_HEADER_SIZE + 0L, value);
+        segment.set(ValueLayout.JAVA_INT, offset + 4L, value);
     }
 
     int getNumNeurons(int offset) {
-        return segment.get(ValueLayout.JAVA_INT, offset + FIELD_HEADER_SIZE + 0L);
+        return segment.get(ValueLayout.JAVA_INT, offset + 4L);
     }
 
     void setMaxNeurons(int offset, int value) {
-        segment.set(ValueLayout.JAVA_INT, offset + FIELD_HEADER_SIZE + 4L, value);
+        segment.set(ValueLayout.JAVA_INT, offset + 8L, value);
     }
 
     int getMaxNeurons(int offset) {
-        return segment.get(ValueLayout.JAVA_INT, offset + FIELD_HEADER_SIZE + 4L);
+        return segment.get(ValueLayout.JAVA_INT, offset + 8L);
     }
 
     void setNumInNeighbours(int offset, int value) {
-        segment.set(ValueLayout.JAVA_INT, offset + FIELD_HEADER_SIZE + 8L, value);
+        segment.set(ValueLayout.JAVA_INT, offset + 12L, value);
     }
 
     int getNumInNeighbours(int offset) {
-        return segment.get(ValueLayout.JAVA_INT, offset + FIELD_HEADER_SIZE + 8L);
+        return segment.get(ValueLayout.JAVA_INT, offset + 12L);
     }
 
     void setMaxInNeighbours(int offset, int value) {
-        segment.set(ValueLayout.JAVA_INT, offset + FIELD_HEADER_SIZE + 12L, value);
+        segment.set(ValueLayout.JAVA_INT, offset + 16L, value);
     }
 
     int getMaxInNeighbours(int offset) {
-        return segment.get(ValueLayout.JAVA_INT, offset + FIELD_HEADER_SIZE + 12L);
+        return segment.get(ValueLayout.JAVA_INT, offset + 16L);
     }
 
     void setNumOutNeighbours(int offset, int value) {
-        segment.set(ValueLayout.JAVA_INT, offset + FIELD_HEADER_SIZE + 16L, value);
+        segment.set(ValueLayout.JAVA_INT, offset + 20L, value);
     }
 
     int getNumOutNeighbours(int offset) {
-        return segment.get(ValueLayout.JAVA_INT, offset + FIELD_HEADER_SIZE + 16L);
+        return segment.get(ValueLayout.JAVA_INT, offset + 20L);
     }
 
     void setMaxOutNeighbours(int offset, int value) {
-        segment.set(ValueLayout.JAVA_INT, offset + FIELD_HEADER_SIZE + 20L, value);
+        segment.set(ValueLayout.JAVA_INT, offset + 24L, value);
     }
 
     int getMaxOutNeighbours(int offset) {
-        return segment.get(ValueLayout.JAVA_INT, offset + FIELD_HEADER_SIZE + 20L);
+        return segment.get(ValueLayout.JAVA_INT, offset + 24L);
     }
 
     void setNumData(int offset, int value) {
-        segment.set(ValueLayout.JAVA_INT, offset + FIELD_HEADER_SIZE + 24L, value);
+        segment.set(ValueLayout.JAVA_INT, offset + 28L, value);
     }
 
     int getNumData(int offset) {
-        return segment.get(ValueLayout.JAVA_INT, offset + FIELD_HEADER_SIZE + 24L);
+        return segment.get(ValueLayout.JAVA_INT, offset + 28L);
     }
 
     void setMaxData(int offset, int value) {
-        segment.set(ValueLayout.JAVA_INT, offset + FIELD_HEADER_SIZE + 28L, value);
+        segment.set(ValueLayout.JAVA_INT, offset + 32L, value);
     }
 
     int getMaxData(int offset) {
-        return segment.get(ValueLayout.JAVA_INT, offset + FIELD_HEADER_SIZE + 28L);
+        return segment.get(ValueLayout.JAVA_INT, offset + 32L);
     }
+
 }

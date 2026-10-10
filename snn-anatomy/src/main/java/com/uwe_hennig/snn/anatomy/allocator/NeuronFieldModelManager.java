@@ -3,7 +3,12 @@
 /// All rights reserved.
 package com.uwe_hennig.snn.anatomy.allocator;
 
+import java.io.IOException;
+import java.nio.file.Path;
+
 import com.uwe_hennig.snn.anatomy.neuron.NeuronFieldModel;
+import com.uwe_hennig.snn.anatomy.neuron.NeuronFieldPersistence;
+import com.uwe_hennig.snn.util.logging.SNNLogger;
 
 /// NeuronFieldModelManager
 ///
@@ -30,6 +35,10 @@ public final class NeuronFieldModelManager {
         return INSTANCE;
     }
 
+    public static NeuronFieldModelManager instance() {
+        return INSTANCE;
+    }
+
     public int claimField(int maxNeurons, int maxOutNeighbours, int maxInNeighbours, int maxData) {
         return NeuronFieldModel.calculateSize(maxNeurons, maxOutNeighbours, maxInNeighbours, maxData);
     }
@@ -47,10 +56,22 @@ public final class NeuronFieldModelManager {
     }
 
     public void save(String folder) {
-        // TODO
+        try {
+            Path path = Path.of(folder).resolve(FILENAME);
+            NeuronFieldPersistence.save(model, path);
+        } catch (IOException e) {
+            e.printStackTrace();
+            SNNLogger.error(() -> "NeuronField not saved!");
+        }
     }
 
     public void load(String folder) {
-        // TODO
+        try {
+            Path path = Path.of(folder).resolve(FILENAME);
+            this.model = NeuronFieldPersistence.load(path);
+        } catch (IOException e) {
+            e.printStackTrace();
+            SNNLogger.error(() -> "Dendrit not loaded!");
+        }
     }
 }
