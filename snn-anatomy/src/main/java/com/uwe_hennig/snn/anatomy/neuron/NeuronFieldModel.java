@@ -42,15 +42,15 @@ import java.nio.file.StandardOpenOption;
 /// │ ...                             │
 /// └─────────────────────────────────┘
 ///
-/// 32: numNeurons (int)        – Current number of neurons
-/// 36: maxNeurons (int)        – Maximum capacity for neurons (important for neurogenesis)
-/// 40: numInNeighbors (int)    – Current number of incoming neighbours
-/// 44: maxInNeighbors (int)    – Fixed maximum capacity for in-neighbours
-/// 48: numOutNeighbors (int)   – Current number of outgoing neighbours
-/// 52: maxOutNeighbors (int)   – Fixed maximum capacity for out-neighbours
-/// 56: numData (int)           – Current size of field data (APP)
-/// 60: maxData (int)           – Maximum capacity of field data
-/// 64: lock (int)              – Lock for neurogenesis
+/// 32: lock (int)              – Lock for neurogenesis
+/// 36: numNeurons (int)        – Current number of neurons
+/// 40: maxNeurons (int)        – Maximum capacity for neurons (important for neurogenesis)
+/// 44: numInNeighbors (int)    – Current number of incoming neighbours
+/// 48: maxInNeighbors (int)    – Fixed maximum capacity for in-neighbours
+/// 52: numOutNeighbors (int)   – Current number of outgoing neighbours
+/// 56: maxOutNeighbors (int)   – Fixed maximum capacity for out-neighbours
+/// 60: numData (int)           – Current size of field data (APP)
+/// 64: maxData (int)           – Maximum capacity of field data
 ///
 /// Field-Data (from Byte 64):
 /// --------------------------------------------------
@@ -120,7 +120,29 @@ public final class NeuronFieldModel extends MetaDataAccessor {
         return segment;
     }
 
-    public int claimField(int maxNeurons, int maxOutNeighbours, int maxInNeighbours, int maxData) {
+    public void close() {
+        arena.close();
+    }
+
+    // ----- lock -----
+
+    void writeLock(int offset) {
+        lockSupport.writeLock(offset);
+    }
+
+    void readLock(int offset) {
+        lockSupport.readLock(offset);
+    }
+
+    void writeUnlock(int offset) {
+        lockSupport.writeUnlock(offset);
+    }
+
+    void readUnlock(int offset) {
+        lockSupport.readUnlock(offset);;
+    }
+
+    int claimField(int maxNeurons, int maxOutNeighbours, int maxInNeighbours, int maxData) {
         int range = calculateSize(maxNeurons, maxOutNeighbours, maxInNeighbours, maxData);
         int newOffset = getEndOffset();
         setEndOffset(newOffset + range);
@@ -138,7 +160,7 @@ public final class NeuronFieldModel extends MetaDataAccessor {
         return newOffset;
     }
 
-    public void addNeuron(int fieldOffset, int neuronId) {
+    void addNeuron(int fieldOffset, int neuronId) {
         int numNeurons = getNumNeurons(fieldOffset);
         int maxNeurons = getMaxNeurons(fieldOffset);
         assert numNeurons + 1 <= maxNeurons : "OutOfBounds neurons";
@@ -149,11 +171,11 @@ public final class NeuronFieldModel extends MetaDataAccessor {
         setNumNeurons(fieldOffset, numNeurons + 1);
     }
 
-    public void addInField(int fieldOffset, int fieldId) {
+    void addInField(int fieldOffset, int fieldId) {
         int numFields = getNumInNeighbours(fieldOffset);
         int maxFields = getMaxInNeighbours(fieldOffset);
         int maxNeurons = getMaxNeurons(fieldOffset);
-        assert numFields + 1 <= maxFields : "OutOfBounds fields";
+        assert numFields + 1 <= maxFields : "OutOfBounds in fields";
 
         int relOffset = (maxNeurons + numFields) * VALUE_SIZE;
         segment.set(ValueLayout.JAVA_INT, fieldOffset + FIELD_HEADER_SIZE + relOffset, fieldId);
@@ -161,12 +183,12 @@ public final class NeuronFieldModel extends MetaDataAccessor {
         setNumInNeighbours(fieldOffset, numFields + 1);
     }
 
-    public void addOutField(int fieldOffset, int fieldId) {
+    void addOutField(int fieldOffset, int fieldId) {
         int maxNeurons = getMaxNeurons(fieldOffset);
         int maxInFields = getMaxInNeighbours(fieldOffset);
         int maxOutFields = getMaxOutNeighbours(fieldOffset);
         int numOutFields = getNumOutNeighbours(fieldOffset);
-        assert numOutFields + 1 <= maxOutFields : "OutOfBounds fields";
+        assert numOutFields + 1 <= maxOutFields : "OutOfBounds out fields";
 
         int relOffset = (maxNeurons + maxInFields + numOutFields) * VALUE_SIZE;
         segment.set(ValueLayout.JAVA_INT, fieldOffset + FIELD_HEADER_SIZE + relOffset, fieldId);
@@ -174,6 +196,27 @@ public final class NeuronFieldModel extends MetaDataAccessor {
         setNumInNeighbours(fieldOffset, numOutFields + 1);
     }
 
+    void setFieldType(int fieldOffset, int type) {
+        int maxNeurons = getMaxNeurons(fieldOffset);
+        int maxInFields = getMaxInNeighbours(fieldOffset);
+        int maxOutFields = getMaxOutNeighbours(fieldOffset);
+        int numData = getNumData(fieldOffset);
+        assert numData >= 1 : "OutOfBounds field type";
+
+        int relOffset = (maxNeurons + maxInFields + maxOutFields) * VALUE_SIZE;
+        segment.set(ValueLayout.JAVA_INT, fieldOffset + FIELD_HEADER_SIZE + relOffset, type);
+    }
+
+    int getFieldType(int fieldOffset) {
+        int maxNeurons = getMaxNeurons(fieldOffset);
+        int maxInFields = getMaxInNeighbours(fieldOffset);
+        int maxOutFields = getMaxOutNeighbours(fieldOffset);
+        int numData = getNumData(fieldOffset);
+        assert numData >= 1 : "OutOfBounds field type";
+
+        int relOffset = (maxNeurons + maxInFields + maxOutFields) * VALUE_SIZE;
+        return segment.get(ValueLayout.JAVA_INT, fieldOffset + FIELD_HEADER_SIZE + relOffset);
+    }
 
     int[] getFieldOffsets() {
         int numFields = getEntryCount();
@@ -295,9 +338,5 @@ public final class NeuronFieldModel extends MetaDataAccessor {
 
     int getMaxData(int offset) {
         return segment.get(ValueLayout.JAVA_INT, offset + FIELD_HEADER_SIZE + 28L);
-    }
-
-    public void close() {
-        arena.close();
     }
 }
