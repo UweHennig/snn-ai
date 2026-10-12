@@ -1,42 +1,47 @@
 /// @(#)StimulusDispatcherTest.java
 /// Copyright (c) 2026 Uwe Hennig
 /// All rights reserved.
-package com.uwe_hennig.snn.util;
+package com.uwe_hennig.snn.cerebro.neuron;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.anyFloat;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
 
 import java.time.Duration;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.mockito.Mockito;
 
-import com.uwe_hennig.snn.services.StimulusDispatcher;
+import com.uwe_hennig.snn.util.BufferedTransferModel;
+import com.uwe_hennig.snn.util.IntQueue;
 import com.uwe_hennig.snn.util.logging.SNNLogger;
 
 /// StimulusDispatcherTest
 ///
 /// @author Uwe Hennig
 public class StimulusDispatcherTest {
+
     @Test
     @DisplayName("StimulusDispatcherTest")
     public void testStimulusDispatcher() {
-        AtomicLong count = new AtomicLong();
-
-        SNNLogger.setActive(true);
-        SNNLogger.setCallback(_ -> count.incrementAndGet());
-
         BufferedTransferModel ts = null;
         IntQueue queue = null;
+        StimulusDispatcher realDispatcher = null;
         StimulusDispatcher dispatcher = null;
 
         try {
             ts = new BufferedTransferModel(1048576);
             queue = new IntQueue(1024);
-            dispatcher = StimulusDispatcher.init(3, ts, queue);
+            realDispatcher = StimulusDispatcher.init(3, ts, queue);
+            dispatcher = Mockito.spy(realDispatcher);
+
+            doNothing().when(dispatcher).transfer(anyInt(), anyInt(), anyInt(), anyInt(), anyInt(), anyFloat());
 
             int blockA = ts.claimSlot(2, 3, 10, 20);
             int blockB = ts.claimSlot(2, 3, 30, 40);
@@ -56,7 +61,6 @@ public class StimulusDispatcherTest {
 
             dispatcher.start();
             for (int i = 0; i < 100; i += 10) {
-                System.out.println(i);
                 ts.offerFbTime(blockA, 0, i);
                 ts.offerFbValue(blockA, 0, i + 1.0f);
                 ts.offerStimulus(blockA, 0, i + 2.0f);
@@ -71,14 +75,12 @@ public class StimulusDispatcherTest {
                 ts.offerFbValue(blockB, 1, i + 10.0f);
                 ts.offerStimulus(blockB, 1, i + 11.0f);
 
-                // very bad time, because of StringFormatter in StimulusDispatcher!
                 Thread.sleep(Duration.ofMillis(5L));
             }
             Thread.sleep(Duration.ofSeconds(1L));
             dispatcher.stop(100);
-            // expected should be 120, but depends on machine performance
-            System.out.println("count = " + count.get());
-            assertTrue(count.get() > 10, "invalid count!");
+
+            verify(dispatcher, atLeast(120)).transfer(anyInt(), anyInt(), anyInt(), anyInt(), anyInt(), anyFloat());
 
         } catch (InterruptedException e) {
             e.printStackTrace();

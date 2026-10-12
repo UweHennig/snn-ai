@@ -1,19 +1,18 @@
 /// @(#)StimulusDispatcher.java
 /// Copyright (c) 2026 Uwe Hennig
 /// All rights reserved.
-package com.uwe_hennig.snn.services;
+package com.uwe_hennig.snn.cerebro.neuron;
 
-import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.LockSupport;
 
+import com.uwe_hennig.snn.contracts.core.ElementType;
 import com.uwe_hennig.snn.contracts.core.StimulusType;
 import com.uwe_hennig.snn.util.BufferedTransferModel;
 import com.uwe_hennig.snn.util.IntQueue;
-import com.uwe_hennig.snn.util.logging.SNNLogger;
 
 /// StimulusDispatcher
 ///
@@ -26,8 +25,8 @@ public final class StimulusDispatcher {
     private static StimulusDispatcher INSTANCE;
 
     private final BufferedTransferModel buffer;
-    private final IntQueue                bufferOffsets;
-    private final int                     numWorkers;
+    private final IntQueue              bufferOffsets;
+    private final int                   numWorkers;
 
     private final ExecutorService executor;
     private final AtomicBoolean   isRunning = new AtomicBoolean(false);
@@ -62,10 +61,11 @@ public final class StimulusDispatcher {
                         int offset = bufferOffsets.poll();
                         if (offset >= 0) {
                             dispatch(offset);
-                            bufferOffsets.offer(offset);
                         } else {
                             LockSupport.parkNanos(1);
                         }
+                        // Once complete, the block must be made available again for processing within the segment.
+                        bufferOffsets.offer(offset);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -98,37 +98,55 @@ public final class StimulusDispatcher {
     }
 
     private void dispatch(int offset) {
+        // read header
         int entries = buffer.getEntries(offset);
+        int srcType = buffer.getSrcType(offset);
+        int srcNeuronId = buffer.getNeuronId(offset);
+
+        // process entries
         for (int entry = 0; entry < entries; entry++) {
-            int srcId = buffer.getSrcId(offset);
-            int srcType = buffer.getSrcType(offset);
+            float stimulusValue = buffer.pollStimulus(offset, entry);
+            if (!Float.isNaN(stimulusValue)) {
+                int trgId = buffer.getTrgId(offset, entry);
+                int trgType = buffer.getTrgType(offset, entry);
 
-            int trgId = buffer.getTrgId(offset, entry);
-            int trgType = buffer.getTrgType(offset, entry);
-
-            float stimulus = buffer.pollStimulus(offset, entry);
-            if (!Float.isNaN(stimulus)) {
-                transfer(StimulusType.STIMULUS, srcId, srcType, trgId, trgType, stimulus);
+                transfer(StimulusType.STIMULUS, srcNeuronId, srcType, trgId, trgType, stimulusValue);
             }
 
             float fbTime = buffer.pollFbTime(offset, entry);
             if (!Float.isNaN(fbTime)) {
-                transfer(StimulusType.TIME_FEEDBACK, srcId, srcType, trgId, trgType, fbTime);
+                int trgId = buffer.getTrgId(offset, entry);
+                int trgType = buffer.getTrgType(offset, entry);
+
+                transfer(StimulusType.TIME_FEEDBACK, srcNeuronId, srcType, trgId, trgType, stimulusValue);
             }
 
             float fbValue = buffer.pollFbValue(offset, entry);
             if (!Float.isNaN(fbValue)) {
-                transfer(StimulusType.VALUE_FEEDBACK, srcId, srcType, trgId, trgType, fbValue);
+                int trgId = buffer.getTrgId(offset, entry);
+                int trgType = buffer.getTrgType(offset, entry);
+
+                transfer(StimulusType.VALUE_FEEDBACK, srcNeuronId, srcType, trgId, trgType, stimulusValue);
             }
         }
-
-        // Once complete, the block must be made available again for processing within the segment.
-        bufferOffsets.offer(offset);
     }
 
-    private void transfer(int type, int srcId, int srcType, int trgId, int trgType, float value) {
-        // TODO
-        SNNLogger.debug(() -> String.format(Locale.ENGLISH, "%3d -> %3d (%3.2f)", srcId, trgId, value));
+    protected void transfer(int stimulusType, int srcNeuronId, int srcType, int trgId, int trgType, float stimulusValue) {
+        if (ElementType.isDendrit(trgType)) {
+            Dendrit.stimulate(trgId, srcNeuronId, srcType, stimulusType, stimulusValue);
+        }
+
+        if (ElementType.isSoma(trgType)) {
+            Soma.stimulate(trgId, srcNeuronId, srcType, stimulusType, stimulusValue);
+        }
+
+        if (ElementType.isAxon(trgType)) {
+            Axon.stimulate(trgId, srcNeuronId, srcType, stimulusType, stimulusValue);
+        }
+
+        if (ElementType.isSynapse(trgType)) {
+            Synapse.stimulate(trgId, srcNeuronId, srcType, stimulusType, stimulusValue);
+        }
     }
 
     public static StimulusDispatcher instance() {

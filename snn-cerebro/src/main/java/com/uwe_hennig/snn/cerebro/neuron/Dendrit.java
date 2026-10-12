@@ -25,10 +25,8 @@ public final class Dendrit {
     ///
     /// @param offset
     ///            memory address of the dendrite segment
-    /// @param srcId
-    ///            is the source identifier
     /// @param srcType
-    ///            is the type of the source
+    ///            is the type of the source and might be used for modulation or identifying receptor
     /// @param stimulusType
     ///            is the stimulus type: FEEDBACK_TIME, FEEDBACK_VALUE, STIMULUS
     /// @param stimulusValue

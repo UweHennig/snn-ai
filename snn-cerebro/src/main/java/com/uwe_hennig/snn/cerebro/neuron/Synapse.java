@@ -22,7 +22,7 @@ public final class Synapse {
     private Synapse() {
     }
 
-    public void stimulate(int offset, int srcNeuronId, int srcType, int stimulusType, float stimulusValue) {
+    public static void stimulate(int offset, int srcNeuronId, int srcType, int stimulusType, float stimulusValue) {
         if (Math.abs(stimulusValue) < 0.01) {
             return;
         }
