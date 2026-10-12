@@ -145,8 +145,10 @@ public final class StimulusDispatcher {
         }
 
         if (ElementType.isSynapse(trgType)) {
-            Synapse.stimulate(trgId, srcNeuronId, srcType, stimulusType, stimulusValue);
+            Synapse.stimulate(trgId, srcNeuronId, srcType, trgType, stimulusType, stimulusValue);
         }
+
+        // TODO ElementType.isEffector(trgType)
     }
 
     public static StimulusDispatcher instance() {

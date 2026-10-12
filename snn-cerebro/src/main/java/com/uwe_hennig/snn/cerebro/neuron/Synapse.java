@@ -1,8 +1,6 @@
-/**
- * @(#)Synapse.java
- * Copyright (c) 2026 Uwe Hennig
- * All rights reserved.
- */
+/// @(#)Synapse.java
+/// Copyright (c) 2026 Uwe Hennig
+/// All rights reserved.
 package com.uwe_hennig.snn.cerebro.neuron;
 
 import com.uwe_hennig.snn.anatomy.allocator.ModulatorModelManager;
@@ -11,18 +9,18 @@ import com.uwe_hennig.snn.anatomy.neuron.ModulatorModel;
 import com.uwe_hennig.snn.anatomy.neuron.ModulatorView;
 import com.uwe_hennig.snn.anatomy.neuron.SynapseModel;
 import com.uwe_hennig.snn.anatomy.neuron.SynapseView;
+import com.uwe_hennig.snn.contracts.core.ElementType;
 import com.uwe_hennig.snn.contracts.core.StimulusType;
 
-/**
- * Synapse
- *
- * @author Uwe Hennig
- */
+/// Synapse
+///
+/// @author Uwe Hennig
+///
 public final class Synapse {
     private Synapse() {
     }
 
-    public static void stimulate(int offset, int srcNeuronId, int srcType, int stimulusType, float stimulusValue) {
+    public static void stimulate(int offset, int srcNeuronId, int srcType, int trgType, int stimulusType, float stimulusValue) {
         if (Math.abs(stimulusValue) < 0.01) {
             return;
         }
@@ -49,8 +47,28 @@ public final class Synapse {
             SynapseView.writeUnlock(model, offset);
         }
 
-        // TODO transfer!
-        // stimulusIdentifier = StimulusService.update(stimulusIdentifier, stimulusType, adjustedValue, targetId);
+        int trgId = SynapseView.getTargetId(model, offset);
+        transfer(stimulusType, srcNeuronId, ElementType.SYNAPSE, trgId, trgType, adjustedValue);
+    }
+
+    private static void transfer(int stimulusType, int srcNeuronId, int srcType, int trgId, int trgType, float stimulusValue) {
+        if (ElementType.isDendrit(trgType)) {
+            Dendrit.stimulate(trgId, srcNeuronId, srcType, stimulusType, stimulusValue);
+        }
+
+        if (ElementType.isSoma(trgType)) {
+            Soma.stimulate(trgId, srcNeuronId, srcType, stimulusType, stimulusValue);
+        }
+
+        if (ElementType.isAxon(trgType)) {
+            Axon.stimulate(trgId, srcNeuronId, srcType, stimulusType, stimulusValue);
+        }
+
+        if (ElementType.isSynapse(trgType)) {
+            Synapse.stimulate(trgId, srcNeuronId, srcType, trgType, stimulusType, stimulusValue);
+        }
+
+        // TODO ElementType.isEffector(trgType)
     }
 
     private static boolean isExternalStimulus(SynapseModel model, int offset, int srcNeuronId) {
