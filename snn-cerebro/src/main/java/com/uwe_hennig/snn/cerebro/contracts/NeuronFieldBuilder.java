@@ -5,35 +5,25 @@
  */
 package com.uwe_hennig.snn.cerebro.contracts;
 
-import com.uwe_hennig.snn.contracts.graph.GraphGenerator;
-
 /**
  * NeuronFieldBuilder
  *
  * @author Uwe Hennig
  */
 public interface NeuronFieldBuilder {
-    interface Start {
-        AfferentStage start();
-    }
+    // 1. Declare fields
+    NeuronFieldBuilder addReceptorFields(int countFields, int maxNeuronCount);
+    NeuronFieldBuilder addEffectorFields(int countFields, int maxNeuronCount);
+    NeuronFieldBuilder addFeedbackFields(int countFields, int maxNeuronCount);
+    NeuronFieldBuilder addAssociativeFields(int countFields, int maxNeuronCount);
 
-    interface AfferentStage {
-        AssociativeStage withAfferent(GraphGenerator generator);
-    }
+    // 2. Projection rules
+    NeuronFieldBuilder wireReceptors(int outDegree);
+    NeuronFieldBuilder wireEffectors(int inDegree);
+    NeuronFieldBuilder wireAssociative(int inDegree, int outDegree);
+    NeuronFieldBuilder wireFeedback(int inDegree, int outDegree);
 
-    interface AssociativeStage {
-        EfferentStage withAssociative(GraphGenerator generator);
-    }
+    // 3. Transition: Validate
+    FieldNetwork compile();
 
-    interface EfferentStage {
-        FeedbackStage withEfferent(GraphGenerator generator);
-    }
-
-    interface FeedbackStage {
-        BuildStage withFeedback(GraphGenerator generator);
-    }
-
-    interface BuildStage {
-        FieldGraph build();
-    }
 }

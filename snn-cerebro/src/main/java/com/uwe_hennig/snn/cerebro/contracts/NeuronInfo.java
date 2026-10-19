@@ -7,5 +7,6 @@ package com.uwe_hennig.snn.cerebro.contracts;
 ///
 /// @author Uwe Hennig
 ///
-public record NeuronInfo(int fieldId, int neuronId, int somaId, int axonId, int[] dendriteIds, int[] synapseIds) {
+public interface NeuronInfo {
+
 }

@@ -8,7 +8,6 @@ package com.uwe_hennig.snn.cerebro.neuron;
 import com.uwe_hennig.snn.anatomy.allocator.AxonModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.DendritModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.ModulatorModelManager;
-import com.uwe_hennig.snn.anatomy.allocator.NeuronModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.PlasticityModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.PotentialModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.SomaModelMangager;
@@ -41,7 +40,7 @@ import com.uwe_hennig.snn.cerebro.contracts.NeuronInfo;
  *
  * @author Uwe Hennig
  */
-public class NeuronBuilderImpl implements NeuronBuilder {
+public class NeuronBuilderImpl implements NeuronBuilder, NeuronInfo {
     private int fieldId;
     private int neuronId;
 
@@ -99,7 +98,8 @@ public class NeuronBuilderImpl implements NeuronBuilder {
             dendritArray[i] = dendritOffset;
         }
 
-        return new NeuronInfo(fieldId, neuronId, somaOffset, axonOffset, dendritArray, synapseArray);
+        // TODO
+        return this; // new NeuronInfo(fieldId, neuronId, somaOffset, axonOffset, dendritArray, synapseArray);
     }
 
     // -- convenient --

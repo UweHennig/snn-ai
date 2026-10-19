@@ -19,7 +19,6 @@ import com.uwe_hennig.snn.learning.contracts.Environment;
 import com.uwe_hennig.snn.peripheral.agent.EnvActionImpl;
 import com.uwe_hennig.snn.peripheral.agent.EnvFeedbackImpl;
 import com.uwe_hennig.snn.peripheral.agent.EnvStateImpl;
-import com.uwe_hennig.snn.util.Trigger;
 
 /**
  * EchoEnvironment generates random numbers between 0 and 10 and checks the SNN's response.
@@ -36,7 +35,7 @@ public class EchoEnvironment implements Environment {
 
     private AtomicBoolean pendingAnswer = new AtomicBoolean(false);
 
-    private Trigger  trigger;
+    //private Trigger  trigger;
     private Duration totalRuntime;
     private Duration stepInterval;
 
@@ -76,13 +75,13 @@ public class EchoEnvironment implements Environment {
 
     @Override
     public void start() {
-        trigger = Trigger.of(stepInterval, this::sendData);
-        trigger.startWithTotalRuntime(totalRuntime);
+//        trigger = Trigger.of(stepInterval, this::sendData);
+//        trigger.startWithTotalRuntime(totalRuntime);
     }
 
     @Override
     public void stop() {
-        trigger.stop();
+//        trigger.stop();
     }
 
 
@@ -100,5 +99,4 @@ public class EchoEnvironment implements Environment {
     public List<EnvFeedback> getEnvFeedback() {
         return List.of(valueFeedbackPort, timeFeedbackPort);
     }
-
 }

@@ -30,7 +30,7 @@ import java.nio.file.StandardOpenOption;
 /// │  60: numData           : int    │
 /// │  64: maxData           : int    │
 /// ├─────────────────────────────────┤
-/// │ Neuron Is                       │
+/// │ Neuron Ids                      │
 /// │  N_START: neuronId     : int    │
 /// │ In Field Ids                    │
 /// │  I_START: inNeighbourId: int    │
