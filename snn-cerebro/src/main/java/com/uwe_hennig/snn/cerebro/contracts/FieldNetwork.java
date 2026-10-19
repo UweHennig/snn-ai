@@ -12,7 +12,7 @@ import com.uwe_hennig.snn.cerebro.field.NeuronField;
 /// @author Uwe Hennig
 ///
 public interface FieldNetwork {
-    void toDot(Path path);
+    void toDot(Path path, String comment);
     long totalBytes();
 
     NeuronField build();

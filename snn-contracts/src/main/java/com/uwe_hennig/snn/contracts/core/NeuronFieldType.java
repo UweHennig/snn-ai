@@ -10,26 +10,25 @@ package com.uwe_hennig.snn.contracts.core;
  *
  * @author Uwe Hennig
  */
-public enum NeuronFieldType {
-    AFFERENT(1), ASSOCIATIVE(2), EFFERENT(3), FEEDBACK(4), UNDEFINED(5);
+public final class NeuronFieldType {
+    public static final int RECEPTOR_FIELD    = 1 << 0;
+    public static final int ASSOCIATIVE_FIELD = 1 << 1;
+    public static final int EFFECTOR_FIELD    = 1 << 2;
+    public static final int FEEDBACK_FIELD    = 1 << 3;
 
-    private final int code;
-
-    NeuronFieldType(int code) {
-        this.code = code;
+    public static boolean isReceptorField(int code) {
+        return (code & RECEPTOR_FIELD) > 0;
     }
 
-    public int code() {
-        return this.code;
+    public static boolean isAssociativeField(int code) {
+        return (code & ASSOCIATIVE_FIELD) > 0;
     }
 
-    public static NeuronFieldType fieldType(int code) {
-        return switch (code) {
-            case 1 -> AFFERENT;
-            case 2 -> ASSOCIATIVE;
-            case 3 -> EFFERENT;
-            case 4 -> FEEDBACK;
-            default -> UNDEFINED;
-        };
+    public static boolean isEffectorField(int code) {
+        return (code & EFFECTOR_FIELD) > 0;
+    }
+
+    public static boolean isFeedbackField(int code) {
+        return (code & FEEDBACK_FIELD) > 0;
     }
 }
