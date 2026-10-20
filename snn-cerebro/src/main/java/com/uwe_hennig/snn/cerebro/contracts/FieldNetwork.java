@@ -3,8 +3,6 @@
 /// All rights reserved.
 package com.uwe_hennig.snn.cerebro.contracts;
 
-import java.nio.file.Path;
-
 import com.uwe_hennig.snn.cerebro.field.NeuronField;
 
 /// FieldNetwork
@@ -12,7 +10,7 @@ import com.uwe_hennig.snn.cerebro.field.NeuronField;
 /// @author Uwe Hennig
 ///
 public interface FieldNetwork {
-    void toDot(Path path, String comment);
+    String toDot(String comment);
     long totalBytes();
 
     NeuronField build();

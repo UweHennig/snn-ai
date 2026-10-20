@@ -13,10 +13,10 @@ import com.uwe_hennig.snn.contracts.graph.GraphType;
  */
 public interface NeuronFieldBuilder {
     // Declare structure
-    NeuronFieldBuilder addReceptorFields(GraphType type, int maxNeuronCount);
+    NeuronFieldBuilder addReceptorFields(GraphType type, int associativeEdges, int maxNeuronCount);
+    NeuronFieldBuilder addAssociativeFields(GraphType type, int effectorEdges, int maxNeuronCount);
     NeuronFieldBuilder addEffectorFields(GraphType type, int maxNeuronCount);
-    NeuronFieldBuilder addFeedbackFields(GraphType type, int maxNeuronCount);
-    NeuronFieldBuilder addAssociativeFields(GraphType type, int maxNeuronCount);
+    NeuronFieldBuilder addFeedbackFields(GraphType type, int groupEdges, int maxNeuronCount);
 
     // Transition: Validate
     FieldNetwork compile();
