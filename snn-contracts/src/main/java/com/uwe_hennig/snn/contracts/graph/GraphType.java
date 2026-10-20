@@ -10,16 +10,29 @@ package com.uwe_hennig.snn.contracts.graph;
 public sealed interface GraphType
         permits GraphType.Random, GraphType.Ring, GraphType.LayeredGrid, GraphType.SmallWorld,
                 GraphType.Tube, GraphType.Fractal, GraphType.ScaleFree {
-    record Random(int nodes) implements  GraphType {}
+    /// A random graph, but connected
+    record Random(int nodes, int outNeighbours) implements  GraphType {}
+
+    /// Simple ring
     record Ring(int nodes) implements  GraphType {}
-    record LayeredGrid(int width, int height, int layers) implements GraphType {}
+
+    /// Spinal cord
     record Tube(int ringNodes, int depth)  implements  GraphType {}
+
+    /// not yet definined
     record Fractal(int depth) implements  GraphType {}
+
+    /// Cortical layers I–VI
+    record LayeredGrid(int width, int height, int layers) implements GraphType {}
+
+    /// Barabási–Albert
     record ScaleFree(int nodes, int edgesPerNewNode) implements GraphType {}
+
+    /// Watts-Strogatz
     record SmallWorld(int nodes, int neighbours, float rewireProbability) implements GraphType {}
 
-    static GraphType RANDOM(int nodes) {
-        return new Random(nodes);
+    static GraphType RANDOM(int nodes, int outNeighbours) {
+        return new Random(nodes, outNeighbours);
     }
 
     static GraphType RING(int nodes) {
