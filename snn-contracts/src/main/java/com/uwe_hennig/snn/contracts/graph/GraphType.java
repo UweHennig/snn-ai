@@ -20,7 +20,7 @@ public sealed interface GraphType
     record Tube(int ringNodes, int depth)  implements  GraphType {}
 
     /// not yet definined
-    record Fractal(int depth) implements  GraphType {}
+    record Fractal(int nodes, int depth) implements  GraphType {}
 
     /// Cortical layers I–VI
     record LayeredGrid(int width, int height, int layers) implements GraphType {}
@@ -47,8 +47,8 @@ public sealed interface GraphType
         return new Tube(ringNodes, depth);
     }
 
-    static GraphType FRACTAL(int depth) {
-        return new Fractal(depth);
+    static GraphType FRACTAL(int nodes, int depth) {
+        return new Fractal(nodes, depth);
     }
 
     static GraphType SCALE_FREE(int nodes, int edgesPerNewNode) {

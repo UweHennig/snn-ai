@@ -3,6 +3,11 @@
 /// All rights reserved.
 package com.uwe_hennig.snn.cerebro.field;
 
+import static com.uwe_hennig.snn.contracts.core.NeuronFieldType.ASSOCIATIVE_FIELD;
+import static com.uwe_hennig.snn.contracts.core.NeuronFieldType.EFFECTOR_FIELD;
+import static com.uwe_hennig.snn.contracts.core.NeuronFieldType.FEEDBACK_FIELD;
+import static com.uwe_hennig.snn.contracts.core.NeuronFieldType.RECEPTOR_FIELD;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,10 +36,10 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldNetwork 
         }
     }
 
-    private List<FieldNode> receptorFields = new ArrayList<>();
-    private List<FieldNode> effectorFields = new ArrayList<>();
+    private List<FieldNode> receptorFields    = new ArrayList<>();
+    private List<FieldNode> effectorFields    = new ArrayList<>();
     private List<FieldNode> associativeFields = new ArrayList<>();
-    private List<FieldNode> feedbackFields = new ArrayList<>();
+    private List<FieldNode> feedbackFields    = new ArrayList<>();
 
     private GraphType receptorGraphType;
     private int       maxReceptorNeurons;
@@ -92,7 +97,7 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldNetwork 
     public NeuronFieldBuilder addAssociativeFields(GraphType type, int associativeEffectorEdges, int maxNeuronCount) {
         assert type != null : "invalid associative type";
         assert maxNeuronCount >= 1 : "invalid associative maxNeuronCount";
-        assert associativeEffectorEdges >=1 : "invalid parameter associativeEffectorEdges";
+        assert associativeEffectorEdges >= 1 : "invalid parameter associativeEffectorEdges";
 
         this.associativeGraphType = type;
         this.maxAssociativeNeurons = maxNeuronCount;
@@ -109,10 +114,96 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldNetwork 
             throw new IllegalArgumentException("Invalid parameters in NeuronFieldBuilder!");
         }
 
-        // TODO create in/out connections
-        // receptorFields
+        receptorFields = switch (receptorGraphType) {
+            case GraphType.Random r -> random(RECEPTOR_FIELD, r);
+            case GraphType.Fractal f -> fractal(RECEPTOR_FIELD, f);
+            case GraphType.ScaleFree sf -> scaleFree(RECEPTOR_FIELD, sf);
+            case GraphType.SmallWorld sw -> smallWorld(RECEPTOR_FIELD, sw);
+            case GraphType.Ring r -> ring(RECEPTOR_FIELD, r);
+            case GraphType.Tube t -> tube(RECEPTOR_FIELD, t);
+            case GraphType.LayeredGrid l -> layeredGrid(RECEPTOR_FIELD, l);
+            default -> throw new IllegalArgumentException("Unexpected value: " + receptorGraphType);
+        };
+
+        associativeFields = switch (associativeGraphType) {
+            case GraphType.Random r -> random(ASSOCIATIVE_FIELD, r);
+            case GraphType.Fractal f -> fractal(ASSOCIATIVE_FIELD, f);
+            case GraphType.ScaleFree sf -> scaleFree(ASSOCIATIVE_FIELD, sf);
+            case GraphType.SmallWorld sw -> smallWorld(ASSOCIATIVE_FIELD, sw);
+            case GraphType.Ring r -> ring(ASSOCIATIVE_FIELD, r);
+            case GraphType.Tube t -> tube(ASSOCIATIVE_FIELD, t);
+            case GraphType.LayeredGrid l -> layeredGrid(ASSOCIATIVE_FIELD, l);
+            default -> throw new IllegalArgumentException("Unexpected value: " + associativeGraphType);
+        };
+
+        effectorFields = switch (effectorGraphType) {
+            case GraphType.Random r -> random(EFFECTOR_FIELD, r);
+            case GraphType.Fractal f -> fractal(EFFECTOR_FIELD, f);
+            case GraphType.ScaleFree sf -> scaleFree(EFFECTOR_FIELD, sf);
+            case GraphType.SmallWorld sw -> smallWorld(EFFECTOR_FIELD, sw);
+            case GraphType.Ring r -> ring(EFFECTOR_FIELD, r);
+            case GraphType.Tube t -> tube(EFFECTOR_FIELD, t);
+            case GraphType.LayeredGrid l -> layeredGrid(EFFECTOR_FIELD, l);
+            default -> throw new IllegalArgumentException("Unexpected value: " + effectorGraphType);
+        };
+
+        feedbackFields = switch (feedbackGraphType) {
+            case GraphType.Random r -> random(FEEDBACK_FIELD, r);
+            case GraphType.Fractal f -> fractal(FEEDBACK_FIELD, f);
+            case GraphType.ScaleFree sf -> scaleFree(FEEDBACK_FIELD, sf);
+            case GraphType.SmallWorld sw -> smallWorld(FEEDBACK_FIELD, sw);
+            case GraphType.Ring r -> ring(FEEDBACK_FIELD, r);
+            case GraphType.Tube t -> tube(FEEDBACK_FIELD, t);
+            case GraphType.LayeredGrid l -> layeredGrid(FEEDBACK_FIELD, l);
+            default -> throw new IllegalArgumentException("Unexpected value: " + feedbackGraphType);
+        };
+
+        // TODO create connections between fields groups
 
         return this;
+    }
+
+    private List<FieldNode> random(int fieldType, GraphType.Random randomGraph) {
+        // TODO
+        System.out.println("nodes = " + randomGraph.nodes() + " outNeighbours = " + randomGraph.outNeighbours());
+        return new ArrayList<>();
+    }
+
+    private List<FieldNode> fractal(int fieldType, GraphType.Fractal fractalGraph) {
+        // TODO
+        System.out.println("nodes = " + fractalGraph.nodes() + "depth = " + fractalGraph.depth());
+        return new ArrayList<>();
+    }
+
+    private List<FieldNode> scaleFree(int fieldType, GraphType.ScaleFree scaleFreeGraph) {
+        // TODO
+        System.out.println("nodes = " + scaleFreeGraph.nodes() + " edgesPerNewNode = " + scaleFreeGraph.edgesPerNewNode());
+        return new ArrayList<>();
+    }
+
+    private List<FieldNode> smallWorld(int fieldType, GraphType.SmallWorld smallWorldGraph) {
+        // TODO
+        System.out.println("nodes = " + smallWorldGraph.nodes() + "neighbours = " + smallWorldGraph.neighbours() + " rewireProbability = "
+            + smallWorldGraph.rewireProbability());
+        return new ArrayList<>();
+    }
+
+    private List<FieldNode> ring(int fieldType, GraphType.Ring ringGraph) {
+        // TODO
+        System.out.println("nodes = " + ringGraph.nodes());
+        return new ArrayList<>();
+    }
+
+    private List<FieldNode> tube(int fieldType, GraphType.Tube tubeGrpah) {
+        // TODO
+        System.out.println("ringNodes = " + tubeGrpah.ringNodes() + " depth = " + tubeGrpah.depth());
+        return new ArrayList<>();
+    }
+
+    private List<FieldNode> layeredGrid(int fieldType, GraphType.LayeredGrid layeredGridGraph) {
+        // TODO
+        System.out.println("width = " + layeredGridGraph.width() + " height = " + layeredGridGraph.height() + " layers = " + layeredGridGraph.layers());
+        return new ArrayList<>();
     }
 
     @Override
@@ -142,7 +233,6 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldNetwork 
         builder.append("\t style = filled;\n");
         builder.append("\t color = lightgrey;\n");
         builder.append("\t anchor_associative [shape=point, style=invis, label=\"\", width=0, height=0];\n");
-
 
         for (int i = 0; i < associativeFields.size(); i++) {
             builder.append("\t" + associativeFields.get(i).id + ";\n");
