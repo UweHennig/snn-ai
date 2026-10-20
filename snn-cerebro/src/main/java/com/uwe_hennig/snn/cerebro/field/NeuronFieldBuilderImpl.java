@@ -3,17 +3,12 @@
 /// All rights reserved.
 package com.uwe_hennig.snn.cerebro.field;
 
-import static com.uwe_hennig.snn.contracts.core.NeuronFieldType.ASSOCIATIVE_FIELD;
-import static com.uwe_hennig.snn.contracts.core.NeuronFieldType.EFFECTOR_FIELD;
-import static com.uwe_hennig.snn.contracts.core.NeuronFieldType.FEEDBACK_FIELD;
-import static com.uwe_hennig.snn.contracts.core.NeuronFieldType.RECEPTOR_FIELD;
-
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 
 import com.uwe_hennig.snn.cerebro.contracts.FieldNetwork;
 import com.uwe_hennig.snn.cerebro.contracts.NeuronFieldBuilder;
+import com.uwe_hennig.snn.contracts.graph.GraphType;
 
 /// NeuronFieldBuilderImpl
 ///
@@ -36,128 +31,63 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldNetwork 
         }
     }
 
-    private int countReceptorFields;
-    private int maxReceptorNeurons;
-    private int countEffectorFields;
-    private int maxEffectorNeurons;
-    private int countFeedbackFields;
-    private int maxFeedbackNeurons;
-    private int countAssociativeFields;
-    private int maxAssociativeNeurons;
-
-    private int receptorOutDegree;
-    private int effectorInDegree;
-    private int associativeInDegree;
-    private int associativeOutDegree;
-    private int feedbackInDegree;
-    private int feedbackOutDegree;
-
-    private int             fieldId = 0;
     private List<FieldNode> receptorFields;
     private List<FieldNode> effectorFields;
     private List<FieldNode> associativeFields;
     private List<FieldNode> feedbackFields;
 
+    private GraphType receptorGraphType;
+    private int       maxReceptorNeurons;
+
+    private GraphType effectorGraphType;
+    private int       maxEffectorNeurons;
+
+    private GraphType feedbackGraphType;
+    private int       maxFeedbackNeurons;
+
+    private GraphType associativeGraphType;
+    private int       maxAssociativeNeurons;
+
     @Override
-    public NeuronFieldBuilder addReceptorFields(int countFields, int maxNeuronCount) {
-        assert countFields >= 1 : "invalid receptor countFields";
+    public NeuronFieldBuilder addReceptorFields(GraphType type, int maxNeuronCount) {
+        assert type != null : "invalid receptor type";
         assert maxNeuronCount >= 1 : "invalid receptor maxNeuronCount";
 
-        this.countReceptorFields = countFields;
+        this.receptorGraphType = type;
         this.maxReceptorNeurons = maxNeuronCount;
 
         return this;
     }
 
     @Override
-    public NeuronFieldBuilder addEffectorFields(int countFields, int maxNeuronCount) {
-        assert countFields >= 1 : "invalid effector countFields";
+    public NeuronFieldBuilder addEffectorFields(GraphType type, int maxNeuronCount) {
+        assert type != null : "invalid effector type";
         assert maxNeuronCount >= 1 : "invalid effector maxNeuronCount";
 
-        this.countEffectorFields = countFields;
+        this.effectorGraphType = type;
         this.maxEffectorNeurons = maxNeuronCount;
 
         return this;
     }
 
     @Override
-    public NeuronFieldBuilder addFeedbackFields(int countFields, int maxNeuronCount) {
-        assert countFields >= 1 : "invalid feedback countFields";
+    public NeuronFieldBuilder addFeedbackFields(GraphType type, int maxNeuronCount) {
+        assert type != null : "invalid feedback type";
         assert maxNeuronCount >= 1 : "invalid feedback maxNeuronCount";
 
-        this.countFeedbackFields = countFields;
+        this.feedbackGraphType = type;
         this.maxFeedbackNeurons = maxNeuronCount;
 
         return this;
     }
 
     @Override
-    public NeuronFieldBuilder addAssociativeFields(int countFields, int maxNeuronCount) {
-        assert countFields >= 1 : "invalid associative countFields";
+    public NeuronFieldBuilder addAssociativeFields(GraphType type, int maxNeuronCount) {
+        assert type != null : "invalid associative type";
         assert maxNeuronCount >= 1 : "invalid associative maxNeuronCount";
 
-        this.countAssociativeFields = countFields;
+        this.associativeGraphType = type;
         this.maxAssociativeNeurons = maxNeuronCount;
-
-        return this;
-    }
-
-    // --- Wire methods ---
-
-    @Override
-    public NeuronFieldBuilder wireReceptors(int outDegree) {
-        assert outDegree >= 1 : "invalid receptor out degree";
-        this.receptorOutDegree = outDegree;
-
-        receptorFields = new ArrayList<>(countReceptorFields);
-        for (int i = 0; i < countReceptorFields; i++) {
-            receptorFields.add(new FieldNode(RECEPTOR_FIELD, fieldId++, EMPTY_ARRAY, new int[outDegree], maxReceptorNeurons));
-        }
-
-        return this;
-    }
-
-    @Override
-    public NeuronFieldBuilder wireEffectors(int inDegree) {
-        assert inDegree >= 1 : "invalid effector in degree";
-        this.effectorInDegree = inDegree;
-
-        effectorFields = new ArrayList<>(countEffectorFields);
-        for (int i = 0; i < countEffectorFields; i++) {
-            effectorFields.add(new FieldNode(EFFECTOR_FIELD, fieldId++, new int[inDegree], EMPTY_ARRAY, maxEffectorNeurons));
-        }
-
-        return this;
-    }
-
-    @Override
-    public NeuronFieldBuilder wireAssociative(int inDegree, int outDegree) {
-        assert inDegree >= 1 : "invalid associative in degree";
-        assert outDegree >= 1 : "invalid associative out degree";
-
-        this.associativeInDegree = inDegree;
-        this.associativeOutDegree = outDegree;
-
-        associativeFields = new ArrayList<>(countAssociativeFields);
-        for (int i = 0; i < countAssociativeFields; i++) {
-            associativeFields.add(new FieldNode(ASSOCIATIVE_FIELD, fieldId++, new int[inDegree], new int[outDegree], maxAssociativeNeurons));
-        }
-
-        return this;
-    }
-
-    @Override
-    public NeuronFieldBuilder wireFeedback(int inDegree, int outDegree) {
-        assert inDegree >= 1 : "invalid feedback in degree";
-        assert outDegree >= 1 : "invalid feedback out degree";
-
-        this.feedbackInDegree = inDegree;
-        this.feedbackOutDegree = outDegree;
-
-        feedbackFields = new ArrayList<>(countFeedbackFields);
-        for (int i = 0; i < countFeedbackFields; i++) {
-            feedbackFields.add(new FieldNode(FEEDBACK_FIELD, fieldId++, new int[inDegree], new int[outDegree], maxFeedbackNeurons));
-        }
 
         return this;
     }
@@ -226,40 +156,17 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldNetwork 
         builder.append("}\n");
 
         // connections
-        builder.append("\t// receptor fields\n");
-        for (int i = 0; i < receptorFields.size(); i++) {
-            for (int j = 0; j < receptorOutDegree; j++) {
-                builder.append("\t" + receptorFields.get(i).id + "->" + receptorFields.get(i).outNeighbours[j] + ";\n");
-            }
-        }
-
-        builder.append("\t// associative fields\n");
-        for (int i = 0; i < associativeFields.size(); i++) {
-            for (int j = 0; j < associativeOutDegree; j++) {
-                builder.append("\t" + associativeFields.get(i).id + "->" + associativeFields.get(i).outNeighbours[j] + ";\n");
-            }
-        }
-
-        builder.append("\t// feedback fields\n");
-        for (int i = 0; i < feedbackFields.size(); i++) {
-            for (int j = 0; j < feedbackOutDegree; j++) {
-                builder.append("\t" + feedbackFields.get(i).id + "->" + feedbackFields.get(i).outNeighbours[j] + ";\n");
-            }
-        }
-
-        builder.append("\t// no out effector fields\n");
+        // TODO
 
         builder.append("}\n");
     }
 
     @Override
     public long totalBytes() {
-        int totalFields = countReceptorFields + countEffectorFields + countFeedbackFields + countAssociativeFields;
-        int totalNeurons = maxReceptorNeurons * countReceptorFields + maxEffectorNeurons * countEffectorFields + maxFeedbackNeurons * countFeedbackFields
-            + maxAssociativeNeurons * countAssociativeFields;
-
-        int totalDegrees = receptorOutDegree * countReceptorFields + effectorInDegree * countEffectorFields + associativeInDegree * countAssociativeFields
-            + associativeOutDegree * countAssociativeFields + feedbackInDegree * countFeedbackFields + feedbackOutDegree * countFeedbackFields;
+        // TODO
+        int totalFields = 0;
+        int totalNeurons = 0;
+        int totalDegrees = 0;
 
         int bytes = 32; // meta info
         bytes += totalFields * 36; // field header
@@ -277,8 +184,7 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldNetwork 
     }
 
     private boolean valid() {
-        return countReceptorFields >= 1 && maxReceptorNeurons >= 1 && countEffectorFields >= 1 && maxEffectorNeurons >= 1 && countFeedbackFields >= 1
-            && maxFeedbackNeurons >= 1 && countAssociativeFields >= 1 && maxAssociativeNeurons >= 1 && receptorOutDegree >= 1 && effectorInDegree >= 1
-            && associativeInDegree >= 1 && associativeOutDegree >= 1 && feedbackInDegree >= 1 && feedbackOutDegree >= 1;
+        // TODO
+        return false;
     }
 }

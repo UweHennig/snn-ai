@@ -5,25 +5,19 @@
  */
 package com.uwe_hennig.snn.cerebro.contracts;
 
+import com.uwe_hennig.snn.contracts.graph.GraphType;
+
 /**
  * NeuronFieldBuilder
- *
  * @author Uwe Hennig
  */
 public interface NeuronFieldBuilder {
-    // 1. Declare fields
-    NeuronFieldBuilder addReceptorFields(int countFields, int maxNeuronCount);
-    NeuronFieldBuilder addEffectorFields(int countFields, int maxNeuronCount);
-    NeuronFieldBuilder addFeedbackFields(int countFields, int maxNeuronCount);
-    NeuronFieldBuilder addAssociativeFields(int countFields, int maxNeuronCount);
+    // Declare structure
+    NeuronFieldBuilder addReceptorFields(GraphType type, int maxNeuronCount);
+    NeuronFieldBuilder addEffectorFields(GraphType type, int maxNeuronCount);
+    NeuronFieldBuilder addFeedbackFields(GraphType type, int maxNeuronCount);
+    NeuronFieldBuilder addAssociativeFields(GraphType type, int maxNeuronCount);
 
-    // 2. Projection rules
-    NeuronFieldBuilder wireReceptors(int outDegree);
-    NeuronFieldBuilder wireEffectors(int inDegree);
-    NeuronFieldBuilder wireAssociative(int inDegree, int outDegree);
-    NeuronFieldBuilder wireFeedback(int inDegree, int outDegree);
-
-    // 3. Transition: Validate
+    // Transition: Validate
     FieldNetwork compile();
-
 }
