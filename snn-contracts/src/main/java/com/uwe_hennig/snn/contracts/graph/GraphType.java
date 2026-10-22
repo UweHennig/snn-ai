@@ -6,18 +6,18 @@ package com.uwe_hennig.snn.contracts.graph;
 /// GraphType
 ///
 /// @author Uwe Hennig
-///
+/// @formatter:off
 public sealed interface GraphType
         permits GraphType.Random, GraphType.Ring, GraphType.LayeredGrid, GraphType.SmallWorld,
                 GraphType.Tube, GraphType.Fractal, GraphType.ScaleFree {
     /// A random graph, but connected
-    record Random(int nodes, int outNeighbours) implements  GraphType {}
+    record Random(int nodes) implements  GraphType {}
 
     /// Simple ring
     record Ring(int nodes) implements  GraphType {}
 
     /// Spinal cord
-    record Tube(int ringNodes, int depth)  implements  GraphType {}
+    record Tube(int nodes, int depth)  implements  GraphType {}
 
     /// not yet definined
     record Fractal(int nodes, int depth) implements  GraphType {}
@@ -31,8 +31,8 @@ public sealed interface GraphType
     /// Watts-Strogatz
     record SmallWorld(int nodes, int neighbours, float rewireProbability) implements GraphType {}
 
-    static GraphType RANDOM(int nodes, int outNeighbours) {
-        return new Random(nodes, outNeighbours);
+    static GraphType RANDOM(int fields, int maxNeurons) {
+        return new Random(fields);
     }
 
     static GraphType RING(int nodes) {
@@ -59,3 +59,4 @@ public sealed interface GraphType
         return new SmallWorld(nodes, neighbours, rewireProbability);
     }
 }
+///  @formatter:on
