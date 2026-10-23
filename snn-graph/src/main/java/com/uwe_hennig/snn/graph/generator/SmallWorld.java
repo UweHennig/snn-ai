@@ -55,6 +55,9 @@ public class SmallWorld {
 
             for (int j : targetsToProcess) {
                 if (random.nextDouble() < exchangePct) {
+                    if (nodes[j].inNeighbours().size() <= 1) {
+                        continue;
+                    }
 
                     int maxLoops = countNodes * 2;
                     int w = 0;
@@ -81,7 +84,21 @@ public class SmallWorld {
             }
         }
 
-        // relative identifier
+        // Step 3: find repair nodes with no inNeighbours
+        for (int k = 0; k < countNodes; k++) {
+            if (nodes[k].inNeighbours().isEmpty()) {
+                // Suche einen zufälligen Spender u, der k als outNeighbour aufnimmt
+                int u;
+                do {
+                    u = random.nextInt(countNodes);
+                } while (u == k || nodes[u].hasOutNeighbour(k));
+
+                nodes[u].addOutNeighbour(k);
+                nodes[k].addInNeighbour(u);
+            }
+        }
+
+        // Step 4: relative identifier
         LinkedHashSet<Node> result = new LinkedHashSet<>();
         for(Node node: nodes) {
             Node newNode = Node.of(type, startId + node.id(), maxNeurons);
