@@ -29,7 +29,7 @@ public sealed interface GraphType
     record ScaleFree(int nodes, int edgesPerNewNode) implements GraphType {}
 
     /// Watts-Strogatz
-    record SmallWorld(int nodes, int neighbours, float rewireProbability) implements GraphType {}
+    record SmallWorld(int nodes, int stepSizeControl, float rewireProbability) implements GraphType {}
 
     static GraphType RANDOM(int fields, int maxNeurons) {
         return new Random(fields);
@@ -55,8 +55,8 @@ public sealed interface GraphType
         return new ScaleFree(nodes, edgesPerNewNode);
     }
 
-    static GraphType SMALL_WORLD(int nodes, int neighbours, float rewireProbability) {
-        return new SmallWorld(nodes, neighbours, rewireProbability);
+    static GraphType SMALL_WORLD(int nodes, int k, float rewireProbability) {
+        return new SmallWorld(nodes, k, rewireProbability);
     }
 }
 ///  @formatter:on

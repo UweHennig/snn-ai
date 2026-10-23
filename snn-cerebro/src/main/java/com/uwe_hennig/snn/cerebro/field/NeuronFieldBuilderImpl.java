@@ -14,30 +14,18 @@ import java.util.Set;
 import com.uwe_hennig.snn.cerebro.contracts.FieldNetwork;
 import com.uwe_hennig.snn.cerebro.contracts.NeuronFieldBuilder;
 import com.uwe_hennig.snn.contracts.graph.GraphType;
+import com.uwe_hennig.snn.graph.generator.contracts.Node;
+import com.uwe_hennig.snn.graph.util.GraphvizPrinter;
 
 /// NeuronFieldBuilderImpl
 ///
 /// @author Uwe Hennig
 ///
 public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldNetwork {
-    private static final int[] EMPTY_ARRAY = new int[0];
-
-    private final record FieldNode(int fieldType, int id, Set<Integer> inNeighbours, Set<Integer> outNeighbours, int maxNeurons) {
-        public FieldNode addInNeighbour(int id) {
-            inNeighbours.add(id);
-            return this;
-        }
-
-        public FieldNode addOutNeighbour(int id) {
-            outNeighbours.add(id);
-            return this;
-        }
-    }
-
-    private Set<FieldNode> receptorFields    = new LinkedHashSet<>();
-    private Set<FieldNode> effectorFields    = new LinkedHashSet<>();
-    private Set<FieldNode> associativeFields = new LinkedHashSet<>();
-    private Set<FieldNode> feedbackFields    = new LinkedHashSet<>();
+    private Set<Node> receptorFields    = new LinkedHashSet<>();
+    private Set<Node> effectorFields    = new LinkedHashSet<>();
+    private Set<Node> associativeFields = new LinkedHashSet<>();
+    private Set<Node> feedbackFields    = new LinkedHashSet<>();
 
     private GraphType receptorGraphType;
     private int       maxReceptorNeurons;
@@ -167,15 +155,15 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldNetwork 
         return this;
     }
 
-    private Set<FieldNode> random(int fieldType, int maxNeurons, GraphType.Random randomGraph) {
+    private Set<Node> random(int fieldType, int maxNeurons, GraphType.Random randomGraph) {
         System.out.println("fields = " + randomGraph.nodes());
-        Set<FieldNode> result = new LinkedHashSet<>();
+        Set<Node> result = new LinkedHashSet<>();
 
-        FieldNode currentNode = null;
-        FieldNode previousNode = null;
+        Node currentNode = null;
+        Node previousNode = null;
 
         for (int i = 0; i < randomGraph.nodes(); i++) {
-            currentNode = new FieldNode(fieldType, fieldId++, new LinkedHashSet<>(), new LinkedHashSet<>(), maxNeurons);
+            currentNode = new Node(fieldType, fieldId++, new LinkedHashSet<>(), new LinkedHashSet<>(), maxNeurons);
             result.add(currentNode);
             if (previousNode != null) {
                 previousNode.addOutNeighbour(currentNode.id());
@@ -191,16 +179,16 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldNetwork 
         return result;
     }
 
-    private Set<FieldNode> ring(int fieldType, int maxNeurons, GraphType.Ring ringGraph) {
+    private Set<Node> ring(int fieldType, int maxNeurons, GraphType.Ring ringGraph) {
         System.out.println("nodes = " + ringGraph.nodes());
-        Set<FieldNode> result = new LinkedHashSet<>();
+        Set<Node> result = new LinkedHashSet<>();
 
-        FieldNode firstNode = null;
-        FieldNode currentNode = null;
-        FieldNode previousNode = null;
+        Node firstNode = null;
+        Node currentNode = null;
+        Node previousNode = null;
 
         for (int i = 0; i < ringGraph.nodes(); i++) {
-            currentNode = new FieldNode(fieldType, fieldId++, new LinkedHashSet<>(), new LinkedHashSet<>(), maxNeurons);
+            currentNode = new Node(fieldType, fieldId++, new LinkedHashSet<>(), new LinkedHashSet<>(), maxNeurons);
             if (i == 0) {
                 firstNode = currentNode;
             }
@@ -222,110 +210,42 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldNetwork 
         return result;
     }
 
-    private Set<FieldNode> fractal(int fieldType, GraphType.Fractal fractalGraph) {
+    private Set<Node> fractal(int fieldType, GraphType.Fractal fractalGraph) {
         // TODO
         System.out.println("nodes = " + fractalGraph.nodes() + "depth = " + fractalGraph.depth());
         return new LinkedHashSet<>();
     }
 
-    private Set<FieldNode> scaleFree(int fieldType, GraphType.ScaleFree scaleFreeGraph) {
+    private Set<Node> scaleFree(int fieldType, GraphType.ScaleFree scaleFreeGraph) {
         // TODO
         System.out.println("nodes = " + scaleFreeGraph.nodes() + " edgesPerNewNode = " + scaleFreeGraph.edgesPerNewNode());
-        Set<FieldNode> result = new LinkedHashSet<>();
+        Set<Node> result = new LinkedHashSet<>();
 
         return result;
     }
 
-    private Set<FieldNode> smallWorld(int fieldType, GraphType.SmallWorld smallWorldGraph) {
+    private Set<Node> smallWorld(int fieldType, GraphType.SmallWorld smallWorldGraph) {
         // TODO
-        System.out.println("nodes = " + smallWorldGraph.nodes() + "neighbours = " + smallWorldGraph.neighbours() + " rewireProbability = "
+        System.out.println("nodes = " + smallWorldGraph.nodes() + "stepSizeControl  = " + smallWorldGraph.stepSizeControl () + " rewireProbability = "
             + smallWorldGraph.rewireProbability());
-        Set<FieldNode> result = new LinkedHashSet<>();
+        Set<Node> result = new LinkedHashSet<>();
         return result;
     }
 
-    private Set<FieldNode> tube(int fieldType, GraphType.Tube tubeGrpah) {
+    private Set<Node> tube(int fieldType, GraphType.Tube tubeGrpah) {
         // TODO
         System.out.println("ringNodes = " + tubeGrpah.nodes() + " depth = " + tubeGrpah.depth());
-        Set<FieldNode> result = new LinkedHashSet<>();
+        Set<Node> result = new LinkedHashSet<>();
         return result;
     }
 
-    private Set<FieldNode> layeredGrid(int fieldType, GraphType.LayeredGrid layeredGridGraph) {
+    private Set<Node> layeredGrid(int fieldType, GraphType.LayeredGrid layeredGridGraph) {
         // TODO
         System.out.println("width = " + layeredGridGraph.width() + " height = " + layeredGridGraph.height() + " layers = " + layeredGridGraph.layers());
-        Set<FieldNode> result = new LinkedHashSet<>();
+        Set<Node> result = new LinkedHashSet<>();
         return result;
     }
 
-    @Override
-    public String toDot(String comment) {
-        StringBuilder builder = new StringBuilder();
-        builder.append("digraph SNN {\n");
-        builder.append("// " + comment + "\n");
-        builder.append(" compound=true;\n");
-        builder.append(" node [shape=none];\n");
-        builder.append(" edge [arrowhead=empty, color=red];\n");
-        builder.append(" layout = dot;\n");
-
-        builder.append(" subgraph cluster_receptor {\n");
-        builder.append("\t label = \"receptor\";\n");
-        builder.append("\t style = filled;\n");
-        builder.append("\t color = lightgrey;\n");
-        builder.append("\t anchor_receptor [shape=point, style=invis, label=\"\", width=0, height=0];\n");
-
-        for (FieldNode node : receptorFields) {
-            builder.append(node.id() + ";\n");
-        }
-        builder.append(" }\n");
-
-        builder.append(" subgraph cluster_associative {\n");
-        builder.append("\t label = \"associative\";\n");
-        builder.append("\t style = filled;\n");
-        builder.append("\t color = lightgrey;\n");
-        builder.append("\t anchor_associative [shape=point, style=invis, label=\"\", width=0, height=0];\n");
-
-        for (FieldNode node : associativeFields) {
-            builder.append(node.id() + ";\n");
-        }
-        builder.append(" }\n");
-
-        builder.append(" subgraph cluster_feedback {\n");
-        builder.append("\t label = \"feedback\";\n");
-        builder.append("\t style = filled;\n");
-        builder.append("\t color = lightgrey;\n");
-        builder.append("\t anchor_feedback [shape=point, style=invis, label=\"\", width=0, height=0];\n");
-
-        for (FieldNode node : feedbackFields) {
-            builder.append(node.id() + ";\n");
-        }
-        builder.append(" }\n");
-
-        builder.append(" subgraph cluster_effector {\n");
-        builder.append("\t label = \"effector\";\n");
-        builder.append("\t style = filled;\n");
-        builder.append("\t color = lightgrey;\n");
-        builder.append("\t anchor_effector [shape=point, style=invis, label=\"\", width=0, height=0];\n");
-
-        for (FieldNode node : effectorFields) {
-            builder.append(node.id() + ";\n");
-        }
-        builder.append(" }\n");
-
-        // connect subgraphs
-        builder.append(" anchor_receptor:s    -> anchor_associative:n [ltail=cluster_receptor, lhead=cluster_associative, color=blue];\n");
-        builder.append(" anchor_associative:s ->  anchor_effector:n   [ltail=cluster_associative, lhead=cluster_effector, color=blue];\n");
-        builder.append(" anchor_feedback:s    -> anchor_receptor:n    [ltail=cluster_feedback, lhead=cluster_receptor, color=blue];\n");
-        builder.append(" anchor_feedback:s    -> anchor_associative:n [ltail=cluster_feedback, lhead=cluster_associative, color=blue];\n");
-        builder.append(" anchor_feedback:s    -> anchor_effector:n    [ltail=cluster_feedback, lhead=cluster_effector, color=blue];\n");
-
-        // connections
-        // TODO
-
-        builder.append("}\n");
-
-        return builder.toString();
-    }
 
     @Override
     public long totalBytes() {
@@ -354,8 +274,8 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldNetwork 
         return false;
     }
 
-    public static void main(String[] args) {
-        NeuronFieldBuilderImpl nb = new NeuronFieldBuilderImpl();
-        System.out.println(nb.toDot("test"));
+    @Override
+    public String toDot(String comment) {
+        return GraphvizPrinter.toDot(comment, receptorFields, effectorFields, associativeFields, feedbackFields);
     }
 }

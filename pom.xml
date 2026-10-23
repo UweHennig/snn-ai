@@ -53,12 +53,12 @@
                 <artifactId>snn-peripheral</artifactId>
                 <version>${snn-version}</version>
             </dependency>        
-<!--        <dependency>
+            <dependency>
                 <groupId>com.uwe-hennig</groupId>
                 <artifactId>snn-graph</artifactId>
                 <version>${snn-version}</version>
             </dependency>        
--->            <dependency>
+            <dependency>
                 <groupId>com.uwe-hennig</groupId>
                 <artifactId>snn-learning</artifactId>
                 <version>${snn-version}</version>
@@ -108,8 +108,8 @@
         <module>snn-util</module>
         <!-- TODO enable this after refactoring
         <module>snn-analytics</module>
-        <module>snn-graph</module>
         -->
+        <module>snn-graph</module>
 	</modules>
 	
     <build>

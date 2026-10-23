@@ -11,15 +11,11 @@
     <artifactId>snn-graph</artifactId>
     <packaging>jar</packaging>
     <name>Snn-Graph</name>
-    <description>Cerebro</description>
+    <description>Graph Utilities</description>
     <dependencies>
         <dependency>
             <groupId>com.uwe-hennig</groupId>
             <artifactId>snn-contracts</artifactId>
-        </dependency>        
-        <dependency>
-            <groupId>com.uwe-hennig</groupId>
-            <artifactId>snn-util</artifactId>
         </dependency>        
         <!-- Source: https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api -->
         <dependency>

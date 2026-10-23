@@ -25,11 +25,11 @@
             <groupId>com.uwe-hennig</groupId>
             <artifactId>snn-system</artifactId>
         </dependency>           
-<!--    <dependency>
+        <dependency>
             <groupId>com.uwe-hennig</groupId>
             <artifactId>snn-graph</artifactId>
         </dependency>           
--->        <!-- Source: https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api -->
+        <!-- Source: https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
