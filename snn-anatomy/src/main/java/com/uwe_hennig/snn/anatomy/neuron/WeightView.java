@@ -32,7 +32,7 @@ public final class WeightView {
         float preSynapticTime = model.getPreSynapticTime(offset);
         float postSynapticTime = model.getPostSynapticTime(offset);
 
-        float dt = Math.max(postSynapticTime - preSynapticTime, 0);
+        float dt = postSynapticTime - preSynapticTime;
         float deltaWeight = deltaWeight(model, offset, deltaTimeFeedback) + deltaHebbWeight(model, offset, deltaTimeFeedback, dt);
 
         float weight = Math.clamp(deltaWeight + model.getWeight(offset), 0f, 1f);
@@ -62,9 +62,11 @@ public final class WeightView {
 
     static float deltaHebbWeight(WeightModel model, int offset, float deltaTimeFeedback, float dt) {
         float hebbTimeRange = model.getHebbTimeRange(offset);
-        if (dt >= hebbTimeRange || hebbTimeRange == 0) {
+
+        if (dt <= 0 || dt >= hebbTimeRange || hebbTimeRange == 0) {
             return 0.0f;
         }
+
         float proximity = 1f - (dt / hebbTimeRange);
         float hebbScale = model.getHebbScale(offset);
 

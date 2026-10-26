@@ -3,6 +3,7 @@
 /// All rights reserved.
 package com.uwe_hennig.snn.graph.genrator;
 
+import static com.uwe_hennig.snn.graph.generator.contracts.IdGenerator.ID_GENERATOR;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -28,7 +29,8 @@ public class SmallWorldTest {
     @Test
     public void testSimpleWorldGraph() {
         try {
-            Set<Node> smallWorld = SmallWorld.generateGraph(55, NOT_REQUIRED, NOT_REQUIRED, 10, 2, 0.3f);
+            Set<Node> smallWorld = SmallWorld.generateGraph(ID_GENERATOR, NOT_REQUIRED, 10, 3, 0.3);
+
             assertNotNull(smallWorld, "SmalWorld returns null!");
             assertFalse(smallWorld.isEmpty(), "No samall world data generated!");
             for (Node node: smallWorld) {

@@ -77,6 +77,7 @@ public class GraphvizPrinter {
         builder.append(" anchor_feedback:s    -> anchor_effector:n    [ltail=cluster_feedback, lhead=cluster_effector, color=blue];\n");
 
         // connections
+        builder.append("// out neighbours\n");
         for(Node node: receptorFields) {
             for (int target: node.outNeighbours()) {
                 builder.append(node.id()).append(" -> ").append(target).append(";\n");
@@ -94,6 +95,28 @@ public class GraphvizPrinter {
         }
         for(Node node: feedbackFields) {
             for (int target: node.outNeighbours()) {
+                builder.append(node.id()).append(" -> ").append(target).append(";\n");
+            }
+        }
+
+        builder.append("// in neighbours\n");
+        for(Node node: receptorFields) {
+            for (int target: node.inNeighbours()) {
+                builder.append(node.id()).append(" -> ").append(target).append(";\n");
+            }
+        }
+        for(Node node: effectorFields) {
+            for (int target: node.inNeighbours()) {
+                builder.append(node.id()).append(" -> ").append(target).append(";\n");
+            }
+        }
+        for(Node node: associativeFields) {
+            for (int target: node.inNeighbours()) {
+                builder.append(node.id()).append(" -> ").append(target).append(";\n");
+            }
+        }
+        for(Node node: feedbackFields) {
+            for (int target: node.inNeighbours()) {
                 builder.append(node.id()).append(" -> ").append(target).append(";\n");
             }
         }

@@ -4,11 +4,13 @@
 package com.uwe_hennig.snn.graph.generator;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import com.uwe_hennig.snn.graph.generator.contracts.IdGenerator;
 import com.uwe_hennig.snn.graph.generator.contracts.Node;
 
 /// SmallWorld WattsStrogatz
@@ -16,26 +18,26 @@ import com.uwe_hennig.snn.graph.generator.contracts.Node;
 /// @author Uwe Hennig
 ///
 public class SmallWorld {
-    public static Set<Node> generateGraph(int startId, int type, int maxNeurons, int countNodes, int stepSizeControl, double exchangePct) {
+    public static Set<Node> generateGraph(IdGenerator idGen, int type, int countNodes, int stepSizeControl, double exchangePct) {
         if (countNodes < 3) {
             throw new IllegalArgumentException("Count nodes must be greater than or equal to 3!");
         }
 
-        if (stepSizeControl > countNodes / 2) {
-            throw new IllegalArgumentException("stepSizeControl must be less than half the number of nodes!");
+        if (stepSizeControl < 1 || stepSizeControl > countNodes / 2) {
+            throw new IllegalArgumentException("stepSizeControl must be between 1 and countNodes / 2!");
         }
 
         Node[] nodes = new Node[countNodes];
         for (int i = 0; i < countNodes; i++) {
-            nodes[i] = new Node(type, i, new LinkedHashSet<>(), new LinkedHashSet<>(), maxNeurons);
+            nodes[i] = new Node(idGen.apply(), type, new LinkedHashSet<>(), new LinkedHashSet<>());
         }
 
         // Step 1: initial ring
         for (int i = 0; i < countNodes; i++) {
             for (int step = 1; step <= stepSizeControl; step++) {
                 int j = (i + step) % countNodes;
-                nodes[i].addOutNeighbour(j);
-                nodes[j].addInNeighbour(i);
+                nodes[i].addOutNeighbour(nodes[j].id());
+                nodes[j].addInNeighbour(nodes[i].id());
             }
         }
 
@@ -74,42 +76,16 @@ public class SmallWorld {
                     }
 
                     if (found) {
-                        nodes[i].removeOutNeighbour(j);
-                        nodes[j].removeInNeighbour(i);
+                        nodes[i].removeOutNeighbour(nodes[j].id());
+                        nodes[j].removeInNeighbour(nodes[i].id());
 
-                        nodes[i].addOutNeighbour(w);
-                        nodes[w].addInNeighbour(i);
+                        nodes[i].addOutNeighbour(nodes[w].id());
+                        nodes[w].addInNeighbour(nodes[i].id());
                     }
                 }
             }
         }
 
-        // Step 3: find repair nodes with no inNeighbours
-        for (int k = 0; k < countNodes; k++) {
-            if (nodes[k].inNeighbours().isEmpty()) {
-                // Suche einen zufälligen Spender u, der k als outNeighbour aufnimmt
-                int u;
-                do {
-                    u = random.nextInt(countNodes);
-                } while (u == k || nodes[u].hasOutNeighbour(k));
-
-                nodes[u].addOutNeighbour(k);
-                nodes[k].addInNeighbour(u);
-            }
-        }
-
-        // Step 4: relative identifier
-        LinkedHashSet<Node> result = new LinkedHashSet<>();
-        for(Node node: nodes) {
-            Node newNode = Node.of(type, startId + node.id(), maxNeurons);
-            for (Integer id : node.outNeighbours()) {
-                newNode.addOutNeighbour(startId + id);
-            }
-            for (Integer id : node.inNeighbours()) {
-                newNode.addInNeighbour(startId + id);
-            }
-            result.add(newNode);
-        }
-        return result;
+        return new LinkedHashSet<>(Arrays.asList(nodes));
     }
 }

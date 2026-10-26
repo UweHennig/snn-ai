@@ -10,10 +10,10 @@ import java.util.Set;
 ///
 /// @author Uwe Hennig
 ///
-public record Node(int fieldType, int id, Set<Integer> inNeighbours, Set<Integer> outNeighbours, int maxNeurons) {
+public record Node(int id, int nodeType,  Set<Integer> inNeighbours, Set<Integer> outNeighbours) {
 
     public static Node of(int fieldType, int id, int maxNeurons) {
-        return new Node(fieldType, id, new LinkedHashSet<Integer>(), new LinkedHashSet<Integer>(), maxNeurons);
+        return new Node(fieldType, id, new LinkedHashSet<Integer>(), new LinkedHashSet<Integer>());
     }
 
     public Node addInNeighbour(int id) {

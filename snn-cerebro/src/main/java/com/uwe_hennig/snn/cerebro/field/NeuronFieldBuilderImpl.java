@@ -14,6 +14,7 @@ import java.util.Set;
 import com.uwe_hennig.snn.cerebro.contracts.FieldNetwork;
 import com.uwe_hennig.snn.cerebro.contracts.NeuronFieldBuilder;
 import com.uwe_hennig.snn.contracts.graph.GraphType;
+import com.uwe_hennig.snn.graph.generator.contracts.IdGenerator;
 import com.uwe_hennig.snn.graph.generator.contracts.Node;
 import com.uwe_hennig.snn.graph.util.GraphvizPrinter;
 
@@ -42,7 +43,7 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldNetwork 
     private int       maxAssociativeNeurons;
     private int       associativeEffectorEdges;
 
-    private int fieldId = 0;
+    private IdGenerator idGen = IdGenerator.ID_GENERATOR;
 
     @Override
     public NeuronFieldBuilder addReceptorFields(GraphType type, int effectorAssociativeEdges, int maxNeuronCount) {
@@ -163,7 +164,7 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldNetwork 
         Node previousNode = null;
 
         for (int i = 0; i < randomGraph.nodes(); i++) {
-            currentNode = new Node(fieldType, fieldId++, new LinkedHashSet<>(), new LinkedHashSet<>(), maxNeurons);
+            currentNode = new Node(idGen.apply(), fieldType, new LinkedHashSet<>(), new LinkedHashSet<>());
             result.add(currentNode);
             if (previousNode != null) {
                 previousNode.addOutNeighbour(currentNode.id());
@@ -188,7 +189,7 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldNetwork 
         Node previousNode = null;
 
         for (int i = 0; i < ringGraph.nodes(); i++) {
-            currentNode = new Node(fieldType, fieldId++, new LinkedHashSet<>(), new LinkedHashSet<>(), maxNeurons);
+            currentNode = new Node(idGen.apply(), fieldType, new LinkedHashSet<>(), new LinkedHashSet<>());
             if (i == 0) {
                 firstNode = currentNode;
             }
