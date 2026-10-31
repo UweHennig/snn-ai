@@ -22,18 +22,12 @@ import java.nio.file.StandardOpenOption;
 /// │ Entry 0                         │
 /// │  32: lock             : int     │
 /// │  36: fieldId          : int     │
-/// │  40: dendritRef       : int     │
-/// │  44: somaId           : int     │
-/// │  48: axonId           : int     │
-/// │  52: synapseRef       : int     │
+/// │  40: attraction       : float   │
 /// ├─────────────────────────────────┤
 /// │ Entry 1                         │
-/// │  56: lock             : int     │
-/// │  60: fieldId          : int     │
-/// │  64: dendritRef       : int     │
-/// │  68: somaId           : int     │
-/// │  72: axonId           : int     │
-/// │  76: synapseRef       : int     │
+/// │  44: lock             : int     │
+/// │  48: fieldId          : int     │
+/// │  52: attraction       : float   │
 /// ├─────────────────────────────────┤
 /// │ ...                             │
 /// └─────────────────────────────────┘
@@ -44,7 +38,7 @@ import java.nio.file.StandardOpenOption;
 public final class NeuronModel extends MetaDataAccessor {
     static final int MAGIC      = ('N' << 24) | ('M' << 16) | ('_' << 8) | '1';
     static final int VALUE_SIZE = 4;
-    static final int ENTRY_SIZE = 24;
+    static final int ENTRY_SIZE = 12;
     static final int LOCK_SIZE  = 4;
 
     final Arena         arena;
@@ -140,35 +134,12 @@ public final class NeuronModel extends MetaDataAccessor {
         segment.set(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 0L, value);
     }
 
-    int getDendritRef(int offset) {
-        return segment.get(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 4L);
+    float getAttraction(int offset) {
+        return segment.get(ValueLayout.JAVA_FLOAT, offset + LOCK_SIZE + 4L);
     }
 
-    void setDendritRef(int offset, int value) {
-        segment.set(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 4L, value);
+    void setAttraction(int offset, float value) {
+        segment.set(ValueLayout.JAVA_FLOAT, offset + LOCK_SIZE + 4L, value);
     }
 
-    int getSomaId(int offset) {
-        return segment.get(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 8L);
-    }
-
-    void setSomaId(int offset, int value) {
-        segment.set(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 8L, value);
-    }
-
-    int getAxonId(int offset) {
-        return segment.get(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 12L);
-    }
-
-    void setAxonId(int offset, int value) {
-        segment.set(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 12L, value);
-    }
-
-    int getSynapseRef(int offset) {
-        return segment.get(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 16L);
-    }
-
-    void setSynapseRef(int offset, int value) {
-        segment.set(ValueLayout.JAVA_INT, offset + LOCK_SIZE + 16L, value);
-    }
 }

@@ -22,10 +22,6 @@ import com.uwe_hennig.snn.contracts.core.SnnFieldVisitor;
  * @author Uwe Hennig
  */
 public class NeuronField {
-    public static final int IN     = 1 << 0;
-    public static final int OUT    = 1 << 1;
-    public static final int IN_OUT = IN | OUT;
-
     private NeuronField() {
     }
 
@@ -39,33 +35,24 @@ public class NeuronField {
         queue.add(startFieldId);
 
         while (!queue.isEmpty()) {
-            int currentField = queue.poll();
+            int currentFieldId = queue.poll();
 
-            if (visited.add(currentField)) {
-                if (visitor.visit(currentField)) {
+            if (visited.add(currentFieldId)) {
+                if (visitor.visit(currentFieldId)) {
                     return;
                 }
 
-                if ((mode & OUT) > 0) {
-                    int[] out = NeuronFieldView.getOutNeighbours(model, currentField);
-                    for (int id : out) {
-                        queue.add(id);
-                    }
-                }
-
-                if ((mode & IN) > 0) {
-                    int[] in = NeuronFieldView.getInNeighbours(model, currentField);
-                    for (int id : in) {
-                        queue.add(id);
-                    }
+                int[] allFields = NeuronFieldView.getNeighbours(model, currentFieldId);
+                for (int fieldId : allFields) {
+                    queue.add(fieldId);
                 }
             }
         }
     }
 
-    public static void forEachField(Consumer<Integer> visitor) {
+    public static void forEachField(int fieldId, Consumer<Integer> visitor) {
         NeuronFieldModel model = NeuronFieldModelManager.instance().getModel();
-        int[] allFields = NeuronFieldView.getAllFieldIds(model);
+        int[] allFields = NeuronFieldView.getNeighbours(model, fieldId);
         for (int i = 0; i < allFields.length; i++) {
             visitor.accept(allFields[i]);
         }

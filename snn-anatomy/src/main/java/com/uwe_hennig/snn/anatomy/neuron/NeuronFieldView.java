@@ -11,36 +11,22 @@ public class NeuronFieldView {
     private NeuronFieldView() {
     }
 
-    public static void addNeuron(NeuronFieldModel model, int offset, int neuronId) {
-        model.addInField(offset, neuronId);
+    public static int [] getNeighbours(NeuronFieldModel model, int offset) {
+        return model.getNeigbours(offset);
     }
 
-    public static void addInNeighbour(NeuronFieldModel model, int offset, int inNeighbour) {
-        model.addInField(offset, inNeighbour);
+    public static void addNeighbour(NeuronFieldModel model, int offset, int identifier) {
+        int numNumNeighbours = model.getNumNeighbours(offset);
+        model.setNumNeighbours(offset, numNumNeighbours + 1);
+        model.setFieldId(offset, numNumNeighbours, identifier);
     }
 
-    public static void addOutNeigbour(NeuronFieldModel model, int offset, int outNeigbour) {
-        model.addOutField(offset, outNeigbour);
+    public static int getType(NeuronFieldModel model, int offset) {
+        return model.getFieldType(offset);
     }
 
-    public static void setFieldType(NeuronFieldModel model, int offset, int type) {
+    public static void setType(NeuronFieldModel model, int offset, int type) {
         model.setFieldType(offset, type);
-    }
-
-    public static int [] getAllFieldIds(NeuronFieldModel model) {
-        return model.getFieldOffsets();
-    }
-
-    public static int [] getNeuronIds(NeuronFieldModel model, int offset) {
-        return model.getNeuronIds(offset);
-    }
-
-    public static int [] getInNeighbours(NeuronFieldModel model, int offset) {
-        return model.getInFields(offset);
-    }
-
-    public static int [] getOutNeighbours(NeuronFieldModel model, int offset) {
-        return model.getOutFields(offset);
     }
 
 }

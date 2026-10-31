@@ -39,8 +39,8 @@ public final class NeuronFieldModelManager {
         return INSTANCE;
     }
 
-    public int claimField(int maxNeurons, int maxOutNeighbours, int maxInNeighbours, int maxData) {
-        return NeuronFieldModel.calculateSize(maxNeurons, maxOutNeighbours, maxInNeighbours, maxData);
+    public int claimField() {
+        return model.claimField();
     }
 
     public NeuronFieldModel getModel() {
