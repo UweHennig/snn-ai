@@ -3,6 +3,7 @@
 /// All rights reserved.
 package com.uwe_hennig.snn.cerebro.contracts;
 
+import java.util.List;
 import java.util.Optional;
 
 import com.uwe_hennig.snn.cerebro.field.NeuronField;
@@ -15,8 +16,11 @@ public interface FieldCompileResult {
     String toDot(String comment);
     long totalBytes();
 
+    int maxEdges();
+    int numNodes();
+
     boolean isSuccess();
-    String getErrorMessage();
+    List<String> getErrorMessage();
 
     Optional<NeuronField> build();
 }

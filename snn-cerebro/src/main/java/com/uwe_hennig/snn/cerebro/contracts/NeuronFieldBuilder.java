@@ -9,10 +9,15 @@ package com.uwe_hennig.snn.cerebro.contracts;
 /// @author Uwe Hennig
 ///
 public interface NeuronFieldBuilder {
-    NeuronFieldBuilder withReceptorFields(int numFiedlds, int edges, double probability);
-    NeuronFieldBuilder withAssociativeFields(int numFiedlds, int edges, double probability);
-    NeuronFieldBuilder withEffectorFields(int numFiedlds, int edges, double probability);
-    NeuronFieldBuilder withFeedbackFields(int numFiedlds, int edges, double probability);
+    NeuronFieldBuilder withReceptorFields(int numFiedlds, int edges, float probability);
+    NeuronFieldBuilder withAssociativeFields(int numFiedlds, int edges, float probability);
+    NeuronFieldBuilder withEffectorFields(int numFiedlds, int edges, float probability);
+    NeuronFieldBuilder withFeedbackFields(int numFiedlds, int edges, float probability);
+
+    NeuronFieldBuilder connectReceptorFields(int edges);
+    NeuronFieldBuilder connectAssociativeFields(int edges);
+    NeuronFieldBuilder connectEffectorFields(int edges);
+    NeuronFieldBuilder connectFeedbackFields(int edges);
 
     FieldCompileResult compile();
 }
