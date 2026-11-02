@@ -20,15 +20,15 @@ public final class NeuronFieldModelManager {
 
     private NeuronFieldModel model;
 
-    private NeuronFieldModelManager(int size) {
-        model = new NeuronFieldModel(size);
+    private NeuronFieldModelManager(int numFields, int maxEdges) {
+        model = new NeuronFieldModel(numFields, maxEdges);
     }
 
-    public static NeuronFieldModelManager init(int size) {
+    public static NeuronFieldModelManager init(int maxNodes, int maxEdges) {
         if (INSTANCE == null) {
             synchronized (NeuronFieldModelManager.class) {
                 if (INSTANCE == null) {
-                    INSTANCE = new NeuronFieldModelManager(size);
+                    INSTANCE = new NeuronFieldModelManager(maxNodes, maxEdges);
                 }
             }
         }

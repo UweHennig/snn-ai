@@ -12,13 +12,11 @@ public class NeuronFieldView {
     }
 
     public static int [] getNeighbours(NeuronFieldModel model, int offset) {
-        return model.getNeigbours(offset);
+        return model.getNeighbours(offset);
     }
 
     public static void addNeighbour(NeuronFieldModel model, int offset, int identifier) {
-        int numNumNeighbours = model.getNumNeighbours(offset);
-        model.setNumNeighbours(offset, numNumNeighbours + 1);
-        model.setFieldId(offset, numNumNeighbours, identifier);
+        model.addNeighbourId(offset, identifier);
     }
 
     public static int getType(NeuronFieldModel model, int offset) {

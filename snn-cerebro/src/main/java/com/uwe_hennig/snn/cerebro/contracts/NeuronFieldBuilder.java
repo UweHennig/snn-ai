@@ -1,23 +1,18 @@
-/**
- * @(#)NeuronFieldBuilder.java
- * Copyright (c) 2026 Uwe Hennig
- * All rights reserved.
- */
+/// @(#)NeuronFieldBuilder.java
+/// Copyright (c) 2026 Uwe Hennig
+/// All rights reserved.
 package com.uwe_hennig.snn.cerebro.contracts;
 
-import com.uwe_hennig.snn.contracts.graph.GraphType;
-
-/**
- * NeuronFieldBuilder
- * @author Uwe Hennig
- */
+/// NeuronFieldBuilder
+/// uses Small World by Watts-Strogatz
+///
+/// @author Uwe Hennig
+///
 public interface NeuronFieldBuilder {
-    // Declare structure
-    NeuronFieldBuilder addReceptorFields(GraphType type, int associativeEdges, int maxNeuronCount);
-    NeuronFieldBuilder addAssociativeFields(GraphType type, int effectorEdges, int maxNeuronCount);
-    NeuronFieldBuilder addEffectorFields(GraphType type, int maxNeuronCount);
-    NeuronFieldBuilder addFeedbackFields(GraphType type, int groupEdges, int maxNeuronCount);
+    NeuronFieldBuilder withReceptorFields(int numFiedlds, int edges, double probability);
+    NeuronFieldBuilder withAssociativeFields(int numFiedlds, int edges, double probability);
+    NeuronFieldBuilder withEffectorFields(int numFiedlds, int edges, double probability);
+    NeuronFieldBuilder withFeedbackFields(int numFiedlds, int edges, double probability);
 
-    // Transition: Validate
-    FieldNetwork compile();
+    FieldCompileResult compile();
 }

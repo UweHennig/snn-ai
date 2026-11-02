@@ -63,6 +63,8 @@ import java.lang.foreign.ValueLayout;
 /// ````
 ///
 /// @author Uwe Hennig
+///
+/// TODO renaming BufferedTransmissionLine/TransmissionLineModel/TransmissionModel
 public final class BufferedTransferModel {
     static final int   MAGIC       = 0x42545331; // BTS
     static final int   VALUE_SIZE  = 4;
