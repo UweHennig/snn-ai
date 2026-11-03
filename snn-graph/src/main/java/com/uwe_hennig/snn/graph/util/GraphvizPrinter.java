@@ -16,7 +16,7 @@ public class GraphvizPrinter {
     }
 
     public static String toDot(String comment,
-        List<Node> receptorFields, List<Node> effectorFields, List<Node> associativeFields, List<Node> feedbackFields) {
+        List<Node> receptorFields, List<Node> associativeFields, List<Node> effectorFields, List<Node> feedbackFields) {
         StringBuilder builder = new StringBuilder();
         builder.append("digraph SNN {\n");
         builder.append("// " + comment + "\n");
@@ -77,7 +77,7 @@ public class GraphvizPrinter {
         builder.append(" anchor_feedback:s    -> anchor_effector:n    [ltail=cluster_feedback, lhead=cluster_effector, color=blue];\n");
 
         // connections
-        builder.append("// out neighbours\n");
+        builder.append("// external neighbours\n");
         for (Node node : receptorFields) {
             for (int target : node.neighbours()) {
                 builder.append(node.id()).append(" -> ").append(target).append(";\n");

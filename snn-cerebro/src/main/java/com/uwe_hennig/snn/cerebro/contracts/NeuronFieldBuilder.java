@@ -14,10 +14,10 @@ public interface NeuronFieldBuilder {
     NeuronFieldBuilder withEffectorFields(int numFiedlds, int edges, float probability);
     NeuronFieldBuilder withFeedbackFields(int numFiedlds, int edges, float probability);
 
-    NeuronFieldBuilder connectReceptorFields(int edges);
-    NeuronFieldBuilder connectAssociativeFields(int edges);
-    NeuronFieldBuilder connectEffectorFields(int edges);
-    NeuronFieldBuilder connectFeedbackFields(int edges);
+    NeuronFieldBuilder connectReceptor(int forwardConnections);
+    NeuronFieldBuilder connectAssociative(int forwardConnections, int backwardsConnections);
+    NeuronFieldBuilder connectEffector(int backwardsConnections);
+    NeuronFieldBuilder connectFeedback(int forwardConnections);
 
     FieldCompileResult compile();
 }

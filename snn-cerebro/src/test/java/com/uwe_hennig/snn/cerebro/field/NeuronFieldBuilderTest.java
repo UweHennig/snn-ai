@@ -31,40 +31,43 @@ public class NeuronFieldBuilderTest {
 
     @Test
     public void compileTest() {
+        final int numReceptorFields = 2;
+        final int numAssociativeFields = 3;
+        final int numEffectorFields = 1;
+        final int numFeedbackFields = 5;
+        final int totalFields = numReceptorFields + numAssociativeFields + numEffectorFields + numFeedbackFields;
+
         NeuronFieldBuilderImpl nfbi = new NeuronFieldBuilderImpl();
-        FieldCompileResult compiled = nfbi.withReceptorFields(1, 0, 0.1f)
-            .connectReceptorFields(2)
-            .withAssociativeFields(2, 2, 1f)
-            .connectAssociativeFields(1)
-            .withEffectorFields(3, 1, 1f)
-            .connectEffectorFields(1)
-            .withFeedbackFields(4, 2, 1f)
-            .connectFeedbackFields(10)
+        FieldCompileResult compiled = nfbi
+            .withReceptorFields(numReceptorFields, 2, 0.1f).connectReceptor(2)
+            .withAssociativeFields(numAssociativeFields, 1, 0.2f).connectAssociative(2, 1)
+            .withEffectorFields(numEffectorFields, 0, 0.3f).connectEffector(1)
+            .withFeedbackFields(numFeedbackFields, 2, 0.4f).connectFeedback(10)
             .compile();
 
-        assertTrue(compiled.isSuccess(), "invalad field compilations");
+        if (!compiled.isSuccess()) {
+            System.out.println(compiled.getErrorMessage());
+            assertTrue(compiled.isSuccess(), "invalad field compilations");
+        }
+        System.out.println("fields = " + compiled.numFields());
+        System.out.println("max neighbours = " + compiled.maxNeighbours());
+        System.out.println("bytes = " + compiled.totalBytes());
 
         String dotString = compiled.toDot("Test");
+
         assertTrue(dotString != null && !dotString.isBlank(), "dto string not generated");
         convertDotStringToPng(dotString, new File(PNG_FILE));
 
-        System.out.println(dotString);
+        assertEquals(totalFields, compiled.numFields(), "invalid number of fields");
 
-        assertEquals(10, compiled.numFields());
-
-        // TODO not yet implemented
-        //        System.out.println(compiled.totalBytes());
-        //        assertTrue(compiled.totalBytes() > 130, "invalid totalBytes");
-        //
-        //        assertEquals(136, compiled.maxNeighbours());
+        assertTrue(compiled.totalBytes() > 100, "invalid totalBytes");
+        assertEquals(10, compiled.maxNeighbours());
     }
 
     public static void convertDotFileToPng(File dotFile, File pngPath) {
         try {
             Parser parser = new Parser();
-            Graphviz.fromGraph(parser.read(dotFile))
-                .render(guru.nidi.graphviz.engine.Format.PNG)
-                .toFile(pngPath);
+            Graphviz.fromGraph(parser.read(dotFile)).render(guru.nidi.graphviz.engine.Format.PNG).toFile(pngPath);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -72,9 +75,7 @@ public class NeuronFieldBuilderTest {
 
     public static void convertDotStringToPng(String dotString, File pngFile) {
         try {
-            Graphviz.fromString(dotString)
-                .render(Format.PNG)
-                .toFile(pngFile);
+            Graphviz.fromString(dotString).render(Format.PNG).toFile(pngFile);
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -4,9 +4,17 @@
 package com.uwe_hennig.snn.cerebro.field;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.uwe_hennig.snn.anatomy.neuron.NeuronFieldModel;
 import com.uwe_hennig.snn.cerebro.contracts.FieldCompileResult;
@@ -16,7 +24,7 @@ import com.uwe_hennig.snn.graph.generator.contracts.IdGenerator;
 import com.uwe_hennig.snn.graph.generator.contracts.Node;
 import com.uwe_hennig.snn.graph.util.GraphvizPrinter;
 
-/// NeuronFieldBuilderImpl
+/// NeuronFieldBuilderImpl Newman- Watts Version
 ///
 /// @author Uwe Hennig
 ///
@@ -41,10 +49,11 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldCompileR
     private float effectorProbability;
     private float feedbackProbability;
 
-    private int receptorAssociativeConnection;
-    private int associativeEffectorConnections;
-    private int effectorAnyConnections;
-    private int feedbackAnyConnections;
+    private int receptorForwardConnections;
+    private int associativeForwardConnections;
+    private int associativeBackwardsConnections;
+    private int effectorBackwardsConnections;
+    private int feedbackForwardConnections;
 
     @Override
     public NeuronFieldBuilder withReceptorFields(int numFiedlds, int edges, float probability) {
@@ -96,41 +105,43 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldCompileR
     }
 
     @Override
-    public NeuronFieldBuilder connectReceptorFields(int edges) {
-        if (edges < 1) {
-            errorMsg.add("At least one receptor field connection required");
+    public NeuronFieldBuilder connectReceptor(int forwardConnections) {
+        if (forwardConnections < 1) {
+            errorMsg.add("At least one receptor field connection is required");
         }
-        this.receptorAssociativeConnection = edges;
+        this.receptorForwardConnections = forwardConnections;
         return this;
     }
 
     @Override
-    public NeuronFieldBuilder connectAssociativeFields(int edges) {
-        if (edges < 1) {
-            errorMsg.add("At least one associative field connection required");
+    public NeuronFieldBuilder connectAssociative(int fowardConnections, int backwardsConnections) {
+        if (fowardConnections < 1 || backwardsConnections < 1) {
+            errorMsg.add("Each direction requires at least one associative connection");
         }
 
-        associativeEffectorConnections = edges;
+        this.associativeForwardConnections = fowardConnections;
+        this.associativeBackwardsConnections = backwardsConnections;
         return this;
 
     }
 
     @Override
-    public NeuronFieldBuilder connectEffectorFields(int edges) {
-        if (edges < 1) {
+    public NeuronFieldBuilder connectEffector(int backwardsConnections) {
+        if (backwardsConnections < 1) {
             errorMsg.add("At least one effector field connection required");
         }
-        effectorAnyConnections = edges;
+        this.effectorBackwardsConnections = backwardsConnections;
         return this;
 
     }
 
     @Override
-    public NeuronFieldBuilder connectFeedbackFields(int edges) {
-        if (edges < 1) {
-            errorMsg.add("At least one feedback field connection required");
+    public NeuronFieldBuilder connectFeedback(int forwardConnections) {
+        if (forwardConnections < 3) {
+            errorMsg.add("At least three feedback connections are required");
         }
-        feedbackAnyConnections = edges;
+        this.feedbackForwardConnections = forwardConnections;
+
         return this;
     }
 
@@ -143,8 +154,64 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldCompileR
         feedbackFields = smallWorld(feedbackFields, feedbackEdges, feedbackProbability);
 
         // TODO connections
+        List<Node> allNodes = Stream.of(receptorFields, associativeFields, effectorFields, feedbackFields).flatMap(List::stream).collect(Collectors.toList());
+
+        connect(receptorFields, List.of(), associativeFields, 0, receptorForwardConnections);
+        connect(associativeFields, receptorFields, effectorFields, associativeBackwardsConnections, associativeForwardConnections);
+        connect(effectorFields, associativeFields, List.of(), effectorBackwardsConnections, 0);
+        connect(feedbackFields, List.of(), allNodes, 0, feedbackForwardConnections);
 
         return this;
+    }
+
+    private void connect(List<Node> srcNodes, List<Node> backwardsNodes, List<Node> forwardNodes, int numBackward, int numForward) {
+        if (srcNodes == null || srcNodes.isEmpty()) {
+            return;
+        }
+
+        Random rand = new Random(System.currentTimeMillis());
+        connectToTargetLayer(srcNodes, backwardsNodes, numBackward, rand);
+        connectToTargetLayer(srcNodes, forwardNodes, numForward, rand);
+    }
+
+    private void connectToTargetLayer(List<Node> srcNodes, List<Node> targetNodes, int requestedCount, Random rand) {
+        if (targetNodes == null || targetNodes.isEmpty() || requestedCount <= 0) {
+            return;
+        }
+
+        int maxPossible = Math.min(requestedCount, targetNodes.size());
+
+        Map<Integer, Integer> usageCount = new HashMap<>();
+        for (Node target : targetNodes) {
+            usageCount.put(target.id(), target.neighbours().size());
+        }
+
+        for (Node src : srcNodes) {
+            Set<Integer> existingNeighbours = new HashSet<>(src.neighbours());
+
+            List<Node> candidates = new ArrayList<>();
+            for (Node target : targetNodes) {
+                if (!existingNeighbours.contains(target.id()) && target.id() != src.id()) {
+                    candidates.add(target);
+                }
+            }
+
+            int toPick = Math.min(maxPossible, candidates.size());
+            if (toPick == 0) {
+                continue;
+            }
+
+            Collections.shuffle(candidates, rand);
+            candidates.sort(Comparator.comparingInt(node -> usageCount.getOrDefault(node.id(), 0)));
+
+            for (int i = 0; i < toPick; i++) {
+                Node chosen = candidates.get(i);
+
+                src.addNeighbour(chosen.id());
+
+                usageCount.put(chosen.id(), usageCount.getOrDefault(chosen.id(), 0) + 1);
+            }
+        }
     }
 
     private boolean validate() {
@@ -248,73 +315,59 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldCompileR
 
     private List<Node> smallWorld(List<Node> nodes, int k, float probability) {
         int n = nodes.size();
-        if (n <= 0) {
-            errorMsg.add("Empty fields found in small world graph!");
+        if (n == 0) {
             return List.of();
         }
         if (n == 1) {
             return nodes;
         }
-        if (n == 2) {
-            nodes.get(0).neighbours().add(nodes.get(1).id());
-            nodes.get(1).neighbours().add(nodes.get(0).id());
-            return nodes;
-        }
 
-        Random rand = new Random();
+        k = Math.min(k, n - 1);
         int halfK = k / 2;
-
-        Node[] tempNodes = new Node[n];
-        for (int i = 0; i < nodes.size(); i++) {
-            tempNodes[i] = new Node(i, nodes.get(i).nodeType(), new ArrayList<>());
+        if (halfK < 1) {
+            halfK = 1;
         }
 
-        // ring
+        List<Set<Integer>> adj = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) {
+            adj.add(new HashSet<>());
+        }
+
         for (int i = 0; i < n; i++) {
             for (int j = 1; j <= halfK; j++) {
                 int target = (i + j) % n;
-                tempNodes[i].neighbours().add(target);
-                tempNodes[target].neighbours().add(i);
+                adj.get(i).add(target);
+                adj.get(target).add(i);
             }
         }
 
-        if (n > 3) {
-            // rewire
-            for (int i = 0; i < n; i++) {
-                for (int j = 1; j <= halfK; j++) {
-                    if (rand.nextFloat() < probability) {
-                        int oldTarget = (i + j) % n;
-
-                        int newTarget;
-                        int retries = 3;
-                        do {
-                            newTarget = rand.nextInt(n);
-                        } while ((newTarget == i || tempNodes[i].neighbours().contains(newTarget)) && retries-- > 0);
-
-                        if (retries > 0) {
-                            tempNodes[i].neighbours().remove(Integer.valueOf(oldTarget));
-                            tempNodes[oldTarget].neighbours().remove(Integer.valueOf(i));
-
-                            tempNodes[i].neighbours().add(newTarget);
-                            tempNodes[newTarget].neighbours().add(i);
-                        }
+        Random rand = new Random();
+        for (int i = 0; i < n; i++) {
+            for (int j = 1; j <= halfK; j++) {
+                if (rand.nextFloat() < probability) {
+                    int newTarget = rand.nextInt(n);
+                    if (newTarget != i && !adj.get(i).contains(newTarget)) {
+                        adj.get(i).add(newTarget);
+                        adj.get(newTarget).add(i);
                     }
                 }
             }
         }
 
+        return buildResult(nodes, adj);
+    }
+
+    private List<Node> buildResult(List<Node> originalNodes, List<Set<Integer>> adj) {
         List<Node> result = new ArrayList<>();
+        int n = originalNodes.size();
+
         for (int i = 0; i < n; i++) {
-            Node currentTmpNode = tempNodes[i];
-            Node resultNode = Node.of(nodes.get(i).id(), nodes.get(i).nodeType());
-            result.add(resultNode);
-
-            for (int neighbourIds : currentTmpNode.neighbours()) {
-                int id = nodes.get(neighbourIds).id();
-                resultNode.neighbours().add(id);
+            Node resNode = Node.of(originalNodes.get(i).id(), originalNodes.get(i).nodeType());
+            for (int neighborIdx : adj.get(i)) {
+                resNode.neighbours().add(originalNodes.get(neighborIdx).id());
             }
+            result.add(resNode);
         }
-
         return result;
     }
 
