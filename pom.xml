@@ -122,8 +122,16 @@
                         <argLine>--enable-final-field-mutation=ALL-UNNAMED</argLine>
                     </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <version>2.4.0</version>
+                <configuration>
+                    <outputDirectory>${project.basedir}</outputDirectory>
+                    <thirdPartyFilename>THIRD-PARTY.txt</thirdPartyFilename>
+                    <sortArtifactByName>true</sortArtifactByName>
+                </configuration>
+            </plugin>
         </plugins>
-    </build>
-
-	
+    </build>	
 </project>
