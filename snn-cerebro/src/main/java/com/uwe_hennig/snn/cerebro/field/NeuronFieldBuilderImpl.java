@@ -8,22 +8,19 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
+import com.uwe_hennig.snn.anatomy.neuron.NeuronFieldModel;
 import com.uwe_hennig.snn.cerebro.contracts.FieldCompileResult;
 import com.uwe_hennig.snn.cerebro.contracts.NeuronFieldBuilder;
 import com.uwe_hennig.snn.contracts.core.NeuronFieldType;
 import com.uwe_hennig.snn.graph.generator.contracts.IdGenerator;
+import com.uwe_hennig.snn.graph.generator.contracts.Node;
+import com.uwe_hennig.snn.graph.util.GraphvizPrinter;
 
 /// NeuronFieldBuilderImpl
 ///
 /// @author Uwe Hennig
 ///
 public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldCompileResult {
-    record Node(int id, int nodeType, List<Integer> neighbours) {
-        public static Node of(int id, int type) {
-            return new Node(id, type, new ArrayList<>());
-        }
-    }
-
     private List<Node> receptorFields    = new ArrayList<>();
     private List<Node> effectorFields    = new ArrayList<>();
     private List<Node> associativeFields = new ArrayList<>();
@@ -43,6 +40,11 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldCompileR
     private float associativeProbability;
     private float effectorProbability;
     private float feedbackProbability;
+
+    private int receptorAssociativeConnection;
+    private int associativeEffectorConnections;
+    private int effectorAnyConnections;
+    private int feedbackAnyConnections;
 
     @Override
     public NeuronFieldBuilder withReceptorFields(int numFiedlds, int edges, float probability) {
@@ -95,27 +97,40 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldCompileR
 
     @Override
     public NeuronFieldBuilder connectReceptorFields(int edges) {
-        // TODO
+        if (edges < 1) {
+            errorMsg.add("At least one receptor field connection required");
+        }
+        this.receptorAssociativeConnection = edges;
         return this;
     }
 
     @Override
     public NeuronFieldBuilder connectAssociativeFields(int edges) {
-        // TODO
+        if (edges < 1) {
+            errorMsg.add("At least one associative field connection required");
+        }
+
+        associativeEffectorConnections = edges;
         return this;
 
     }
 
     @Override
     public NeuronFieldBuilder connectEffectorFields(int edges) {
-        // TODO
+        if (edges < 1) {
+            errorMsg.add("At least one effector field connection required");
+        }
+        effectorAnyConnections = edges;
         return this;
 
     }
 
     @Override
     public NeuronFieldBuilder connectFeedbackFields(int edges) {
-        // TODO
+        if (edges < 1) {
+            errorMsg.add("At least one feedback field connection required");
+        }
+        feedbackAnyConnections = edges;
         return this;
     }
 
@@ -126,6 +141,9 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldCompileR
         associativeFields = smallWorld(associativeFields, associativeEdges, associativeProbability);
         effectorFields = smallWorld(effectorFields, effectorEdges, effectorProbability);
         feedbackFields = smallWorld(feedbackFields, feedbackEdges, feedbackProbability);
+
+        // TODO connections
+
         return this;
     }
 
@@ -155,14 +173,15 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldCompileR
 
     @Override
     public String toDot(String comment) {
-        // TODO Auto-generated method stub class FieldCompileResult
-        return null;
+        return GraphvizPrinter.toDot(comment, receptorFields, associativeFields, effectorFields, feedbackFields);
     }
 
     @Override
     public long totalBytes() {
-        // TODO Auto-generated method stub class FieldCompileResult
-        return 0;
+        int numField = numFields();
+        int maxEdge = maxNeighbours();
+
+        return NeuronFieldModel.calculateSize(numField, maxEdge);
     }
 
     @Override
@@ -184,15 +203,27 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldCompileR
     }
 
     @Override
-    public int maxEdges() {
-        // TODO
-        return 0;
+    public int maxNeighbours() {
+        int max = 0;
+        for (int i = 0; i < receptorFields.size(); i++) {
+            max = Math.max(max, receptorFields.get(i).neighbours().size());
+        }
+        for (int i = 0; i < associativeFields.size(); i++) {
+            max = Math.max(max, associativeFields.get(i).neighbours().size());
+        }
+        for (int i = 0; i < effectorFields.size(); i++) {
+            max = Math.max(max, effectorFields.get(i).neighbours().size());
+        }
+        for (int i = 0; i < feedbackFields.size(); i++) {
+            max = Math.max(max, feedbackFields.get(i).neighbours().size());
+        }
+
+        return max;
     }
 
     @Override
-    public int numNodes() {
-        // TODO
-        return 0;
+    public int numFields() {
+        return receptorFields.size() + associativeFields.size() + effectorFields.size() + feedbackFields.size();
     }
 
     // --- helper ---
@@ -225,8 +256,8 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldCompileR
             return nodes;
         }
         if (n == 2) {
-            nodes.get(0).neighbours.add(nodes.get(1).id);
-            nodes.get(1).neighbours.add(nodes.get(0).id);
+            nodes.get(0).neighbours().add(nodes.get(1).id());
+            nodes.get(1).neighbours().add(nodes.get(0).id());
             return nodes;
         }
 
@@ -235,7 +266,7 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldCompileR
 
         Node[] tempNodes = new Node[n];
         for (int i = 0; i < nodes.size(); i++) {
-            tempNodes[i] = new Node(i, nodes.get(i).nodeType, new ArrayList<>());
+            tempNodes[i] = new Node(i, nodes.get(i).nodeType(), new ArrayList<>());
         }
 
         // ring
@@ -275,12 +306,12 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldCompileR
         List<Node> result = new ArrayList<>();
         for (int i = 0; i < n; i++) {
             Node currentTmpNode = tempNodes[i];
-            Node resultNode = Node.of(nodes.get(i).id, nodes.get(i).nodeType);
+            Node resultNode = Node.of(nodes.get(i).id(), nodes.get(i).nodeType());
             result.add(resultNode);
 
             for (int neighbourIds : currentTmpNode.neighbours()) {
-                int id = nodes.get(neighbourIds).id;
-                resultNode.neighbours.add(id);
+                int id = nodes.get(neighbourIds).id();
+                resultNode.neighbours().add(id);
             }
         }
 
@@ -289,40 +320,5 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldCompileR
 
     private static int even(int n) {
         return (n + 1) & ~1;
-    }
-
-    public static void main(String[] args) {
-        NeuronFieldBuilderImpl nfbi = new NeuronFieldBuilderImpl();
-        nfbi.withReceptorFields(1, 0, 0.1f).withAssociativeFields(2, 2, 1f).withEffectorFields(3, 1, 1f).withFeedbackFields(4, 2, 1f).compile();
-
-        System.out.println("Errors: ");
-        for (int i = 0; i < nfbi.errorMsg.size(); i++) {
-            System.out.println(nfbi.errorMsg.get(i));
-        }
-
-        System.out.println("\nConnections: ");
-        System.out.println("--- receptors ---");
-        for (int i = 0; i < nfbi.receptorFields.size(); i++) {
-            System.out.println(nfbi.receptorFields.get(i));
-        }
-        System.out.println();
-
-        System.out.println("--- associative ---");
-        for (int i = 0; i < nfbi.associativeFields.size(); i++) {
-            System.out.println(nfbi.associativeFields.get(i));
-        }
-        System.out.println();
-
-        System.out.println("--- effectors ---");
-        for (int i = 0; i < nfbi.effectorFields.size(); i++) {
-            System.out.println(nfbi.effectorFields.get(i));
-        }
-        System.out.println();
-
-        System.out.println("--- feedbacks ---");
-        for (int i = 0; i < nfbi.feedbackFields.size(); i++) {
-            System.out.println(nfbi.feedbackFields.get(i));
-        }
-        System.out.println();
     }
 }

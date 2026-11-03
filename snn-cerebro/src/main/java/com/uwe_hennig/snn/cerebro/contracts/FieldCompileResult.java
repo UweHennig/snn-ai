@@ -16,8 +16,8 @@ public interface FieldCompileResult {
     String toDot(String comment);
     long totalBytes();
 
-    int maxEdges();
-    int numNodes();
+    int maxNeighbours();
+    int numFields();
 
     boolean isSuccess();
     List<String> getErrorMessage();
