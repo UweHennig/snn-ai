@@ -24,7 +24,8 @@ import com.uwe_hennig.snn.graph.generator.contracts.IdGenerator;
 import com.uwe_hennig.snn.graph.generator.contracts.Node;
 import com.uwe_hennig.snn.graph.util.GraphvizPrinter;
 
-/// NeuronFieldBuilderImpl Newman- Watts Version
+/// NeuronFieldBuilderImpl
+/// based on Newman- Watts small world graph.
 ///
 /// @author Uwe Hennig
 ///
@@ -141,6 +142,36 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldCompileR
             errorMsg.add("At least three feedback connections are required");
         }
         this.feedbackForwardConnections = forwardConnections;
+
+        return this;
+    }
+
+    @Override
+    public NeuronFieldBuilder reset() {
+        idGen = IdGenerator.sequence(0);
+
+        receptorEdges = 0;
+        associativeEdges = 0;
+        effectorEdges = 0;
+        feedbackEdges = 0;
+
+        receptorProbability = 0.0f;
+        associativeProbability = 0.0f;
+        effectorProbability = 0.0f;
+        feedbackProbability = 0.0f;
+
+        receptorForwardConnections = 0;
+        associativeForwardConnections = 0;
+        associativeBackwardsConnections = 0;
+        effectorBackwardsConnections = 0;
+        feedbackForwardConnections = 0;
+
+        receptorFields.clear();
+        effectorFields.clear();
+        associativeFields.clear();
+        feedbackFields.clear();
+
+        errorMsg.clear();
 
         return this;
     }

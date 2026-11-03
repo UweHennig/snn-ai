@@ -19,5 +19,7 @@ public interface NeuronFieldBuilder {
     NeuronFieldBuilder connectEffector(int backwardsConnections);
     NeuronFieldBuilder connectFeedback(int forwardConnections);
 
+    NeuronFieldBuilder reset();
+
     FieldCompileResult compile();
 }

@@ -54,8 +54,8 @@ public class NeuronFieldBuilderTest {
         System.out.println("bytes = " + compiled.totalBytes());
 
         String dotString = compiled.toDot("Test");
-
         assertTrue(dotString != null && !dotString.isBlank(), "dto string not generated");
+        System.out.println(dotString);
         convertDotStringToPng(dotString, new File(PNG_FILE));
 
         assertEquals(totalFields, compiled.numFields(), "invalid number of fields");
