@@ -6,3 +6,7 @@ bin/
 
 # Maven
 target/
+
+#other
+*.png
+
