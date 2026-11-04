@@ -22,5 +22,6 @@ public interface FieldCompileResult {
     boolean isSuccess();
     List<String> getErrorMessage();
 
-    Optional<NeuronField> build();
+    // returns field id
+    Optional<Integer> build(int fieldBuffer, int neighboursBuffer);
 }

@@ -27,4 +27,11 @@ public class NeuronFieldView {
         model.setFieldType(offset, type);
     }
 
+    public static void setAttraction(NeuronFieldModel model, int offset, float attraction) {
+        model.setAttraction(offset, attraction);
+    }
+
+    public static float getAttraction(NeuronFieldModel model, int offset) {
+        return model.getAttraction(offset);
+    }
 }

@@ -16,7 +16,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.uwe_hennig.snn.anatomy.allocator.NeuronFieldModelManager;
 import com.uwe_hennig.snn.anatomy.neuron.NeuronFieldModel;
+import com.uwe_hennig.snn.anatomy.neuron.NeuronFieldView;
 import com.uwe_hennig.snn.cerebro.contracts.FieldCompileResult;
 import com.uwe_hennig.snn.cerebro.contracts.NeuronFieldBuilder;
 import com.uwe_hennig.snn.contracts.core.NeuronFieldType;
@@ -293,11 +295,32 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldCompileR
     }
 
     @Override
-    public Optional<NeuronField> build() {
+    public Optional<Integer> build(int fieldBuffer, int neighboursBuffer) {
+        assert fieldBuffer >=1 && neighboursBuffer >=1 : "fieldBuffer and neighboursBuffer must be greater than 0";
         if (!isSuccess()) {
             return Optional.empty();
         }
-        return null; // TODO
+
+        List<Node> allNodes = Stream.of(receptorFields, associativeFields, effectorFields, feedbackFields).flatMap(List::stream).collect(Collectors.toList());
+        Map<Integer, Integer> nodeMap = new HashMap<>();
+
+        NeuronFieldModel model = NeuronFieldModelManager.init(allNodes.size() + fieldBuffer, associativeEdges + neighboursBuffer).getModel();
+        for (Node node: allNodes) {
+            int offset = model.claimField();
+            nodeMap.put(node.id(), offset);
+        }
+
+        for (Node node: allNodes) {
+            int currentFieldOffset = nodeMap.get(node.id());
+            NeuronFieldView.setType(model, currentFieldOffset, node.nodeType());
+            NeuronFieldView.setAttraction(model, currentFieldOffset, 0.0f);
+            for (int neighbourId : node.neighbours()) {
+                int neigbourOffset = nodeMap.get(neighbourId);
+                NeuronFieldView.addNeighbour(model, currentFieldOffset, neigbourOffset);
+            }
+        }
+
+        return Optional.of(nodeMap.get(0));
     }
 
     @Override
