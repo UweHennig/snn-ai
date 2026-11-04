@@ -11,6 +11,14 @@ public class NeuronFieldView {
     private NeuronFieldView() {
     }
 
+    public static int getFieldAt(NeuronFieldModel model, int index) {
+        if (index >= model.getEntryCount()) {
+            return -1;
+        }
+
+        return model.getFieldAt(index);
+    }
+
     public static int [] getNeighbours(NeuronFieldModel model, int offset) {
         return model.getNeighbours(offset);
     }

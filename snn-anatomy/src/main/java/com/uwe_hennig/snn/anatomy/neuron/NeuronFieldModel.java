@@ -54,13 +54,13 @@ public final class NeuronFieldModel extends MetaDataAccessor {
 
 
     public NeuronFieldModel(int numFields, int maxEdges) {
-        this.totalSize = calculateSize(numFields, maxEdges);
-        this.arena = Arena.ofShared();
-
-        this.segment = arena.allocate(totalSize);
-        this.lockSupport = new SnnLockSupport(segment);
         this.maxEdges = maxEdges;
         this.fieldSize = FIELD_HEADER_SIZE + maxEdges * VALUE_SIZE;
+        this.totalSize = calculateSize(numFields, maxEdges);
+
+        this.arena = Arena.ofShared();
+        this.segment = arena.allocate(totalSize);
+        this.lockSupport = new SnnLockSupport(segment);
 
         initMeta();
     }
@@ -89,7 +89,7 @@ public final class NeuronFieldModel extends MetaDataAccessor {
     }
 
     public static int calculateSize(int numFields, int numMaxEdges) {
-        return META_SIZE + (FIELD_HEADER_SIZE +  numMaxEdges) * numMaxEdges;
+        return META_SIZE + (FIELD_HEADER_SIZE +  numMaxEdges * VALUE_SIZE) * numFields;
     }
 
     @Override
@@ -102,6 +102,9 @@ public final class NeuronFieldModel extends MetaDataAccessor {
     }
 
     // ----- getter/setter -----
+    int getFieldAt(int index) {
+        return META_SIZE + fieldSize * index;
+    }
 
     int getFieldType(int offset) {
         return segment.get(ValueLayout.JAVA_INT, offset + LOCK_SIZE);
@@ -128,23 +131,22 @@ public final class NeuronFieldModel extends MetaDataAccessor {
         segment.set(ValueLayout.JAVA_FLOAT, offset + LOCK_SIZE + 8L, value);
     }
 
-
     int getNeighbourId(int offset, int position) {
-        assert position >= 0 && position <= maxEdges : "invalid parameter in getFieldId";
+        assert position >= 0 && position < maxEdges : "invalid parameter in getNeighbourId";
         return segment.get(ValueLayout.JAVA_INT, offset + FIELD_HEADER_SIZE + position * 4L);
     }
 
     void setNeighbourId(int offset, int position, int identifier) {
-        assert position >= 0 && position <= maxEdges : "invalid parameter in setFieldId";
+        assert position >= 0 && position < maxEdges : "invalid parameter in setNeighbourId";
         segment.set(ValueLayout.JAVA_INT, offset + FIELD_HEADER_SIZE + position * 4L, identifier);
     }
 
     void addNeighbourId(int offset, int identifier) {
-        int numNeighbours = getNumNeighbours(offset);
-        assert numNeighbours < maxEdges : "invalid parameter in addNeighbourId";
+        int count = getNumNeighbours(offset);
+        assert count + 1 <= maxEdges : "Cannot add neighbour: maxEdges (" + maxEdges + ") reached";
 
-        setNeighbourId(offset, numNeighbours, identifier);
-        setNumNeighbours(offset, numNeighbours + 1);
+        setNeighbourId(offset, count, identifier);
+        setNumNeighbours(offset, count + 1);
     }
 
     int [] getNeighbours(int offset) {
@@ -181,6 +183,5 @@ public final class NeuronFieldModel extends MetaDataAccessor {
 
         return newOffset;
     }
-
 
 }

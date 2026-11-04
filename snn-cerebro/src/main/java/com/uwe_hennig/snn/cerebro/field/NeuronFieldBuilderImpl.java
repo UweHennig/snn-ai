@@ -175,6 +175,8 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldCompileR
 
         errorMsg.clear();
 
+        NeuronFieldModelManager.close();
+
         return this;
     }
 
@@ -277,11 +279,11 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldCompileR
     }
 
     @Override
-    public long totalBytes() {
+    public int totalBytes(int fieldBuffer, int neighboursBuffer) {
         int numField = numFields();
         int maxEdge = maxNeighbours();
 
-        return NeuronFieldModel.calculateSize(numField, maxEdge);
+        return NeuronFieldModel.calculateSize(numField + fieldBuffer, maxEdge + neighboursBuffer);
     }
 
     @Override
@@ -295,7 +297,7 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldCompileR
     }
 
     @Override
-    public Optional<Integer> build(int fieldBuffer, int neighboursBuffer) {
+    public Optional<NeuronFieldModelManager> build(int fieldBuffer, int neighboursBuffer) {
         assert fieldBuffer >=1 && neighboursBuffer >=1 : "fieldBuffer and neighboursBuffer must be greater than 0";
         if (!isSuccess()) {
             return Optional.empty();
@@ -303,8 +305,16 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldCompileR
 
         List<Node> allNodes = Stream.of(receptorFields, associativeFields, effectorFields, feedbackFields).flatMap(List::stream).collect(Collectors.toList());
         Map<Integer, Integer> nodeMap = new HashMap<>();
+        int maxEdges = 0;
+        for(Node node : allNodes) {
+            maxEdges = Math.max(maxEdges, node.neighbours().size());
+        }
 
-        NeuronFieldModel model = NeuronFieldModelManager.init(allNodes.size() + fieldBuffer, associativeEdges + neighboursBuffer).getModel();
+        if (NeuronFieldModelManager.instance() != null) {
+            NeuronFieldModelManager.close();
+        }
+
+        NeuronFieldModel model = NeuronFieldModelManager.init(allNodes.size() + fieldBuffer, maxEdges + neighboursBuffer).getModel();
         for (Node node: allNodes) {
             int offset = model.claimField();
             nodeMap.put(node.id(), offset);
@@ -320,7 +330,7 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldCompileR
             }
         }
 
-        return Optional.of(nodeMap.get(0));
+        return Optional.of(NeuronFieldModelManager.instance());
     }
 
     @Override

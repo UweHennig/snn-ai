@@ -6,7 +6,7 @@ package com.uwe_hennig.snn.cerebro.contracts;
 import java.util.List;
 import java.util.Optional;
 
-import com.uwe_hennig.snn.cerebro.field.NeuronField;
+import com.uwe_hennig.snn.anatomy.allocator.NeuronFieldModelManager;
 
 /// FieldCompileResult
 ///
@@ -14,7 +14,7 @@ import com.uwe_hennig.snn.cerebro.field.NeuronField;
 ///
 public interface FieldCompileResult {
     String toDot(String comment);
-    long totalBytes();
+    int totalBytes(int fieldBuffer, int neighboursBuffer);
 
     int maxNeighbours();
     int numFields();
@@ -23,5 +23,5 @@ public interface FieldCompileResult {
     List<String> getErrorMessage();
 
     // returns field id
-    Optional<Integer> build(int fieldBuffer, int neighboursBuffer);
+    Optional<NeuronFieldModelManager> build(int fieldBuffer, int neighboursBuffer);
 }
