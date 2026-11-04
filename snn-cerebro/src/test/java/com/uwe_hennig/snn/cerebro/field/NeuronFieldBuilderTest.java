@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Random;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -27,10 +28,10 @@ import guru.nidi.graphviz.parse.Parser;
 /// @author Uwe Hennig
 ///
 public class NeuronFieldBuilderTest {
-    private static final String PNG_FILE = "NeuronFieldBuilderTest.png";
+    private static final String PNG_FILE = "test_compile.png";
 
     @Test
-    public void compileTest() {
+    public void testCompile() {
         final int numReceptorFields = 2;
         final int numAssociativeFields = 3;
         final int numEffectorFields = 1;
@@ -43,17 +44,18 @@ public class NeuronFieldBuilderTest {
             .withAssociativeFields(numAssociativeFields, 1, 0.2f).connectAssociative(2, 1)
             .withEffectorFields(numEffectorFields, 0, 0.3f).connectEffector(1)
             .withFeedbackFields(numFeedbackFields, 2, 0.4f).connectFeedback(10)
-            .compile();
+        .compile();
 
         if (!compiled.isSuccess()) {
             System.out.println(compiled.getErrorMessage());
             assertTrue(compiled.isSuccess(), "invalad field compilations");
         }
+
         System.out.println("fields = " + compiled.numFields());
         System.out.println("max neighbours = " + compiled.maxNeighbours());
         System.out.println("bytes = " + compiled.totalBytes());
 
-        String dotString = compiled.toDot("Test");
+        String dotString = compiled.toDot("testCompile");
         assertTrue(dotString != null && !dotString.isBlank(), "dto string not generated");
         System.out.println(dotString);
         convertDotStringToPng(dotString, new File(PNG_FILE));
@@ -62,6 +64,40 @@ public class NeuronFieldBuilderTest {
 
         assertTrue(compiled.totalBytes() > 100, "invalid totalBytes");
         assertEquals(10, compiled.maxNeighbours());
+    }
+
+    @Test
+    public void testCompileConnection() {
+        Random rand = new Random(System.currentTimeMillis());
+
+        final int numRConnections = rand.nextInt(5, 10);
+        final int numAConnections = rand.nextInt(5, 10);
+        final int numEConnections = rand.nextInt(5, 10);
+        final int numFConnections = rand.nextInt(5, 10);
+
+        NeuronFieldBuilderImpl nfbi = new NeuronFieldBuilderImpl();
+        FieldCompileResult compiled = nfbi
+            .withReceptorFields(10, 4, 0.2f).connectReceptor(numRConnections)
+            .withAssociativeFields(10, 4, 0.2f).connectAssociative(numAConnections, numAConnections)
+            .withEffectorFields(10, 4, 0.2f).connectEffector(numEConnections)
+            .withFeedbackFields(10, 4, 0.2f).connectFeedback(numFConnections)
+        .compile();
+
+        if (!compiled.isSuccess()) {
+            System.out.println(compiled.getErrorMessage());
+            assertTrue(compiled.isSuccess(), "invalad field compilations");
+        }
+
+        System.out.println("fields = " + compiled.numFields());
+        System.out.println("max neighbours = " + compiled.maxNeighbours());
+        System.out.println("bytes = " + compiled.totalBytes());
+
+        String dotString = compiled.toDot("Test");
+        assertTrue(dotString != null && !dotString.isBlank(), "dto string not generated");
+
+        int maxNeighbours = compiled.maxNeighbours();
+        System.out.println("max neigbours = " + maxNeighbours);
+        assertTrue(maxNeighbours >= 10 && maxNeighbours < 20, "invalid maxNeighbours");
     }
 
     public static void convertDotFileToPng(File dotFile, File pngPath) {
