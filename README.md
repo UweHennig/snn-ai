@@ -76,10 +76,6 @@ Link to the detailed documentation: [content](./docs/content.md)
 
 ## **Event & Processing Architecture**
 
-### Batch-Driven Processing
-- All runtime data is processed as **matrix batches**.
-- A worker processes a batch **fully**, ensuring deterministic behavior.
-
 ### Axon as Processing Boundary
 - A worker runs the pipeline only until the **axon**.
 - The axon generates a **new synapse matrix**.
@@ -98,7 +94,7 @@ Link to the detailed documentation: [content](./docs/content.md)
 - Workers process **full matrix batches**, not micro-events.
 - This avoids CPU thread stickiness and ensures real parallelism.
 
-### Controlled Fan‑Out
+### Controlled Fan-Out
 - Axon fan-out is bundled into a **single synapse matrix**, not thousands of micro-events.
 
 ---
