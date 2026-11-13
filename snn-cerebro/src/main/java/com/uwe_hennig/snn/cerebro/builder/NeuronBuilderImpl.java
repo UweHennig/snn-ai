@@ -3,7 +3,7 @@
  * Copyright (c) 2026 Uwe Hennig
  * All rights reserved.
  */
-package com.uwe_hennig.snn.cerebro.neuron;
+package com.uwe_hennig.snn.cerebro.builder;
 
 import com.uwe_hennig.snn.anatomy.allocator.AxonModelManager;
 import com.uwe_hennig.snn.anatomy.allocator.DendritModelManager;
@@ -32,15 +32,14 @@ import com.uwe_hennig.snn.anatomy.neuron.ThresholdModel;
 import com.uwe_hennig.snn.anatomy.neuron.ThresholdView;
 import com.uwe_hennig.snn.anatomy.neuron.WeightModel;
 import com.uwe_hennig.snn.anatomy.neuron.WeightView;
-import com.uwe_hennig.snn.cerebro.contracts.NeuronBuilder;
-import com.uwe_hennig.snn.cerebro.contracts.NeuronInfo;
+import com.uwe_hennig.snn.cerebro.contracts.CompileResult;
 
 /**
  * NeuronBuilderImpl
  *
  * @author Uwe Hennig
  */
-public class NeuronBuilderImpl implements NeuronBuilder, NeuronInfo {
+public class NeuronBuilderImpl {
     private int fieldId;
     private int neuronId;
 
@@ -51,8 +50,7 @@ public class NeuronBuilderImpl implements NeuronBuilder, NeuronInfo {
         this.fieldId = fieldId;
     }
 
-    @Override
-    public NeuronBuilder withDendrites(int dendrites) {
+    public NeuronBuilderImpl withDendrites(int dendrites) {
         if (dendrites < 1) {
             throw new IllegalStateException("At least one dendrit is required!");
         }
@@ -60,8 +58,7 @@ public class NeuronBuilderImpl implements NeuronBuilder, NeuronInfo {
         return this;
     }
 
-    @Override
-    public NeuronBuilder withSynapses(int synapses) {
+    public NeuronBuilderImpl withSynapses(int synapses) {
         if (synapses < 1) {
             throw new IllegalStateException("At least one synapse is required!");
         }
@@ -69,8 +66,7 @@ public class NeuronBuilderImpl implements NeuronBuilder, NeuronInfo {
         return this;
     }
 
-    @Override
-    public NeuronInfo build() {
+    public CompileResult compile() {
         if (!checkPreconditions()) {
             throw new IllegalStateException("System not ready!");
         }
@@ -99,7 +95,7 @@ public class NeuronBuilderImpl implements NeuronBuilder, NeuronInfo {
         }
 
         // TODO
-        return this; // new NeuronInfo(fieldId, neuronId, somaOffset, axonOffset, dendritArray, synapseArray);
+        return null; // new NeuronInfo(fieldId, neuronId, somaOffset, axonOffset, dendritArray, synapseArray);
     }
 
     // -- convenient --

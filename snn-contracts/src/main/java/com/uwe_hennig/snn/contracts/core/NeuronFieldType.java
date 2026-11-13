@@ -7,35 +7,43 @@ package com.uwe_hennig.snn.contracts.core;
 ///
 /// @author Uwe Hennig
 ///
-public final class NeuronFieldType {
-    public static final int RECEPTOR_FIELD    = 1 << 0;
-    public static final int ASSOCIATIVE_FIELD = 1 << 1;
-    public static final int EFFECTOR_FIELD    = 1 << 2;
-    public static final int FEEDBACK_FIELD    = 1 << 3;
+public enum NeuronFieldType {
+    INVALID_FIELD(Code.INVALID),
+    RECEPTOR_FIELD(Code.RECEPTOR),
+    ASSOCIATIVE_FIELD(Code.ASSOCIATIVE),
+    EFFECTOR_FIELD(Code.EFFECTOR),
+    FEEDBACK_FIELD(Code.FEEDBACK);
 
-    public static boolean isReceptorField(int code) {
-        return (code & RECEPTOR_FIELD) > 0;
+    public static final class Code {
+        public static final int INVALID     = 0;
+        public static final int RECEPTOR    = 1 << 0;
+        public static final int ASSOCIATIVE = 1 << 1;
+        public static final int EFFECTOR    = 1 << 2;
+        public static final int FEEDBACK    = 1 << 3;
+        private Code() {}
     }
 
-    public static boolean isAssociativeField(int code) {
-        return (code & ASSOCIATIVE_FIELD) > 0;
+    private final int code;
+
+    NeuronFieldType(int code) {
+        this.code = code;
     }
 
-    public static boolean isEffectorField(int code) {
-        return (code & EFFECTOR_FIELD) > 0;
+    public int code() {
+        return code;
     }
 
-    public static boolean isFeedbackField(int code) {
-        return (code & FEEDBACK_FIELD) > 0;
+    public boolean isInMask(int mask) {
+        return (mask & code) != 0;
     }
 
-    public static String toString(int type) {
-        return switch(type) {
-            case RECEPTOR_FIELD -> "RECEPTOR_FIELD";
-            case ASSOCIATIVE_FIELD -> "ASSOCIATIVE_FIELD";
-            case EFFECTOR_FIELD -> "EFFECTOR_FIELD";
-            case FEEDBACK_FIELD -> "FEEDBACK_FIELD";
-            default -> "INVALID_FIELD_TYPE";
+    public static NeuronFieldType fromCode(int code) {
+        return switch (code) {
+            case Code.RECEPTOR    -> RECEPTOR_FIELD;
+            case Code.ASSOCIATIVE -> ASSOCIATIVE_FIELD;
+            case Code.EFFECTOR    -> EFFECTOR_FIELD;
+            case Code.FEEDBACK    -> FEEDBACK_FIELD;
+            default               -> INVALID_FIELD;
         };
     }
 }

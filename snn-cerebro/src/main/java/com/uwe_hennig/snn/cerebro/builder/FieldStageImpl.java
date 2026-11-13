@@ -1,7 +1,7 @@
-/// @(#)NeuronFieldBuilderImpl.java
+/// @(#)FieldStageImpl.java
 /// Copyright (c) 2026 Uwe Hennig
 /// All rights reserved.
-package com.uwe_hennig.snn.cerebro.field;
+package com.uwe_hennig.snn.cerebro.builder;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -19,19 +18,21 @@ import java.util.stream.Stream;
 import com.uwe_hennig.snn.anatomy.allocator.NeuronFieldModelManager;
 import com.uwe_hennig.snn.anatomy.neuron.NeuronFieldModel;
 import com.uwe_hennig.snn.anatomy.neuron.NeuronFieldView;
-import com.uwe_hennig.snn.cerebro.contracts.FieldCompileResult;
-import com.uwe_hennig.snn.cerebro.contracts.NeuronFieldBuilder;
+import com.uwe_hennig.snn.cerebro.contracts.CerebroBuilder;
+import com.uwe_hennig.snn.cerebro.contracts.CompileResult;
+import com.uwe_hennig.snn.cerebro.contracts.FieldStage;
+import com.uwe_hennig.snn.cerebro.contracts.NeuronDescriptor;
 import com.uwe_hennig.snn.contracts.core.NeuronFieldType;
+import com.uwe_hennig.snn.contracts.graph.GraphType;
 import com.uwe_hennig.snn.graph.generator.contracts.IdGenerator;
 import com.uwe_hennig.snn.graph.generator.contracts.Node;
-import com.uwe_hennig.snn.graph.util.GraphvizPrinter;
 
-/// NeuronFieldBuilderImpl
+/// FieldStageImpl
 /// based on Newman- Watts small world graph.
 ///
 /// @author Uwe Hennig
 ///
-public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldCompileResult {
+public class FieldStageImpl implements FieldStage {
     private List<Node> receptorFields    = new ArrayList<>();
     private List<Node> effectorFields    = new ArrayList<>();
     private List<Node> associativeFields = new ArrayList<>();
@@ -58,57 +59,30 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldCompileR
     private int effectorBackwardsConnections;
     private int feedbackForwardConnections;
 
-    @Override
-    public NeuronFieldBuilder withReceptorFields(int numFiedlds, int edges, float probability) {
-        validParamters("receptor", numFiedlds, edges, probability);
-        this.receptorEdges = even(edges);
-        this.receptorProbability = probability;
+    private CompileResult compileResult;
+    private CerebroBuilder cerebroBuilder;
 
-        for (int i = 0; i < numFiedlds; i++) {
-            receptorFields.add(new Node(idGen.apply(), NeuronFieldType.RECEPTOR_FIELD, new ArrayList<>()));
-        }
-
-        return this;
+    FieldStageImpl(CerebroBuilder cerebroBuilder, CompileResult result) {
+        assert result != null : "CompileResult must not be null!";
+        this.compileResult = result;
+        this.cerebroBuilder = cerebroBuilder;
     }
 
     @Override
-    public NeuronFieldBuilder withAssociativeFields(int numFiedlds, int edges, float probability) {
-        validParamters("associative", numFiedlds, edges, probability);
-        this.associativeEdges = even(edges);
-        this.associativeProbability = probability;
-
-        for (int i = 0; i < numFiedlds; i++) {
-            associativeFields.add(new Node(idGen.apply(), NeuronFieldType.ASSOCIATIVE_FIELD, new ArrayList<>()));
-        }
-        return this;
+    public FieldStage withField(NeuronFieldType fieldType, int numFields, int edges, float probability) {
+        return switch(fieldType) {
+            case NeuronFieldType.RECEPTOR_FIELD -> withReceptorFields(numFields, edges, probability);
+            case NeuronFieldType.ASSOCIATIVE_FIELD -> withAssociativeFields(numFields, edges, probability);
+            case NeuronFieldType.EFFECTOR_FIELD -> withEffectorFields(numFields, edges, probability);
+            case NeuronFieldType.FEEDBACK_FIELD -> withFeedbackFields(numFields, edges, probability);
+            default -> withAssociativeFields(numFields, edges, probability);
+        };
     }
 
-    @Override
-    public NeuronFieldBuilder withEffectorFields(int numFiedlds, int edges, float probability) {
-        validParamters("effector", numFiedlds, edges, probability);
-        this.effectorEdges = even(edges);
-        this.effectorProbability = probability;
 
-        for (int i = 0; i < numFiedlds; i++) {
-            effectorFields.add(new Node(idGen.apply(), NeuronFieldType.EFFECTOR_FIELD, new ArrayList<>()));
-        }
-        return this;
-    }
 
     @Override
-    public NeuronFieldBuilder withFeedbackFields(int numFiedlds, int edges, float probability) {
-        validParamters("feedback", numFiedlds, edges, probability);
-        this.feedbackEdges = even(edges);
-        this.feedbackProbability = probability;
-
-        for (int i = 0; i < numFiedlds; i++) {
-            feedbackFields.add(new Node(idGen.apply(), NeuronFieldType.FEEDBACK_FIELD, new ArrayList<>()));
-        }
-        return this;
-    }
-
-    @Override
-    public NeuronFieldBuilder connectReceptor(int forwardConnections) {
+    public FieldStage connectReceptor(int forwardConnections) {
         if (forwardConnections < 1) {
             errorMsg.add("At least one receptor field connection is required");
         }
@@ -117,7 +91,7 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldCompileR
     }
 
     @Override
-    public NeuronFieldBuilder connectAssociative(int fowardConnections, int backwardsConnections) {
+    public FieldStage connectAssociative(int fowardConnections, int backwardsConnections) {
         if (fowardConnections < 1 || backwardsConnections < 1) {
             errorMsg.add("Each direction requires at least one associative connection");
         }
@@ -129,7 +103,7 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldCompileR
     }
 
     @Override
-    public NeuronFieldBuilder connectEffector(int backwardsConnections) {
+    public FieldStage connectEffector(int backwardsConnections) {
         if (backwardsConnections < 1) {
             errorMsg.add("At least one effector field connection required");
         }
@@ -139,7 +113,7 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldCompileR
     }
 
     @Override
-    public NeuronFieldBuilder connectFeedback(int forwardConnections) {
+    public FieldStage connectFeedback(int forwardConnections) {
         if (forwardConnections < 3) {
             errorMsg.add("At least three feedback connections are required");
         }
@@ -149,7 +123,7 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldCompileR
     }
 
     @Override
-    public NeuronFieldBuilder reset() {
+    public FieldStage reset() {
         idGen = IdGenerator.sequence(0);
 
         receptorEdges = 0;
@@ -181,7 +155,7 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldCompileR
     }
 
     @Override
-    public FieldCompileResult compile() {
+    public CompileResult compile() {
         validate();
         receptorFields = smallWorld(receptorFields, receptorEdges, receptorProbability);
         associativeFields = smallWorld(associativeFields, associativeEdges, associativeProbability);
@@ -196,6 +170,94 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldCompileR
         connect(effectorFields, associativeFields, List.of(), effectorBackwardsConnections, 0);
         connect(feedbackFields, List.of(), allNodes, 0, feedbackForwardConnections);
 
+        return compileResult;
+    }
+
+    @Override
+    public FieldStage withNeurons(NeuronFieldType type, GraphType graphType, NeuronDescriptor neuronDescriptor) {
+        // TODO Auto-generated method stub class FieldStage
+        return null;
+    }
+
+    @Override
+    public CerebroBuilder build(int fieldBuffer, int neighboursBuffer) {
+        assert fieldBuffer >=1 && neighboursBuffer >=1 : "fieldBuffer and neighboursBuffer must be greater than 0";
+        if (!compileResult.isSuccess()) {
+            return null;
+        }
+
+        List<Node> allNodes = Stream.of(receptorFields, associativeFields, effectorFields, feedbackFields).flatMap(List::stream).collect(Collectors.toList());
+        Map<Integer, Integer> nodeMap = new HashMap<>();
+        int maxEdges = 0;
+        for(Node node : allNodes) {
+            maxEdges = Math.max(maxEdges, node.neighbours().size());
+        }
+
+        if (NeuronFieldModelManager.instance() != null) {
+            NeuronFieldModelManager.close();
+        }
+
+        NeuronFieldModel model = NeuronFieldModelManager.init(allNodes.size() + fieldBuffer, maxEdges + neighboursBuffer).getModel();
+        for (Node node: allNodes) {
+            int offset = model.claimField();
+            nodeMap.put(node.id(), offset);
+        }
+
+        for (Node node: allNodes) {
+            int currentFieldOffset = nodeMap.get(node.id());
+            NeuronFieldView.setType(model, currentFieldOffset, node.nodeType());
+            NeuronFieldView.setAttraction(model, currentFieldOffset, 0.0f);
+            for (int neighbourId : node.neighbours()) {
+                int neigbourOffset = nodeMap.get(neighbourId);
+                NeuronFieldView.addNeighbour(model, currentFieldOffset, neigbourOffset);
+            }
+        }
+
+        return null; // TODO
+    }
+
+    private FieldStage withReceptorFields(int numFiedlds, int edges, float probability) {
+        validParamters("receptor", numFiedlds, edges, probability);
+        this.receptorEdges = even(edges);
+        this.receptorProbability = probability;
+
+        for (int i = 0; i < numFiedlds; i++) {
+            receptorFields.add(new Node(idGen.apply(), NeuronFieldType.RECEPTOR_FIELD.code(), new ArrayList<>()));
+        }
+
+        return this;
+    }
+
+    private FieldStage withAssociativeFields(int numFiedlds, int edges, float probability) {
+        validParamters("associative", numFiedlds, edges, probability);
+        this.associativeEdges = even(edges);
+        this.associativeProbability = probability;
+
+        for (int i = 0; i < numFiedlds; i++) {
+            associativeFields.add(new Node(idGen.apply(), NeuronFieldType.ASSOCIATIVE_FIELD.code(), new ArrayList<>()));
+        }
+        return this;
+    }
+
+    private FieldStage withEffectorFields(int numFiedlds, int edges, float probability) {
+        validParamters("effector", numFiedlds, edges, probability);
+        this.effectorEdges = even(edges);
+        this.effectorProbability = probability;
+
+        for (int i = 0; i < numFiedlds; i++) {
+            effectorFields.add(new Node(idGen.apply(), NeuronFieldType.EFFECTOR_FIELD.code(), new ArrayList<>()));
+        }
+        return this;
+    }
+
+    public FieldStage withFeedbackFields(int numFiedlds, int edges, float probability) {
+        validParamters("feedback", numFiedlds, edges, probability);
+        this.feedbackEdges = even(edges);
+        this.feedbackProbability = probability;
+
+        for (int i = 0; i < numFiedlds; i++) {
+            feedbackFields.add(new Node(idGen.apply(), NeuronFieldType.FEEDBACK_FIELD.code(), new ArrayList<>()));
+        }
         return this;
     }
 
@@ -271,70 +333,7 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldCompileR
         return valid;
     }
 
-    // --- FieldCompileResult ---
-
-    @Override
-    public String toDot(String comment) {
-        return GraphvizPrinter.toDot(comment, receptorFields, associativeFields, effectorFields, feedbackFields);
-    }
-
-    @Override
-    public int totalBytes(int fieldBuffer, int neighboursBuffer) {
-        int numField = numFields();
-        int maxEdge = maxNeighbours();
-
-        return NeuronFieldModel.calculateSize(numField + fieldBuffer, maxEdge + neighboursBuffer);
-    }
-
-    @Override
-    public boolean isSuccess() {
-        return errorMsg.isEmpty();
-    }
-
-    @Override
-    public List<String> getErrorMessage() {
-        return errorMsg;
-    }
-
-    @Override
-    public Optional<NeuronFieldModelManager> build(int fieldBuffer, int neighboursBuffer) {
-        assert fieldBuffer >=1 && neighboursBuffer >=1 : "fieldBuffer and neighboursBuffer must be greater than 0";
-        if (!isSuccess()) {
-            return Optional.empty();
-        }
-
-        List<Node> allNodes = Stream.of(receptorFields, associativeFields, effectorFields, feedbackFields).flatMap(List::stream).collect(Collectors.toList());
-        Map<Integer, Integer> nodeMap = new HashMap<>();
-        int maxEdges = 0;
-        for(Node node : allNodes) {
-            maxEdges = Math.max(maxEdges, node.neighbours().size());
-        }
-
-        if (NeuronFieldModelManager.instance() != null) {
-            NeuronFieldModelManager.close();
-        }
-
-        NeuronFieldModel model = NeuronFieldModelManager.init(allNodes.size() + fieldBuffer, maxEdges + neighboursBuffer).getModel();
-        for (Node node: allNodes) {
-            int offset = model.claimField();
-            nodeMap.put(node.id(), offset);
-        }
-
-        for (Node node: allNodes) {
-            int currentFieldOffset = nodeMap.get(node.id());
-            NeuronFieldView.setType(model, currentFieldOffset, node.nodeType());
-            NeuronFieldView.setAttraction(model, currentFieldOffset, 0.0f);
-            for (int neighbourId : node.neighbours()) {
-                int neigbourOffset = nodeMap.get(neighbourId);
-                NeuronFieldView.addNeighbour(model, currentFieldOffset, neigbourOffset);
-            }
-        }
-
-        return Optional.of(NeuronFieldModelManager.instance());
-    }
-
-    @Override
-    public int maxNeighbours() {
+    private int maxNeighbours() {
         int max = 0;
         for (int i = 0; i < receptorFields.size(); i++) {
             max = Math.max(max, receptorFields.get(i).neighbours().size());
@@ -352,8 +351,7 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldCompileR
         return max;
     }
 
-    @Override
-    public int numFields() {
+    private int numFields() {
         return receptorFields.size() + associativeFields.size() + effectorFields.size() + feedbackFields.size();
     }
 
@@ -438,4 +436,5 @@ public class NeuronFieldBuilderImpl implements NeuronFieldBuilder, FieldCompileR
     private static int even(int n) {
         return (n + 1) & ~1;
     }
+
 }

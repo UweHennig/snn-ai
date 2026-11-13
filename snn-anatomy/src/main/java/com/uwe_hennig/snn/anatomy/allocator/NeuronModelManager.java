@@ -39,6 +39,10 @@ public class NeuronModelManager {
         return INSTANCE;
     }
 
+    public static int calculateSize(int entries) {
+        return NeuronModel.calculateSize(entries);
+    }
+
     public int claimSlot() {
         return model.claimSlot();
     }
